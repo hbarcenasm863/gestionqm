@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GestiónQM — Colegio Rufino José Cuervo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Literata:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   VARIABLES & RESET
+═══════════════════════════════════════════════════════════ */
+:root {
+  /* Base */
+  --bg:    #090d13;
+  --surf:  #0f1520;
+  --card:  #151e2e;
+  --card2: #1a2540;
+  --bord:  #1e2d45;
+  --bord2: #2a3d5a;
+  /* Accents */
+  --gold:  #e8b84b;   /* asistencia */
+  --teal:  #3dd6c0;   /* notas */
+  --sky:   #5baef0;   /* consulta */
+  --ok:    #4ade80;
+  --warn:  #fb923c;
+  --fail:  #f87171;
+  /* Text */
+  --text:  #dde8f5;
+  --muted: #4e6180;
+  /* Grades */
+  --n-hi:#4ade80;--n-ok:#a3e635;--n-md:#fbbf24;--n-lo:#fb923c;--n-fl:#f87171;
+  /* Attendance */
+  --P:#4ade80;--A:#f87171;--T:#fbbf24;--J:#a78bfa;
+  /* Layout */
+  --sw: 192px;
+  --r:  10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Literata',Georgia,serif;background:var(--bg);color:var(--text)}
+
+/* ═══════════════════════════════════════════════════════════
+   SCREENS — only one visible at a time
+═══════════════════════════════════════════════════════════ */
+.screen{display:none;flex-direction:column;height:100vh}
+.screen.active{display:flex}
+.screen.page{display:none;height:auto;min-height:100vh}
+.screen.page.active{display:block}
+
+/* ═══════════════════════════════════════════════════════════
+   SETUP SCREEN
+═══════════════════════════════════════════════════════════ */
+.setup-outer{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(ellipse at 60% 40%, rgba(232,184,75,.06) 0%, transparent 60%);
+}
+.setup-card{
+  background:var(--surf);border:1px solid var(--bord);border-radius:16px;
+  padding:32px;width:100%;max-width:480px;
+}
+.setup-logo{
+  font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;
+  color:var(--gold);margin-bottom:4px;letter-spacing:-.5px;
+}
+.setup-logo em{color:var(--text);font-style:normal}
+.setup-sub{font-size:.78rem;color:var(--muted);margin-bottom:24px;line-height:1.6}
+.setup-step{
+  display:flex;gap:12px;margin-bottom:18px;align-items:flex-start;
+}
+.step-num{
+  width:24px;height:24px;border-radius:50%;background:var(--gold);
+  color:#1a0e00;font-family:'Syne',sans-serif;font-weight:800;font-size:.72rem;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+}
+.step-body{flex:1}
+.step-label{font-family:'Syne',sans-serif;font-size:.72rem;letter-spacing:.8px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.step-input{
+  width:100%;background:var(--card);border:1px solid var(--bord);border-radius:8px;
+  padding:9px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:.8rem;
+  outline:none;transition:border-color .2s;
+}
+.step-input:focus{border-color:var(--gold)}
+.step-input::placeholder{color:var(--muted);font-family:'Literata',serif;font-size:.8rem}
+.setup-hint{font-size:.68rem;color:var(--muted);margin-top:4px;line-height:1.5}
+
+/* ═══════════════════════════════════════════════════════════
+   LOGIN SCREEN
+═══════════════════════════════════════════════════════════ */
+.login-outer{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(61,214,192,.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(232,184,75,.05) 0%, transparent 50%);
+}
+.login-card{
+  background:var(--surf);border:1px solid var(--bord);border-radius:16px;
+  padding:36px 32px;width:100%;max-width:360px;text-align:center;
+}
+.login-icon{font-size:2.2rem;margin-bottom:12px}
+.login-title{
+  font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;
+  color:var(--text);margin-bottom:4px;
+}
+.login-school{font-size:.72rem;color:var(--muted);margin-bottom:24px;line-height:1.5}
+.login-input{
+  width:100%;background:var(--card);border:1px solid var(--bord);border-radius:9px;
+  padding:11px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:.95rem;
+  outline:none;transition:border-color .2s;text-align:center;letter-spacing:3px;
+  margin-bottom:8px;
+}
+.login-input:focus{border-color:var(--gold)}
+.login-err{font-size:.74rem;color:var(--fail);margin-bottom:10px;display:none;
+  background:rgba(248,113,113,.08);padding:7px 10px;border-radius:6px;
+  border:1px solid rgba(248,113,113,.2)}
+.login-btn{
+  width:100%;background:var(--gold);color:#1a0e00;border:none;border-radius:9px;
+  padding:11px;font-family:'Syne',sans-serif;font-weight:800;font-size:.88rem;
+  cursor:pointer;letter-spacing:.5px;transition:opacity .2s;
+}
+.login-btn:hover{opacity:.88}
+.login-config{
+  font-size:.68rem;color:var(--muted);margin-top:14px;cursor:pointer;
+  text-decoration:underline;
+}
+.login-config:hover{color:var(--sky)}
+
+/* ═══════════════════════════════════════════════════════════
+   APP SHELL (topbar + sidebar + main)
+═══════════════════════════════════════════════════════════ */
+.topbar{
+  background:var(--surf);border-bottom:1px solid var(--bord);
+  height:52px;padding:0 18px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.topbar-logo{
+  font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;
+  color:var(--gold);letter-spacing:-.3px;white-space:nowrap;
+}
+.topbar-logo em{color:var(--text);font-style:normal;font-size:.8rem;margin-left:4px}
+.topbar-center{display:flex;gap:6px;align-items:center;flex:1;justify-content:center}
+.topbar-right{display:flex;gap:5px}
+
+/* module pill tabs */
+.mod-tab{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 13px;border-radius:20px;border:1px solid var(--bord);
+  background:none;color:var(--muted);font-family:'Syne',sans-serif;
+  font-size:.72rem;font-weight:700;cursor:pointer;transition:all .15s;
+  letter-spacing:.3px;
+}
+.mod-tab:hover{border-color:var(--bord2);color:var(--text)}
+.mod-tab.att.active{background:rgba(232,184,75,.12);border-color:var(--gold);color:var(--gold)}
+.mod-tab.grd.active{background:rgba(61,214,192,.12);border-color:var(--teal);color:var(--teal)}
+.mod-tab.qry.active{background:rgba(91,174,240,.12);border-color:var(--sky);color:var(--sky)}
+
+.icon-btn{
+  background:none;border:1px solid var(--bord);border-radius:7px;color:var(--muted);
+  padding:5px 10px;cursor:pointer;font-family:'Literata',serif;font-size:.74rem;
+  transition:all .2s;white-space:nowrap;
+}
+.icon-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+.app-body{display:flex;flex:1;overflow:hidden}
+
+/* ── Sidebar ── */
+.sidebar{
+  width:var(--sw);flex-shrink:0;background:var(--surf);
+  border-right:1px solid var(--bord);display:flex;flex-direction:column;overflow-y:auto;
+}
+.sidebar-head{
+  padding:12px 14px 5px;font-size:.56rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);font-weight:600;font-family:'Syne',sans-serif;
+}
+.cbtn{
+  display:flex;align-items:center;gap:8px;padding:10px 14px;border:none;background:none;
+  color:var(--muted);font-family:'Literata',serif;font-size:.83rem;cursor:pointer;
+  text-align:left;width:100%;border-left:3px solid transparent;transition:background .1s,color .1s;
+}
+.cbtn:hover{background:var(--card);color:var(--text)}
+.cbtn.active-att{background:var(--card);color:var(--gold);border-left-color:var(--gold)}
+.cbtn.active-grd{background:var(--card);color:var(--teal);border-left-color:var(--teal)}
+.cdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cct{margin-left:auto;font-size:.62rem;background:var(--bord);padding:1px 6px;
+  border-radius:9px;color:var(--muted);font-family:'DM Mono',monospace}
+.ap-badge{font-size:.56rem;font-family:'DM Mono',monospace;padding:1px 4px;
+  border-radius:3px;margin-left:2px;
+  background:rgba(61,214,192,.12);border:1px solid rgba(61,214,192,.25);color:var(--teal)}
+.sidebar-bot{margin-top:auto;padding:10px 12px;border-top:1px solid var(--bord)}
+.sidebar-bot .icon-btn{width:100%;display:flex;justify-content:center;gap:5px;align-items:center}
+
+/* ── Main area ── */
+.main{flex:1;overflow-y:auto;padding:20px 22px}
+
+/* ═══════════════════════════════════════════════════════════
+   DASHBOARD (menu)
+═══════════════════════════════════════════════════════════ */
+.dashboard{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:32px 20px;
+  background:
+    radial-gradient(ellipse at 15% 85%, rgba(232,184,75,.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 15%, rgba(61,214,192,.04) 0%, transparent 50%);
+}
+.dash-inner{width:100%;max-width:540px}
+.dash-greeting{
+  font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;
+  margin-bottom:4px;letter-spacing:-.5px;
+}
+.dash-greeting span{color:var(--gold)}
+.dash-school{font-size:.78rem;color:var(--muted);margin-bottom:32px}
+.dash-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.dash-card{
+  background:var(--surf);border:1px solid var(--bord);border-radius:14px;
+  padding:22px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
+}
+.dash-card::before{
+  content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;
+}
+.dash-card.att::before{background:radial-gradient(ellipse at 0% 0%, rgba(232,184,75,.08),transparent 70%)}
+.dash-card.grd::before{background:radial-gradient(ellipse at 0% 0%, rgba(61,214,192,.08),transparent 70%)}
+.dash-card.qry::before{background:radial-gradient(ellipse at 0% 0%, rgba(91,174,240,.08),transparent 70%)}
+.dash-card:hover{border-color:var(--bord2);transform:translateY(-2px)}
+.dash-card.att:hover{border-color:var(--gold)}
+.dash-card.grd:hover{border-color:var(--teal)}
+.dash-card.qry:hover{border-color:var(--sky)}
+.dash-card:hover::before{opacity:1}
+.dash-card-icon{font-size:1.6rem;margin-bottom:10px}
+.dash-card-title{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;margin-bottom:4px;
+}
+.dash-card.att .dash-card-title{color:var(--gold)}
+.dash-card.grd .dash-card-title{color:var(--teal)}
+.dash-card.qry .dash-card-title{color:var(--sky)}
+.dash-card-desc{font-size:.73rem;color:var(--muted);line-height:1.5}
+.dash-card-arrow{
+  position:absolute;bottom:16px;right:16px;font-size:.8rem;
+  color:var(--bord2);transition:color .2s,transform .2s;
+}
+.dash-card:hover .dash-card-arrow{transform:translateX(3px)}
+.dash-card.att:hover .dash-card-arrow{color:var(--gold)}
+.dash-card.grd:hover .dash-card-arrow{color:var(--teal)}
+.dash-card.qry:hover .dash-card-arrow{color:var(--sky)}
+/* query card full width */
+.dash-card.qry{grid-column:1/-1}
+.dash-meta{font-size:.7rem;color:var(--muted);text-align:center;margin-top:8px}
+
+/* ═══════════════════════════════════════════════════════════
+   SHARED COMPONENTS
+═══════════════════════════════════════════════════════════ */
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.course-label{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;line-height:1.1}
+.course-meta{font-size:.72rem;color:var(--muted);margin-top:3px}
+.head-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;
+  font-family:'Literata',serif;font-size:.78rem;cursor:pointer;transition:all .15s;
+  border:1px solid transparent}
+.btn-gold{background:var(--gold);color:#1a0e00;border-color:var(--gold)}
+.btn-gold:hover{opacity:.85}
+.btn-teal{background:var(--teal);color:#071a17;border-color:var(--teal)}
+.btn-teal:hover{opacity:.85}
+.btn-ghost{background:none;border-color:var(--bord);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--text);color:var(--text)}
+.btn-danger{background:none;border-color:var(--fail);color:var(--fail)}
+.btn-danger:hover{background:var(--fail);color:white}
+.btn-sm{padding:4px 10px;font-size:.72rem}
+
+/* Stats */
+.stats-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.stat{background:var(--card);border:1px solid var(--bord);border-radius:8px;
+  padding:7px 13px;font-size:.78rem;display:flex;align-items:center;gap:6px}
+.stat-n{font-family:'DM Mono',monospace;font-weight:700;font-size:.92rem}
+.stat-l{color:var(--muted)}
+
+/* Table */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:.8rem;min-width:400px}
+.tbl th{padding:8px 10px;background:var(--surf);color:var(--muted);text-align:center;
+  border:1px solid var(--bord);font-family:'Syne',sans-serif;font-size:.66rem;
+  letter-spacing:.5px;font-weight:600;white-space:nowrap;position:sticky;top:0}
+.tbl th:first-child{text-align:left;min-width:165px;position:sticky;left:0;z-index:2;background:var(--surf)}
+.tbl td{padding:5px 8px;border:1px solid var(--bord);text-align:center;vertical-align:middle}
+.tbl td:first-child{text-align:left;background:var(--card);position:sticky;left:0;z-index:1;font-size:.82rem}
+.tbl tr:hover td{background:var(--card2)}
+.tbl tr:hover td:first-child{background:var(--card2)}
+
+/* Grade input */
+.ginp{width:48px;background:none;border:none;text-align:center;color:var(--text);
+  font-family:'DM Mono',monospace;font-size:.8rem;outline:none;padding:3px;
+  border-radius:4px;transition:background .12s}
+.ginp:focus{background:var(--card2);outline:1px solid var(--teal)}
+.g-hi{color:var(--n-hi)}.g-ok{color:var(--n-ok)}.g-md{color:var(--n-md)}
+.g-lo{color:var(--n-lo)}.g-fl{color:var(--n-fl)}
+.prom-cell{font-family:'DM Mono',monospace;font-size:.8rem;font-weight:700;background:var(--card2)!important}
+.code-chip{font-family:'DM Mono',monospace;font-size:.67rem;color:var(--muted)}
+.no-code{color:var(--fail);font-size:.68rem}
+
+/* Attendance status buttons */
+.sbts{display:flex;gap:3px}
+.sbt{width:30px;height:27px;border-radius:6px;border:1px solid var(--bord);
+  background:none;font-size:.67rem;font-weight:700;cursor:pointer;
+  transition:all .12s;color:var(--muted);font-family:'DM Mono',monospace}
+.sbt:hover{border-color:var(--text);color:var(--text)}
+.sbt.on-P{background:var(--P);border-color:var(--P);color:#071e12}
+.sbt.on-A{background:var(--A);border-color:var(--A);color:white}
+.sbt.on-T{background:var(--T);border-color:var(--T);color:#1a1200}
+.sbt.on-J{background:var(--J);border-color:var(--J);color:white}
+.mark-row{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.mark-label{font-size:.7rem;color:var(--muted)}
+.mabtn{padding:4px 11px;border-radius:6px;font-size:.72rem;font-weight:600;
+  cursor:pointer;border:1px solid;font-family:'DM Mono',monospace;transition:all .12s}
+.mabtn.P{border-color:var(--P);color:var(--P)}.mabtn.P:hover{background:var(--P);color:#071e12}
+.mabtn.A{border-color:var(--A);color:var(--A)}.mabtn.A:hover{background:var(--A);color:white}
+
+/* Period tabs */
+.period-tabs{display:flex;gap:4px}
+.ptab{padding:5px 13px;border-radius:6px;border:1px solid var(--bord);background:none;
+  color:var(--muted);font-family:'Syne',sans-serif;font-size:.73rem;font-weight:700;
+  cursor:pointer;transition:all .15s}
+.ptab:hover{border-color:var(--teal);color:var(--teal)}
+.ptab.active{background:var(--teal);border-color:var(--teal);color:#071a17}
+
+/* Period active control */
+.period-ctrl{display:flex;align-items:center;gap:8px;background:var(--card);
+  border:1px solid var(--bord);border-radius:8px;padding:7px 12px;
+  margin-bottom:12px;flex-wrap:wrap}
+.period-ctrl-label{font-size:.68rem;color:var(--muted);font-family:'Syne',sans-serif;letter-spacing:.5px}
+.pa-btn{padding:3px 12px;border-radius:5px;font-family:'DM Mono',monospace;font-size:.73rem;
+  font-weight:700;cursor:pointer;border:1px solid var(--bord);background:none;
+  color:var(--muted);transition:all .15s}
+.pa-btn:hover{border-color:var(--teal);color:var(--teal)}
+.pa-btn.active{background:var(--teal);border-color:var(--teal);color:#071a17}
+
+/* Weights panel */
+.weights-panel{background:var(--card);border:1px solid var(--bord);border-radius:var(--r);
+  padding:12px 14px;margin-bottom:14px}
+.wp-title{font-family:'Syne',sans-serif;font-size:.66rem;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px;
+  display:flex;align-items:center;justify-content:space-between}
+.wp-grid{display:flex;gap:6px;flex-wrap:wrap}
+.wp-chip{background:var(--card2);border:1px solid var(--bord);border-radius:7px;
+  padding:5px 10px;font-size:.76rem;display:flex;align-items:center;gap:5px}
+.wp-chip.special{border-color:rgba(91,174,240,.4);background:rgba(91,174,240,.06)}
+.wp-pct{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--teal);font-weight:600}
+.wp-chip.special .wp-pct{color:var(--sky)}
+.wp-del{background:none;border:none;color:var(--bord);cursor:pointer;font-size:.85rem;
+  padding:0 2px;transition:color .12s;line-height:1}
+.wp-del:hover{color:var(--fail)}
+
+/* Component tabs */
+.comp-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;
+  border-bottom:1px solid var(--bord);padding-bottom:8px}
+.ctab{padding:5px 12px;border-radius:7px;border:1px solid var(--bord);background:none;
+  color:var(--muted);font-family:'Syne',sans-serif;font-size:.7rem;font-weight:600;
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
+.ctab:hover{border-color:var(--bord2);color:var(--text)}
+.ctab.active{background:var(--card2);border-color:var(--teal);color:var(--teal)}
+.ctab-pct{font-family:'DM Mono',monospace;font-size:.62rem;
+  background:var(--bord);padding:1px 4px;border-radius:3px}
+.ctab.active .ctab-pct{background:rgba(61,214,192,.12);color:var(--teal)}
+
+/* Activity column */
+.act-header-row{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.avg-col{background:rgba(232,184,75,.05)!important;border-left:2px solid rgba(232,184,75,.2)!important}
+.del-col-btn{background:none;border:none;color:var(--bord);cursor:pointer;
+  font-size:.72rem;padding:0 2px;transition:color .12s;line-height:1}
+.del-col-btn:hover{color:var(--fail)}
+
+/* Modals */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;
+  align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--surf);border:1px solid var(--bord);border-radius:14px;
+  padding:22px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
+.modal-wide{max-width:560px}
+.modal-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;
+  color:var(--gold);margin-bottom:14px}
+.modal-title.teal{color:var(--teal)}
+.mrow{margin-bottom:11px}
+.mlabel{font-size:.7rem;color:var(--muted);margin-bottom:4px;display:block;
+  font-family:'Syne',sans-serif;letter-spacing:.5px}
+.minput{width:100%;background:var(--card);border:1px solid var(--bord);border-radius:8px;
+  padding:8px 12px;color:var(--text);font-family:'Literata',serif;font-size:.84rem;
+  outline:none;transition:border-color .2s}
+.minput:focus{border-color:var(--gold)}
+.minput.teal:focus{border-color:var(--teal)}
+.minput::placeholder{color:var(--muted)}
+textarea.minput{resize:vertical;min-height:85px;line-height:1.55}
+.mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.mhint{font-size:.68rem;color:var(--muted);margin-top:4px;line-height:1.5}
+.mhint.warn{color:var(--warn)}
+.redist-preview{background:var(--card);border:1px solid var(--bord);border-radius:7px;
+  padding:9px 11px;margin-top:8px;font-size:.72rem}
+.redist-title{font-family:'Syne',sans-serif;font-size:.62rem;letter-spacing:1px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.redist-row{display:flex;justify-content:space-between;padding:2px 0;color:var(--muted)}
+.redist-row span:last-child{font-family:'DM Mono',monospace;color:var(--text)}
+.expbox{background:var(--bg);border:1px solid var(--bord);border-radius:7px;padding:10px;
+  font-family:'DM Mono',monospace;font-size:.68rem;white-space:pre;overflow:auto;
+  max-height:200px;color:var(--muted);margin-bottom:10px}
+.bulk-hint{font-size:.68rem;color:var(--muted);line-height:1.6;margin-top:5px;
+  background:var(--card);border:1px solid var(--bord);border-radius:6px;padding:7px 9px}
+
+/* Attendance history */
+.history{background:var(--card);border:1px solid var(--bord);border-radius:var(--r);
+  padding:12px;margin-top:18px}
+.hist-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.hist-title{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;color:var(--sky)}
+.hist-toggle{background:none;border:none;color:var(--muted);font-size:.7rem;
+  cursor:pointer;font-family:'Literata',serif}
+.hist-toggle:hover{color:var(--sky)}
+.hist-wrap{overflow-x:auto}
+.htable{width:100%;border-collapse:collapse;font-size:.72rem;min-width:380px}
+.htable th{padding:4px 8px;background:var(--surf);color:var(--muted);text-align:center;
+  border:1px solid var(--bord);font-weight:500;white-space:nowrap}
+.htable th:first-child{text-align:left;min-width:130px}
+.htable td{padding:4px 8px;border:1px solid var(--bord);text-align:center}
+.htable td:first-child{text-align:left}
+.hP{color:var(--P);font-weight:700}.hA{color:var(--A);font-weight:700}
+.hT{color:var(--T);font-weight:700}.hJ{color:var(--J);font-weight:700}
+.h0{color:var(--bord)}
+
+/* Date pill */
+.date-pill{display:flex;align-items:center;gap:5px;background:var(--card);
+  border:1px solid var(--bord);padding:4px 11px;border-radius:16px;
+  font-size:.76rem;color:var(--muted);cursor:pointer;transition:all .2s}
+.date-pill:hover{border-color:var(--gold);color:var(--gold)}
+.date-pill input{background:none;border:none;color:inherit;font:inherit;
+  cursor:pointer;outline:none;width:100px}
+
+/* Empty / Loading */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-ico{font-size:2rem;margin-bottom:8px}
+.spin-wrap{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.8rem;padding:18px}
+.spin{width:14px;height:14px;border:2px solid var(--bord);border-top-color:var(--gold);
+  border-radius:50%;animation:sp .7s linear infinite}
+.spin.teal{border-top-color:var(--teal)}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════════════════════════════════════════
+   CONSULTA PÚBLICA
+═══════════════════════════════════════════════════════════ */
+.qry-outer{
+  min-height:100vh;background:var(--bg);
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+}
+.qry-header{background:var(--surf);border-bottom:1px solid var(--bord);
+  padding:14px 22px;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px}
+.qry-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;color:var(--sky)}
+.qry-logo em{color:var(--text);font-style:normal}
+.qry-school{font-size:.68rem;color:var(--muted);font-style:italic}
+.qry-back{font-size:.72rem;color:var(--muted);cursor:pointer;
+  border:1px solid var(--bord);padding:4px 10px;border-radius:6px;
+  font-family:'Literata',serif;background:none;transition:all .2s}
+.qry-back:hover{border-color:var(--sky);color:var(--sky)}
+.qry-container{max-width:520px;margin:0 auto;padding:28px 18px}
+.qry-card{background:var(--surf);border:1px solid var(--bord);border-radius:14px;
+  padding:24px;margin-bottom:20px;box-shadow:0 4px 24px rgba(0,0,0,.3)}
+.qry-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;
+  color:var(--sky);margin-bottom:4px}
+.qry-sub{font-size:.76rem;color:var(--muted);margin-bottom:14px;line-height:1.5}
+.qry-input-row{display:flex;gap:7px}
+.qry-input{flex:1;font-family:'DM Mono',monospace;font-size:.9rem;background:var(--card);
+  border:1px solid var(--bord);border-radius:8px;padding:9px 12px;color:var(--text);
+  outline:none;transition:border-color .2s;letter-spacing:.5px}
+.qry-input:focus{border-color:var(--sky)}
+.qry-input::placeholder{color:var(--muted);font-size:.78rem;letter-spacing:0;font-family:'Literata',serif}
+.qry-btn{background:var(--sky);color:#040e18;border:none;border-radius:8px;
+  padding:9px 16px;font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;
+  cursor:pointer;transition:opacity .2s;white-space:nowrap}
+.qry-btn:hover{opacity:.85}
+.qry-err{margin-top:9px;font-size:.76rem;color:var(--fail);display:none;
+  padding:6px 10px;background:rgba(248,113,113,.07);border-radius:6px;
+  border:1px solid rgba(248,113,113,.18)}
+/* Result */
+.res-card{background:var(--surf);border:1px solid var(--bord);border-radius:14px;
+  overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.3);animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.res-header{background:var(--sky);color:#040e18;padding:14px 20px}
+.res-name{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700}
+.res-meta{font-size:.7rem;opacity:.7;margin-top:2px}
+.res-body{padding:16px 20px}
+.comp-block{margin-bottom:12px;border:1px solid var(--bord);border-radius:8px;overflow:hidden}
+.comp-head{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--bord)}
+.comp-name{font-family:'Syne',sans-serif;font-size:.76rem;font-weight:700}
+.comp-pct{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);
+  background:rgba(255,255,255,.05);padding:2px 6px;border-radius:4px}
+.comp-body{padding:9px 12px}
+.act-sub{display:flex;flex-direction:column;gap:3px}
+.act-sub-row{display:flex;align-items:center;justify-content:space-between;
+  font-size:.74rem;padding:2px 0;border-bottom:1px dashed var(--bord)}
+.act-sub-row:last-child{border-bottom:none}
+.act-sub-name{color:var(--muted)}
+.act-sub-grade{font-family:'DM Mono',monospace;font-weight:500}
+.act-avg-row{display:flex;align-items:center;justify-content:space-between;
+  margin-top:6px;padding-top:6px;border-top:1px solid var(--bord)}
+.act-avg-label{font-size:.7rem;color:var(--muted)}
+.act-avg-val{font-family:'DM Mono',monospace;font-size:.88rem;font-weight:600}
+.aporte-bar{height:3px;background:var(--bord);border-radius:2px;margin-top:4px;overflow:hidden}
+.aporte-fill{height:100%;border-radius:2px}
+.comp-grade-val{font-family:'DM Mono',monospace;font-size:.95rem;font-weight:600}
+.comp-pending{font-size:.74rem;color:var(--muted);font-style:italic;padding:4px 0}
+.final-row{margin-top:14px;padding:12px 15px;border-radius:8px;
+  border:1px solid var(--bord2);display:flex;align-items:center;
+  justify-content:space-between;background:var(--card)}
+.final-label{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.5px}
+.final-val{font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:600}
+.pct-warn{font-size:.68rem;color:var(--warn);margin-top:9px;padding:6px 9px;
+  background:rgba(251,146,60,.07);border-radius:6px;border:1px solid rgba(251,146,60,.2)}
+.qry-footer{text-align:center;padding:20px;font-size:.66rem;color:var(--muted);
+  border-top:1px solid var(--bord);margin-top:32px}
+
+/* ═══════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════ */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--gold);color:#1a0e00;padding:8px 18px;border-radius:18px;
+  font-size:.76rem;font-weight:600;transition:transform .25s;z-index:999;
+  pointer-events:none;font-family:'Syne',sans-serif}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+@media(max-width:600px){
+  :root{--sw:50px}
+  .sidebar-head,.cct,.cbtn span:not(.cdot),.ap-badge,
+  .sidebar-bot .icon-btn span{display:none}
+  .cbtn{justify-content:center;padding:12px 0}
+  .sidebar-bot .icon-btn{font-size:1rem;padding:7px}
+  .main{padding:12px 10px}
+  .mod-tab span:not(:first-child){display:none}
+  .dash-cards{grid-template-columns:1fr}
+  .dash-card.qry{grid-column:auto}
+}
+@media(max-width:400px){
+  .topbar-center{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════════════════ -->
+<div id="loginScreen" class="screen page" style="display:none">
+<div class="login-outer">
+  <div class="login-card">
+    <div class="login-icon">⚗️</div>
+    <div class="login-title">GestiónQM</div>
+    <div class="login-school">Química · Colegio Rufino José Cuervo IED<br>Bogotá, Colombia</div>
+    <input class="login-input" type="password" id="pwdInput"
+      placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="login-err" id="loginErr">Contraseña incorrecta</div>
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════════════════ -->
+<div id="appShell" class="screen" style="display:none">
+
+<header class="topbar">
+  <div class="topbar-logo">Gestión<em>QM</em></div>
+  <div class="topbar-center" id="topbarCenter">
+    <!-- filled by module -->
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn" onclick="showDash()" title="Menú principal">⊞</button>
+    <button class="icon-btn" onclick="logout()" title="Cerrar sesión">🔒</button>
+  </div>
+</header>
+
+<div class="app-body">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-head" id="sidebarHead">Cursos</div>
+    <div id="courseNav"></div>
+    <div class="sidebar-bot">
+      <button class="icon-btn" onclick="refreshModule()">↺ <span>Actualizar</span></button>
+    </div>
+  </nav>
+  <main class="main" id="mainArea">
+    <!-- Module content rendered here -->
+  </main>
+</div>
+
+</div><!-- /appShell -->
+
+<!-- ══════════════════════════════════════════════════════
+     CONSULTA PÚBLICA (overlay dentro del shell)
+══════════════════════════════════════════════════════ -->
+<div id="queryScreen" class="screen page" style="display:none">
+<div class="qry-outer">
+  <header class="qry-header">
+    <div>
+      <div class="qry-logo">CONSULTA<em>·QM</em></div>
+      <div class="qry-school">Química — Colegio Rufino José Cuervo IED</div>
+    </div>
+    <button class="qry-back" onclick="backFromQuery()">← Volver</button>
+  </header>
+  <div class="qry-container">
+    <div class="qry-card">
+      <div class="qry-title">Consulta tus notas</div>
+      <div class="qry-sub">Ingresa tu código único (número de documento o código asignado por tu docente)</div>
+      <div class="qry-input-row">
+        <input class="qry-input" id="qryCode" placeholder="Ej: 1020456789" maxlength="20"
+          onkeydown="if(event.key==='Enter')doQuery()">
+        <button class="qry-btn" onclick="doQuery()">Consultar →</button>
+      </div>
+      <div class="qry-err" id="qryErr"></div>
+    </div>
+    <div id="qryResult"></div>
+  </div>
+  <div class="qry-footer">
+    Sistema de notas · Química · Grados 10 y 11<br>
+    Si tu código no aparece, consulta con tu docente.
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════════ -->
+
+<!-- Attendance: bulk import -->
+<div class="overlay" id="attBulkModal">
+  <div class="modal">
+    <div class="modal-title">📋 Importar lista — Asistencia</div>
+    <div class="mrow"><label class="mlabel">Curso</label>
+      <select class="minput" id="attBulkCourse"></select></div>
+    <div class="mrow"><label class="mlabel">Nombres (uno por línea)</label>
+      <textarea class="minput" id="attBulkNames" placeholder="PÉREZ GARCÍA, Juan&#10;RODRÍGUEZ LÓPEZ, María"></textarea></div>
+    <div class="mbtns">
+      <button class="btn btn-ghost" onclick="closeModal('attBulkModal')">Cancelar</button>
+      <button class="btn btn-gold" onclick="attImportBulk()">Importar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Grades: bulk import -->
+<div class="overlay" id="grdBulkModal">
+  <div class="modal">
+    <div class="modal-title teal">📋 Importar lista — Notas</div>
+    <div class="mrow"><label class="mlabel">Curso</label>
+      <select class="minput teal" id="grdBulkCourse"></select></div>
+    <div class="mrow">
+      <label class="mlabel">Formato: <code style="color:var(--sky);font-size:.76rem">NOMBRE|CÓDIGO</code></label>
+      <textarea class="minput teal" id="grdBulkNames"
+        placeholder="PÉREZ GARCÍA, Juan|1020456789&#10;RODRÍGUEZ (sin código)"></textarea>
+      <div class="bulk-hint">Separa nombre y código con <strong>|</strong>. Código opcional.</div>
+    </div>
+    <div class="mbtns">
+      <button class="btn btn-ghost" onclick="closeModal('grdBulkModal')">Cancelar</button>
+      <button class="btn btn-teal" onclick="grdImportBulk()">Importar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Grades: edit student -->
+<div class="overlay" id="editStuModal">
+  <div class="modal">
+    <div class="modal-title teal">✏ Editar estudiante</div>
+    <div class="mrow"><label class="mlabel">Nombre</label>
+      <input class="minput teal" id="editStuName"></div>
+    <div class="mrow"><label class="mlabel">Código único</label>
+      <input class="minput teal" id="editStuCode" placeholder="Ej: 1020456789"></div>
+    <input type="hidden" id="editStuId">
+    <div class="mbtns">
+      <button class="btn btn-ghost" onclick="closeModal('editStuModal')">Cancelar</button>
+      <button class="btn btn-danger btn-sm" onclick="grdRemoveStuFromModal()">Quitar</button>
+      <button class="btn btn-teal" onclick="grdSaveEditStu()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Grades: special component -->
+<div class="overlay" id="specialModal">
+  <div class="modal">
+    <div class="modal-title teal">➕ Componente especial</div>
+    <div class="mrow"><label class="mlabel">Nombre</label>
+      <input class="minput teal" id="spName" placeholder="Ej: Simulacro ICFES…"></div>
+    <div class="mrow"><label class="mlabel">Peso (%)</label>
+      <input class="minput teal" type="number" id="spWeight" min="1" max="90"
+        oninput="updateRedistPreview()">
+      <div class="mhint" id="spHint"></div>
+    </div>
+    <div class="redist-preview" id="redistPreview" style="display:none">
+      <div class="redist-title">Pesos resultantes</div>
+      <div id="redistRows"></div>
+    </div>
+    <div class="mbtns">
+      <button class="btn btn-ghost" onclick="closeModal('specialModal')">Cancelar</button>
+      <button class="btn btn-teal" onclick="saveSpecial()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Grades: new activity column -->
+<div class="overlay" id="actColModal">
+  <div class="modal">
+    <div class="modal-title teal">📝 Nueva actividad de clase</div>
+    <div class="mrow"><label class="mlabel">Nombre</label>
+      <input class="minput teal" id="actColName" placeholder="Ej: Taller 1, Quiz carbono…"></div>
+    <div class="mhint">Promedio de todas las actividades = <strong id="actColPctLbl">—</strong>% del periodo</div>
+    <div class="mbtns">
+      <button class="btn btn-ghost" onclick="closeModal('actColModal')">Cancelar</button>
+      <button class="btn btn-teal" onclick="saveActCol()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export -->
+<div class="overlay" id="exportModal">
+  <div class="modal modal-wide">
+    <div class="modal-title" id="expModalTitle">⬇ Exportar</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <div style="flex:1"><label class="mlabel">Curso</label>
+        <select class="minput" id="expCourse"></select></div>
+      <div style="flex:1" id="expPeriodWrap"><label class="mlabel">Periodo</label>
+        <select class="minput" id="expPeriod">
+          <option value="1">Periodo 1</option>
+          <option value="2">Periodo 2</option>
+          <option value="3">Periodo 3</option>
+        </select></div>
+    </div>
+    <div id="exportBox" class="expbox"></div>
+    <div class="mbtns">
+      <button class="btn btn-ghost" onclick="closeModal('exportModal')">Cerrar</button>
+      <button class="btn btn-ghost" onclick="copyExport()">📋 Copiar</button>
+      <button class="btn btn-gold" onclick="downloadCSV()">⬇ CSV</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── CONSTANTS ─────────────────────────────────────────── */
+const COURSES = ['1004','1005','1006','1101','1102','1103','1104'];
+const COLORS  = {
+  '1004':'#e8b84b','1005':'#3dd6c0','1006':'#fb923c',
+  '1101':'#a78bfa','1102':'#4ade80','1103':'#f472b6','1104':'#5baef0'
+};
+const PERIODS = [1,2,3];
+const BASE_LABELS = {actividades:'Actividades',autoeval:'Autoevaluación',coeval:'Coevaluación',final:'Evaluación final'};
+const BASE_KEYS   = ['actividades','autoeval','coeval','final'];
+
+/* ── STATE ──────────────────────────────────────────────── */
+const URL_ATT = 'https://script.google.com/macros/s/AKfycbzxJX9jhZYExJervOjVYE9yvX1JK0QXimutdXvSfvZy_rdcK1MZV_SWByKMSdrt9WMf/exec';
+const URL_GRD = 'https://script.google.com/macros/s/AKfycbyhlLNpaxXLIqPONax3_FKx8wnFkpMJ_X0ARUqkAAt8ctC1ZtYecQsL5hxWsdbxpq6W/exec';
+let SESSION_PWD = sessionStorage.getItem('gqm_pwd') || '';
+
+// Current module: 'att' | 'grd' | 'qry' | 'dash'
+let activeModule = 'dash';
+let activeCourse = localStorage.getItem('gqm_course') || COURSES[0];
+let activePeriod = +localStorage.getItem('gqm_period') || 1;
+
+// Caches
+let attCache = {};  // { course: { attendance:{date:{id:status}}, students:[] } }
+let grdCache = {};  // { course: { period: { students, weights, actNames, grades } } }
+let grdConfig = {}; // { course: activePeriod }
+let attHistOpen = true;
+let grdEditingActId = null;
+let pendingSaves = {}, saveTimers = {};
+let grdActiveTab = {};
+
+/* ── ROUTING ─────────────────────────────────────────────── */
+function showScreen(id) {
+  ['loginScreen','appShell','queryScreen'].forEach(s => {
+    const el = document.getElementById(s);
+    el.style.display = 'none';
+    el.classList.remove('active');
+  });
+  const target = document.getElementById(id);
+  target.style.display = 'flex';
+  target.classList.add('active');
+}
+
+function init() {
+  if (!SESSION_PWD) { showScreen('loginScreen'); return; }
+  launchApp();
+}
+
+/* ── LOGIN ──────────────────────────────────────────────── */
+async function doLogin() {
+  const pwd = document.getElementById('pwdInput').value; if (!pwd) return;
+  try {
+    const res = await apiGrd({ action:'getStudents', course:COURSES[0] }, pwd);
+    if (res.error === 'auth') {
+      document.getElementById('loginErr').style.display = '';
+      return;
+    }
+    document.getElementById('loginErr').style.display = 'none';
+    SESSION_PWD = pwd;
+    sessionStorage.setItem('gqm_pwd', pwd);
+    launchApp();
+  } catch(e) { toast('Error de conexión. Verifica las URLs.'); }
+}
+
+function logout() {
+  sessionStorage.removeItem('gqm_pwd');
+  SESSION_PWD = '';
+  showScreen('loginScreen');
+  document.getElementById('pwdInput').value = '';
+}
+
+/* ── LAUNCH ─────────────────────────────────────────────── */
+async function launchApp() {
+  showScreen('appShell');
+  grdConfig = await apiGrd({ action:'getConfig' });
+  showDash();
+}
+
+/* ── DASHBOARD ──────────────────────────────────────────── */
+function showDash() {
+  activeModule = 'dash';
+  document.getElementById('sidebar').style.display = 'none';
+  document.getElementById('topbarCenter').innerHTML = '';
+
+  const hr = new Date().getHours();
+  const gr = hr < 12 ? 'Buenos días' : hr < 18 ? 'Buenas tardes' : 'Buenas noches';
+  const dt = new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+
+  document.getElementById('mainArea').innerHTML = `
+    <div class="dashboard">
+      <div class="dash-inner">
+        <div class="dash-greeting">${gr}, <span>Harvey</span> ⚗️</div>
+        <div class="dash-school">Colegio Rufino José Cuervo IED · Química 10° y 11°</div>
+        <div class="dash-cards">
+          <div class="dash-card att" onclick="openModule('att')">
+            <div class="dash-card-icon">📋</div>
+            <div class="dash-card-title">Asistencia</div>
+            <div class="dash-card-desc">Llamado a lista, historial por curso y exportación por periodo</div>
+            <div class="dash-card-arrow">→</div>
+          </div>
+          <div class="dash-card grd" onclick="openModule('grd')">
+            <div class="dash-card-icon">📝</div>
+            <div class="dash-card-title">Notas</div>
+            <div class="dash-card-desc">Registro de notas, promedios ponderados y backup automático</div>
+            <div class="dash-card-arrow">→</div>
+          </div>
+          <div class="dash-card qry" onclick="openModule('qry')">
+            <div class="dash-card-icon">🔍</div>
+            <div class="dash-card-title">Consulta de estudiantes</div>
+            <div class="dash-card-desc">Página pública para que los estudiantes consulten sus notas con su código</div>
+            <div class="dash-card-arrow">→</div>
+          </div>
+        </div>
+        <div class="dash-meta">${dt}</div>
+      </div>
+    </div>`;
+}
+
+function openModule(mod) {
+  if (mod === 'qry') { showQueryModule(); return; }
+  activeModule = mod;
+  document.getElementById('sidebar').style.display = '';
+  renderNav();
+  if (mod === 'att') loadAttCourse(activeCourse);
+  if (mod === 'grd') grdLoadView(activeCourse, activePeriod);
+}
+
+function refreshModule() {
+  if (activeModule === 'att') { attCache = {}; loadAttCourse(activeCourse); }
+  if (activeModule === 'grd') { grdCache = {}; grdLoadView(activeCourse, activePeriod); }
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────────── */
+function renderNav() {
+  const head = document.getElementById('sidebarHead');
+  head.textContent = activeModule === 'att' ? 'Asistencia' : 'Notas';
+
+  document.getElementById('courseNav').innerHTML = COURSES.map(c => {
+    const isActive = c === activeCourse;
+    const cls = isActive ? (activeModule==='att' ? 'active-att' : 'active-grd') : '';
+    let badge = '', count = '·';
+    if (activeModule === 'att') {
+      count = attCache[c]?.students?.length ?? '·';
+    } else {
+      count = grdCache[c]?.[activePeriod]?.students?.length ?? '·';
+      const ap = grdConfig[c] || 1;
+      badge = `<span class="ap-badge">P${ap}</span>`;
+    }
+    return `<button class="cbtn ${cls}" onclick="selectCourse('${c}')">
+      <span class="cdot" style="background:${COLORS[c]}"></span>
+      <span>${c}</span>
+      ${badge}
+      <span class="cct">${count}</span>
+    </button>`;
+  }).join('');
+}
+
+function selectCourse(c) {
+  activeCourse = c;
+  localStorage.setItem('gqm_course', c);
+  if (activeModule === 'att') loadAttCourse(c);
+  if (activeModule === 'grd') grdLoadView(c, activePeriod);
+}
+
+/* ── API HELPERS ─────────────────────────────────────────── */
+async function apiAtt(params) {
+  const p = { ...params, pwd: SESSION_PWD };
+  const r = await fetch(URL_ATT + '?' + new URLSearchParams(p));
+  return r.json();
+}
+async function apiAttPost(body) {
+  const r = await fetch(URL_ATT, { method:'POST', body: JSON.stringify({...body, pwd:SESSION_PWD}) });
+  return r.json();
+}
+async function apiGrd(params, pwd) {
+  const p = { ...params, pwd: pwd || SESSION_PWD };
+  const r = await fetch(URL_GRD + '?' + new URLSearchParams(p));
+  return r.json();
+}
+async function apiGrdPost(body) {
+  const r = await fetch(URL_GRD, { method:'POST', body: JSON.stringify({...body, pwd:SESSION_PWD}) });
+  return r.json();
+}
+
+/* ══════════════════════════════════════════════════════════
+   ATTENDANCE MODULE
+══════════════════════════════════════════════════════════ */
+function today() { return new Date().toISOString().split('T')[0]; }
+function getDate() { return document.getElementById('dateInput')?.value || today(); }
+
+function attKey(course, date) { return `${course}_${date}`; }
+function getAtt(course, date) { return attCache[course]?.attendance?.[attKey(course,date)] || {}; }
+
+async function loadAttCourse(course) {
+  activeCourse = course;
+  localStorage.setItem('gqm_course', course);
+  renderNav();
+
+  // Set topbar
+  document.getElementById('topbarCenter').innerHTML = `
+    <button class="mod-tab att active" onclick="openModule('att')">📋 <span>Asistencia</span></button>
+    <button class="mod-tab grd" onclick="openModule('grd')">📝 <span>Notas</span></button>
+    <div class="date-pill">📅 <input type="date" id="dateInput" onchange="renderAttMain()"></div>
+    <button class="icon-btn" onclick="openAttExport()">⬇</button>
+    <button class="icon-btn" onclick="openAttBulk()">📋</button>`;
+  document.getElementById('dateInput').value = today();
+
+  if (!attCache[course]) {
+    document.getElementById('mainArea').innerHTML =
+      `<div class="spin-wrap"><div class="spin"></div>Cargando asistencia ${course}…</div>`;
+    const [students, attendance] = await Promise.all([
+      apiAtt({ action:'getStudents', course }),
+      apiAtt({ action:'getAllAttendance', course })
+    ]);
+    if (!attCache[course]) attCache[course] = {};
+    attCache[course].students  = students;
+    attCache[course].attendance = {};
+    // Convert flat attendance to cache format
+    Object.keys(attendance).forEach(date => {
+      attCache[course].attendance[`${course}_${date}`] = attendance[date];
+    });
+  }
+  renderAttMain();
+}
+
+function renderAttMain() {
+  const c = activeCourse, date = getDate();
+  const data = attCache[c] || { students:[], attendance:{} };
+  const att  = getAtt(c, date);
+  const sts  = data.students;
+
+  const cnt = s => sts.filter(x => att[x.id]===s).length;
+  const P=cnt('P'), A=cnt('A'), T=cnt('T'), J=cnt('J'), U=sts.length-P-A-T-J;
+
+  const rows = sts.length===0
+    ? `<div class="empty"><div class="empty-ico">👤</div>Sin estudiantes. Usa 📋 para importar.</div>`
+    : sts.map((s,i) => {
+        const st = att[s.id]||'';
+        return `<tr>
+          <td><span style="font-size:.65rem;color:var(--muted);margin-right:3px;font-family:'DM Mono',monospace">${i+1}</span>${s.name}</td>
+          <td><div class="sbts">
+            <button class="sbt ${st==='P'?'on-P':''}" onclick="attMark('${s.id}','P')">P</button>
+            <button class="sbt ${st==='A'?'on-A':''}" onclick="attMark('${s.id}','A')">A</button>
+            <button class="sbt ${st==='T'?'on-T':''}" onclick="attMark('${s.id}','T')">T</button>
+            <button class="sbt ${st==='J'?'on-J':''}" onclick="attMark('${s.id}','J')">J</button>
+          </div></td>
+          <td><button onclick="attRemoveStu('${s.id}')"
+            style="background:none;border:none;color:var(--bord);cursor:pointer;font-size:.9rem;padding:0 3px;transition:color .12s"
+            onmouseover="this.style.color='var(--fail)'" onmouseout="this.style.color='var(--bord)'">×</button></td>
+        </tr>`;
+      }).join('');
+
+  // History
+  const prefix = `${c}_`;
+  const dates = Object.keys(attCache[c]?.attendance||{})
+    .filter(k=>k.startsWith(prefix)).map(k=>k.replace(prefix,''))
+    .sort().reverse().slice(0,15);
+  const histHtml = dates.length===0 ? '' : buildAttHistory(c, dates, sts);
+
+  document.getElementById('mainArea').innerHTML = `
+    <div class="page-head">
+      <div>
+        <div class="course-label" style="color:${COLORS[c]}">Curso ${c}</div>
+        <div class="course-meta">${sts.length} estudiante${sts.length!==1?'s':''} · ${date}</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><span class="stat-n" style="color:var(--P)">${P}</span><span class="stat-l">Presente</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--A)">${A}</span><span class="stat-l">Ausente</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--T)">${T}</span><span class="stat-l">Tardanza</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--J)">${J}</span><span class="stat-l">Justificado</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--muted)">${U}</span><span class="stat-l">Sin marcar</span></div>
+    </div>
+    <div class="mark-row">
+      <span class="mark-label">Marcar todos:</span>
+      <button class="mabtn P" onclick="attMarkAll('P')">✓ Presente</button>
+      <button class="mabtn A" onclick="attMarkAll('A')">✗ Ausente</button>
+    </div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Estudiante</th><th>Estado</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <div style="display:flex;gap:7px;margin-top:10px">
+      <input class="minput" id="newAttStu" placeholder="Agregar estudiante (Enter)"
+        style="max-width:260px" onkeydown="if(event.key==='Enter')attAddStu()">
+      <button class="btn btn-ghost btn-sm" onclick="attAddStu()">+ Agregar</button>
+    </div>
+    ${histHtml}`;
+}
+
+function buildAttHistory(course, dates, students) {
+  const thd = dates.map(d => { const[,m,dy]=d.split('-'); return `<th>${dy}/${m}</th>`; }).join('');
+  const body = students.map(s => {
+    const cells = dates.map(d => {
+      const st = (attCache[course]?.attendance?.[`${course}_${d}`]||{})[s.id];
+      return st ? `<td class="h${st}">${st}</td>` : `<td class="h0">·</td>`;
+    }).join('');
+    return `<tr><td>${s.name}</td>${cells}</tr>`;
+  }).join('');
+  const vis = attHistOpen ? '' : 'display:none';
+  return `<div class="history">
+    <div class="hist-head">
+      <span class="hist-title">📅 Historial (últimas ${dates.length} clases)</span>
+      <button class="hist-toggle" onclick="attHistOpen=!attHistOpen;renderAttMain()">${attHistOpen?'Ocultar':'Mostrar'}</button>
+    </div>
+    <div id="histBody" style="${vis}">
+      <div class="hist-wrap"><table class="htable">
+        <thead><tr><th>Estudiante</th>${thd}</tr></thead>
+        <tbody>${body}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+
+async function attMark(studentId, status) {
+  const c=activeCourse, date=getDate();
+  const k=attKey(c,date);
+  if(!attCache[c].attendance[k]) attCache[c].attendance[k]={};
+  const cur=attCache[c].attendance[k][studentId];
+  if(cur===status) delete attCache[c].attendance[k][studentId];
+  else attCache[c].attendance[k][studentId]=status;
+  renderAttMain();
+  await apiAttPost({action:'markAttendance',course:c,date,studentId,status:cur===status?'':status});
+}
+
+async function attMarkAll(status) {
+  const c=activeCourse, date=getDate();
+  const k=attKey(c,date);
+  if(!attCache[c].attendance[k]) attCache[c].attendance[k]={};
+  attCache[c].students.forEach(s=>attCache[c].attendance[k][s.id]=status);
+  renderAttMain();
+  const records=attCache[c].students.map(s=>({studentId:s.id,status}));
+  await apiAttPost({action:'markAll',course:c,date,records});
+  toast(`Todos: ${status==='P'?'Presente':'Ausente'}`);
+}
+
+async function attAddStu() {
+  const inp=document.getElementById('newAttStu');
+  const name=inp.value.trim(); if(!name)return;
+  inp.value=''; inp.focus();
+  const res=await apiAttPost({action:'addStudent',course:activeCourse,name});
+  if(res.ok){attCache[activeCourse].students.push({id:res.id,name:res.name});renderAttMain();renderNav();toast(`"${res.name}" agregado`);}
+}
+
+async function attRemoveStu(id) {
+  const s=attCache[activeCourse].students.find(x=>x.id===id);
+  if(!confirm(`¿Quitar a "${s.name}"?`))return;
+  attCache[activeCourse].students=attCache[activeCourse].students.filter(x=>x.id!==id);
+  renderAttMain(); renderNav();
+  await apiAttPost({action:'removeStudent',course:activeCourse,studentId:id});
+  toast(`${s.name} retirado`);
+}
+
+function openAttBulk(){
+  const sel=document.getElementById('attBulkCourse');
+  sel.innerHTML=COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value=activeCourse;
+  document.getElementById('attBulkNames').value='';
+  openModal('attBulkModal');
+}
+async function attImportBulk(){
+  const course=document.getElementById('attBulkCourse').value;
+  const raw=document.getElementById('attBulkNames').value.trim();
+  if(!raw){toast('Pega al menos un nombre');return;}
+  const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  const existing=new Set((attCache[course]?.students||[]).map(s=>s.name.toLowerCase()));
+  const toAdd=lines.filter(l=>!existing.has(l.toLowerCase()));
+  if(!toAdd.length){toast('Todos ya están en la lista');return;}
+  closeModal('attBulkModal'); toast(`Importando ${toAdd.length}…`);
+  const res=await apiAttPost({action:'addStudents',course,names:toAdd});
+  if(res.ok){
+    if(!attCache[course])attCache[course]={students:[],attendance:{}};
+    res.added.forEach(s=>attCache[course].students.push(s));
+    if(course===activeCourse)renderAttMain();
+    renderNav(); toast(`✓ ${res.added.length} importados en ${course}`);
+  }
+}
+
+function openAttExport(){
+  document.getElementById('expModalTitle').textContent='⬇ Exportar asistencia';
+  document.getElementById('expPeriodWrap').style.display='none';
+  const sel=document.getElementById('expCourse');
+  sel.innerHTML=COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value=activeCourse;
+  sel.onchange=buildAttExport;
+  buildAttExport();
+  openModal('exportModal');
+}
+function buildAttExport(){
+  const c=document.getElementById('expCourse').value;
+  const data=attCache[c]||{students:[],attendance:{}};
+  const prefix=`${c}_`;
+  const dates=Object.keys(data.attendance).filter(k=>k.startsWith(prefix))
+    .map(k=>k.replace(prefix,'')).sort();
+  let txt=`ASISTENCIA · Curso ${c}\nGenerado: ${new Date().toLocaleString('es-CO')}\n\n`;
+  txt+=`Estudiante\t${dates.join('\t')}\n`;
+  data.students.forEach(s=>{
+    const vals=dates.map(d=>(data.attendance[`${c}_${d}`]||{})[s.id]||'-');
+    txt+=`${s.name}\t${vals.join('\t')}\n`;
+  });
+  document.getElementById('exportBox').textContent=txt;
+}
+
+/* ══════════════════════════════════════════════════════════
+   GRADES MODULE
+══════════════════════════════════════════════════════════ */
+function computeWeights(specials){
+  const totalSp=Math.round(specials.reduce((s,e)=>s+e.weight,0)*10)/10;
+  const fromAct=Math.min(totalSp,60), fromFinal=Math.max(0,totalSp-60);
+  return{actividades:Math.round((60-fromAct)*10)/10,autoeval:5,coeval:5,
+         final:Math.round((30-fromFinal)*10)/10};
+}
+
+function gcl(n){
+  if(n===''||n===null||n===undefined||isNaN(parseFloat(n)))return '';
+  n=parseFloat(n);
+  if(n>=4.5)return 'g-hi';if(n>=4.0)return 'g-ok';
+  if(n>=3.0)return 'g-md';if(n>=2.0)return 'g-lo';return 'g-fl';
+}
+
+function grdTabKey(){
+  const k=`${activeCourse}_${activePeriod}`;
+  if(!grdActiveTab[k])grdActiveTab[k]='actividades';
+  return grdActiveTab[k];
+}
+function grdSetTab(t){grdActiveTab[`${activeCourse}_${activePeriod}`]=t;grdRenderMain();}
+
+async function grdLoadView(course,period){
+  activeCourse=course; activePeriod=period;
+  localStorage.setItem('gqm_course',course);
+  localStorage.setItem('gqm_period',period);
+  renderNav();
+
+  // Set topbar
+  document.getElementById('topbarCenter').innerHTML = `
+    <button class="mod-tab att" onclick="openModule('att')">📋 <span>Asistencia</span></button>
+    <button class="mod-tab grd active" onclick="openModule('grd')">📝 <span>Notas</span></button>
+    <div class="period-tabs">${PERIODS.map(p=>`<button class="ptab ${p===activePeriod?'active':''}"
+      onclick="grdLoadView('${course}',${p})">P${p}</button>`).join('')}</div>
+    <button class="icon-btn" onclick="openGrdExport()">⬇</button>
+    <button class="icon-btn" onclick="downloadBackup()" title="Backup CSV">💾</button>
+    <button class="icon-btn" onclick="openModal('grdBulkModal')">📋</button>`;
+
+  if(!grdCache[course])grdCache[course]={};
+  if(!grdCache[course][period]){
+    document.getElementById('mainArea').innerHTML=
+      `<div class="spin-wrap"><div class="spin teal"></div>Cargando ${course} · P${period}…</div>`;
+    const data=await apiGrd({action:'getAll',course,period});
+    if(data.error==='auth'){logout();return;}
+    grdCache[course][period]=data;
+  }
+  grdRenderMain();
+}
+
+function grdRenderMain(){
+  const data=grdCache[activeCourse]?.[activePeriod];
+  if(!data){document.getElementById('mainArea').innerHTML=`<div class="spin-wrap"><div class="spin teal"></div>Cargando…</div>`;return;}
+  const{students,weights,actNames,grades}=data;
+  const specials=weights.especiales||[];
+  const baseW=computeWeights(specials);
+  const ap=grdConfig[activeCourse]||1;
+  const tab=grdTabKey();
+  const totalW=Object.values(baseW).reduce((a,b)=>a+b,0)+specials.reduce((s,e)=>s+e.weight,0);
+
+  // Weights panel
+  const chips=BASE_KEYS.map(k=>`<div class="wp-chip"><span>${BASE_LABELS[k]}</span>
+    <span class="wp-pct">${baseW[k]}%</span></div>`).join('')
+    +specials.map(sp=>`<div class="wp-chip special"><span>${sp.name}</span>
+    <span class="wp-pct">${sp.weight}%</span>
+    <button class="wp-del" onclick="grdRemoveSpecial('${sp.id}')">×</button></div>`).join('');
+
+  // Comp tabs
+  const allComps=[
+    ...BASE_KEYS.map(k=>({key:k,label:BASE_LABELS[k],pct:baseW[k]})),
+    ...specials.map(sp=>({key:'especial_'+sp.id,label:sp.name,pct:sp.weight}))
+  ];
+  const tabsHtml=allComps.map(c=>`
+    <button class="ctab ${tab===c.key?'active':''}" onclick="grdSetTab('${c.key}')">
+      ${c.label}<span class="ctab-pct">${c.pct}%</span>
+    </button>`).join('');
+
+  document.getElementById('mainArea').innerHTML=`
+    <div class="page-head">
+      <div>
+        <div class="course-label" style="color:${COLORS[activeCourse]}">Curso ${activeCourse}</div>
+        <div class="course-meta">Periodo ${activePeriod} · ${students.length} estudiante${students.length!==1?'s':''}</div>
+      </div>
+      <div class="head-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openModal('specialModal')">+ Especial</button>
+      </div>
+    </div>
+
+    <div class="period-ctrl">
+      <span class="period-ctrl-label">VISIBLE PARA ESTUDIANTES</span>
+      <div style="display:flex;gap:4px">${PERIODS.map(p=>`<button class="pa-btn ${ap===p?'active':''}"
+        onclick="grdSetActivePeriod(${p})">P${p}</button>`).join('')}</div>
+      <span style="font-size:.68rem;color:var(--muted)">Curso ${activeCourse} → estudiantes ven P${ap}</span>
+    </div>
+
+    <div class="weights-panel">
+      <div class="wp-title">Estructura de evaluación
+        <span style="font-size:.62rem;color:${Math.round(totalW*10)/10<99.9?'var(--warn)':'var(--ok)'}">
+          ${Math.round(totalW*10)/10}% / 100%
+        </span>
+      </div>
+      <div class="wp-grid">${chips}</div>
+      <div class="mhint" style="margin-top:6px">Autoeval y Coeval fijos (5% c/u). Especiales descuentan de Actividades primero, luego de Final.</div>
+    </div>
+
+    ${grdBuildStats(students,actNames,grades,baseW,specials)}
+    <div class="comp-tabs">${tabsHtml}</div>
+    ${grdBuildTabContent(tab,students,actNames,grades,baseW,specials)}
+
+    <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+      <input class="minput" id="newGrdStuName" placeholder="Nombre" style="max-width:190px"
+        onkeydown="if(event.key==='Tab'){event.preventDefault();document.getElementById('newGrdStuCode').focus();}">
+      <input class="minput" id="newGrdStuCode" placeholder="Código (opcional)" style="max-width:130px"
+        onkeydown="if(event.key==='Enter')grdAddStu()">
+      <button class="btn btn-ghost btn-sm" onclick="grdAddStu()">+ Agregar</button>
+    </div>`;
+}
+
+function grdBuildStats(students,actNames,grades,baseW,specials){
+  if(!students.length)return '';
+  const avgs=students.map(s=>grdCalcFinal(s,actNames,grades,baseW,specials)).filter(x=>x!==null);
+  if(!avgs.length)return '';
+  const mean=Math.round(avgs.reduce((a,b)=>a+b,0)/avgs.length*100)/100;
+  const pass=avgs.filter(x=>x>=3).length,fail=avgs.filter(x=>x<3).length;
+  const hi=Math.max(...avgs),lo=Math.min(...avgs);
+  return `<div class="stats-row">
+    <div class="stat"><span class="stat-n ${gcl(mean)}">${mean.toFixed(2)}</span><span class="stat-l">Promedio</span></div>
+    <div class="stat"><span class="stat-n" style="color:var(--ok)">${pass}</span><span class="stat-l">Aprobando</span></div>
+    <div class="stat"><span class="stat-n" style="color:var(--fail)">${fail}</span><span class="stat-l">En riesgo</span></div>
+    <div class="stat"><span class="stat-n ${gcl(hi)}">${hi.toFixed(1)}</span><span class="stat-l">Máx</span></div>
+    <div class="stat"><span class="stat-n ${gcl(lo)}">${lo.toFixed(1)}</span><span class="stat-l">Mín</span></div>
+  </div>`;
+}
+
+function grdCalcFinal(s,actNames,grades,baseW,specials){
+  const av=actNames.map(n=>grades['actividad']?.[n]?.[s.id]).filter(v=>v!=null&&v!==undefined);
+  const actAvg=av.length?av.reduce((a,b)=>a+b,0)/av.length:null;
+  let sum=0,pct=0;
+  const add=(v,p)=>{if(v!=null&&v!==''){sum+=v*(p/100);pct+=p;}};
+  add(actAvg,baseW.actividades);
+  add(grades['autoeval']?.['_']?.[s.id],5);
+  add(grades['coeval']?.['_']?.[s.id],5);
+  add(grades['final']?.['_']?.[s.id],baseW.final);
+  specials.forEach(sp=>add(grades['especial']?.[sp.id]?.[s.id],sp.weight));
+  return pct>0?Math.round(sum/(pct/100)*100)/100:null;
+}
+
+function grdBuildTabContent(tab,students,actNames,grades,baseW,specials){
+  if(!students.length)return `<div class="empty">Sin estudiantes aún.</div>`;
+  if(tab==='actividades')return grdBuildActTab(students,actNames,grades,baseW.actividades);
+  let comp,itemId='_',label,pct;
+  if(tab.startsWith('especial_')){
+    const spId=tab.replace('especial_','');
+    const sp=specials.find(s=>s.id===spId);
+    if(!sp)return '';
+    comp='especial';itemId=spId;label=sp.name;pct=sp.weight;
+  }else{comp=tab;label=BASE_LABELS[tab];pct=baseW[tab];}
+  return grdBuildSingleTab(students,grades,comp,itemId,label,pct);
+}
+
+function grdBuildActTab(students,actNames,grades,pct){
+  const hdrs=actNames.map((n,i)=>`<th>
+    <div style="display:flex;align-items:center;justify-content:center;gap:3px">
+      <span>${i+1}</span>
+      <button class="del-col-btn" onclick="grdDeleteActCol('${n}')" title="Eliminar">×</button>
+    </div>
+    <div style="font-size:.58rem;color:var(--muted);max-width:55px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${n}">${n}</div>
+  </th>`).join('');
+
+  const rows=students.map((s,i)=>{
+    const cells=actNames.map(n=>{
+      const raw=grades['actividad']?.[n]?.[s.id];
+      const val=(raw!=null)?raw:'';
+      return `<td><input class="ginp ${gcl(val)}" type="number" min="0" max="5" step="0.1"
+        value="${val}" data-comp="actividad" data-item="${n}" data-sid="${s.id}"
+        onchange="grdScheduleSave(this)" oninput="grdUpdateColor(this)" onfocus="this.select()"></td>`;
+    }).join('');
+    const vals=actNames.map(n=>grades['actividad']?.[n]?.[s.id]).filter(v=>v!=null);
+    const avg=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length*10)/10:null;
+    return `<tr>
+      <td><span style="font-size:.63rem;color:var(--muted);margin-right:3px;font-family:'DM Mono',monospace">${i+1}</span>
+        <span onclick="grdOpenEditStu('${s.id}')" style="cursor:pointer">${s.name}</span>
+        ${s.code?`<span class="code-chip"> · ${s.code}</span>`:`<span class="no-code" title="Sin código">⚠</span>`}
+      </td>${cells}
+      <td class="prom-cell avg-col ${gcl(avg)}">${avg!=null?avg.toFixed(1):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="act-header-row">
+    <div style="font-size:.72rem;color:var(--muted);font-style:italic">
+      Promedio de ${actNames.length} actividade${actNames.length!==1?'s':''} × <strong style="color:var(--text)">${pct}%</strong>
+    </div>
+    <button class="btn btn-teal btn-sm" onclick="grdOpenActColModal()">+ Nueva actividad</button>
+  </div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Estudiante · Código</th>${hdrs}<th class="avg-col">Promedio</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function grdBuildSingleTab(students,grades,comp,itemId,label,pct){
+  const rows=students.map((s,i)=>{
+    const raw=grades[comp]?.[itemId]?.[s.id];
+    const val=(raw!=null)?raw:'';
+    return `<tr>
+      <td><span style="font-size:.63rem;color:var(--muted);margin-right:3px;font-family:'DM Mono',monospace">${i+1}</span>
+        <span onclick="grdOpenEditStu('${s.id}')" style="cursor:pointer">${s.name}</span>
+        ${s.code?`<span class="code-chip"> · ${s.code}</span>`:`<span class="no-code">⚠</span>`}
+      </td>
+      <td><input class="ginp ${gcl(val)}" type="number" min="0" max="5" step="0.1"
+        value="${val}" data-comp="${comp}" data-item="${itemId}" data-sid="${s.id}"
+        onchange="grdScheduleSave(this)" oninput="grdUpdateColor(this)" onfocus="this.select()"></td>
+      <td class="prom-cell ${gcl(val)}" style="font-size:.73rem;color:var(--muted)">
+        ${val!==''?`→ ${(parseFloat(val)*pct/100).toFixed(2)} pts`:'—'}
+      </td>
+    </tr>`;
+  }).join('');
+  return `<div style="font-size:.73rem;color:var(--muted);margin-bottom:8px;font-style:italic">
+    ${label} · vale <strong style="color:var(--text)">${pct}%</strong> del periodo
+  </div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Estudiante · Código</th><th>Nota (0.0–5.0)</th><th>Aporte</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+/* Grade save */
+function grdUpdateColor(inp){
+  const v=parseFloat(inp.value);
+  inp.className='ginp '+(isNaN(v)?'':gcl(v));
+  const{comp,item,sid}={comp:inp.dataset.comp,item:inp.dataset.item,sid:inp.dataset.sid};
+  const d=grdCache[activeCourse][activePeriod];
+  if(!d.grades[comp])d.grades[comp]={};
+  if(!d.grades[comp][item])d.grades[comp][item]={};
+  d.grades[comp][item][sid]=isNaN(v)?null:v;
+}
+function grdScheduleSave(inp){
+  const{comp,item,sid}={comp:inp.dataset.comp,item:inp.dataset.item,sid:inp.dataset.sid};
+  const v=inp.value.trim()===''?null:Math.round(parseFloat(inp.value)*10)/10;
+  const key=`${activeCourse}_${activePeriod}_${comp}_${item}_${sid}`;
+  pendingSaves[key]={course:activeCourse,period:activePeriod,component:comp,itemId:item,studentId:sid,grade:v};
+  clearTimeout(saveTimers[key]);
+  saveTimers[key]=setTimeout(()=>grdFlushSave(key),900);
+}
+async function grdFlushSave(key){
+  const b=pendingSaves[key];if(!b)return;
+  delete pendingSaves[key];
+  const res=await apiGrdPost({action:'saveGrade',...b});
+  if(res.error)toast('⚠ Error guardando nota');
+}
+
+/* Activity columns */
+function grdOpenActColModal(){
+  const d=grdCache[activeCourse][activePeriod];
+  const bw=computeWeights(d.weights.especiales||[]);
+  document.getElementById('actColPctLbl').textContent=bw.actividades;
+  document.getElementById('actColName').value='';
+  openModal('actColModal');
+  setTimeout(()=>document.getElementById('actColName').focus(),80);
+}
+function saveActCol(){
+  const name=document.getElementById('actColName').value.trim();
+  if(!name){toast('Escribe el nombre');return;}
+  const d=grdCache[activeCourse][activePeriod];
+  if(d.actNames.includes(name)){toast('Ya existe esa actividad');return;}
+  d.actNames.push(name);
+  if(!d.grades.actividad)d.grades.actividad={};
+  if(!d.grades.actividad[name])d.grades.actividad[name]={};
+  closeModal('actColModal');
+  grdRenderMain(); toast(`"${name}" agregada`);
+  apiGrdPost({action:'saveGrade',course:activeCourse,period:activePeriod,
+    component:'actividad',itemId:name,studentId:'__col__',grade:null});
+}
+async function grdDeleteActCol(name){
+  if(!confirm(`¿Eliminar "${name}" y sus notas?`))return;
+  const d=grdCache[activeCourse][activePeriod];
+  d.actNames=d.actNames.filter(n=>n!==name);
+  if(d.grades.actividad)delete d.grades.actividad[name];
+  grdRenderMain();
+  await apiGrdPost({action:'removeActivity',course:activeCourse,period:activePeriod,itemId:name});
+  toast(`"${name}" eliminada`);
+}
+
+/* Specials */
+function updateRedistPreview(){
+  const w=parseFloat(document.getElementById('spWeight').value);
+  const specials=(grdCache[activeCourse]?.[activePeriod]?.weights?.especiales||[]);
+  const used=Math.round(specials.reduce((s,e)=>s+e.weight,0)*10)/10;
+  const avail=Math.round((90-used)*10)/10;
+  const hint=document.getElementById('spHint');
+  hint.textContent=`Disponible: ${avail}% · Autoeval y Coeval no se afectan`;
+  hint.className='mhint'+(w>avail?' warn':'');
+  const prev=document.getElementById('redistPreview');
+  if(!isNaN(w)&&w>0&&w<=avail){
+    const nw=computeWeights([...specials,{id:'_',weight:w}]);
+    prev.style.display='';
+    document.getElementById('redistRows').innerHTML=[
+      {l:'Actividades',v:nw.actividades,b:60},
+      {l:'Autoevaluación',v:5,b:5,f:true},
+      {l:'Coevaluación',v:5,b:5,f:true},
+      {l:'Evaluación final',v:nw.final,b:30}
+    ].map(r=>`<div class="redist-row">
+      <span>${r.l}${r.f?' <span style="font-size:.6rem;color:var(--ok)">fijo</span>':''}</span>
+      <span style="color:${r.v<r.b?'var(--warn)':r.f?'var(--ok)':'var(--text)'}">${r.v}%${r.v<r.b?' ↓':''}</span>
+    </div>`).join('');
+  }else{prev.style.display='none';}
+}
+async function saveSpecial(){
+  const name=document.getElementById('spName').value.trim();
+  const weight=parseFloat(document.getElementById('spWeight').value);
+  if(!name){toast('Escribe el nombre');return;}
+  if(isNaN(weight)||weight<=0){toast('Peso inválido');return;}
+  const res=await apiGrdPost({action:'addSpecial',course:activeCourse,period:activePeriod,name,weight});
+  if(res.error==='overflow'){toast(`Solo quedan ${res.available}% disponibles`);return;}
+  if(!res.ok){toast('Error');return;}
+  closeModal('specialModal');
+  const d=grdCache[activeCourse][activePeriod];
+  d.weights.especiales.push({id:res.id,name:res.name,weight:res.weight});
+  grdRenderMain(); toast(`"${name}" agregado · pesos redistribuidos`);
+}
+async function grdRemoveSpecial(spId){
+  const sp=grdCache[activeCourse][activePeriod].weights.especiales.find(e=>e.id===spId);
+  if(!confirm(`¿Eliminar "${sp.name}"?`))return;
+  const d=grdCache[activeCourse][activePeriod];
+  d.weights.especiales=d.weights.especiales.filter(e=>e.id!==spId);
+  if(d.grades.especial)delete d.grades.especial[spId];
+  const tk=`${activeCourse}_${activePeriod}`;
+  if(grdActiveTab[tk]==='especial_'+spId)grdActiveTab[tk]='actividades';
+  grdRenderMain();
+  await apiGrdPost({action:'removeSpecial',course:activeCourse,period:activePeriod,specialId:spId});
+  toast(`"${sp.name}" eliminado`);
+}
+
+/* Period activo */
+async function grdSetActivePeriod(period){
+  grdConfig[activeCourse]=period;grdRenderMain();renderNav();
+  await apiGrdPost({action:'setActivePeriod',course:activeCourse,period});
+  toast(`Curso ${activeCourse} → estudiantes ven P${period}`);
+}
+
+/* Students */
+async function grdAddStu(){
+  const ni=document.getElementById('newGrdStuName');
+  const ci=document.getElementById('newGrdStuCode');
+  const name=ni.value.trim();if(!name)return;
+  const code=ci.value.trim();
+  ni.value='';ci.value='';ni.focus();
+  const res=await apiGrdPost({action:'addStudent',course:activeCourse,name,code});
+  if(res.error==='duplicate_code'){toast(`Código ya existe: ${res.existing}`);return;}
+  if(res.ok){
+    PERIODS.forEach(p=>{
+      if(grdCache[activeCourse]?.[p])grdCache[activeCourse][p].students.push({id:res.id,name:res.name,code:res.code});
+    });
+    grdRenderMain();renderNav();toast(`"${res.name}" agregado`);
+  }
+}
+function grdOpenEditStu(id){
+  const s=grdCache[activeCourse][activePeriod].students.find(x=>x.id===id);
+  document.getElementById('editStuId').value=id;
+  document.getElementById('editStuName').value=s.name;
+  document.getElementById('editStuCode').value=s.code||'';
+  openModal('editStuModal');
+  setTimeout(()=>document.getElementById('editStuName').focus(),80);
+}
+async function grdSaveEditStu(){
+  const id=document.getElementById('editStuId').value;
+  const name=document.getElementById('editStuName').value.trim();
+  const code=document.getElementById('editStuCode').value.trim();
+  if(!name){toast('El nombre no puede estar vacío');return;}
+  closeModal('editStuModal');
+  const res=await apiGrdPost({action:'updateStudent',course:activeCourse,studentId:id,name,code});
+  if(res.error==='duplicate_code'){toast(`Código ya asignado a: ${res.existing}`);return;}
+  PERIODS.forEach(p=>{const s=grdCache[activeCourse]?.[p]?.students?.find(x=>x.id===id);if(s){s.name=name;s.code=code;}});
+  grdRenderMain();renderNav();toast('Estudiante actualizado');
+}
+async function grdRemoveStuFromModal(){
+  const id=document.getElementById('editStuId').value;
+  const s=grdCache[activeCourse][activePeriod].students.find(x=>x.id===id);
+  if(!confirm(`¿Quitar a "${s.name}"?`))return;
+  closeModal('editStuModal');
+  PERIODS.forEach(p=>{if(grdCache[activeCourse]?.[p])grdCache[activeCourse][p].students=grdCache[activeCourse][p].students.filter(x=>x.id!==id);});
+  grdRenderMain();renderNav();
+  await apiGrdPost({action:'removeStudent',course:activeCourse,studentId:id});
+  toast(`${s.name} retirado`);
+}
+
+/* Bulk grades */
+function openGrdBulkModalFromNav(){
+  const sel=document.getElementById('grdBulkCourse');
+  sel.innerHTML=COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value=activeCourse;
+  document.getElementById('grdBulkNames').value='';
+  openModal('grdBulkModal');
+}
+async function grdImportBulk(){
+  const course=document.getElementById('grdBulkCourse').value;
+  const raw=document.getElementById('grdBulkNames').value.trim();
+  if(!raw){toast('Pega al menos un nombre');return;}
+  const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  const existing=new Set();
+  PERIODS.forEach(p=>(grdCache[course]?.[p]?.students||[]).forEach(s=>existing.add(s.name.toLowerCase())));
+  const toAdd=lines.map(l=>{const[name,code]=(l+'|').split('|');return{name:name.trim(),code:(code||'').trim()};})
+    .filter(s=>s.name&&!existing.has(s.name.toLowerCase()));
+  if(!toAdd.length){toast('Todos ya están');return;}
+  closeModal('grdBulkModal'); toast(`Importando ${toAdd.length}…`);
+  const res=await apiGrdPost({action:'addStudents',course,students:toAdd});
+  if(res.ok){
+    PERIODS.forEach(p=>{
+      if(!grdCache[course])grdCache[course]={};
+      if(!grdCache[course][p])grdCache[course][p]={students:[],weights:{especiales:[]},actNames:[],grades:{}};
+      res.added.forEach(s=>grdCache[course][p].students.push(s));
+    });
+    if(course===activeCourse)grdRenderMain();
+    renderNav();
+    toast(`✓ ${res.added.length} importados${res.skipped?.length?` · Omitidos: ${res.skipped.length}`:''}`);
+  }
+}
+
+/* Export grades */
+function openGrdExport(){
+  document.getElementById('expModalTitle').textContent='⬇ Exportar notas';
+  document.getElementById('expPeriodWrap').style.display='';
+  const sel=document.getElementById('expCourse');
+  sel.innerHTML=COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value=activeCourse; document.getElementById('expPeriod').value=activePeriod;
+  sel.onchange=buildGrdExport; document.getElementById('expPeriod').onchange=buildGrdExport;
+  buildGrdExport(); openModal('exportModal');
+}
+async function buildGrdExport(){
+  const course=document.getElementById('expCourse').value;
+  const period=+document.getElementById('expPeriod').value;
+  if(!grdCache[course]?.[period]){
+    const data=await apiGrd({action:'getAll',course,period});
+    if(!grdCache[course])grdCache[course]={};
+    grdCache[course][period]=data;
+  }
+  const{students,weights,actNames,grades}=grdCache[course][period];
+  const specials=weights.especiales||[];
+  const bw=computeWeights(specials);
+  let txt=`NOTAS · Curso ${course} · Periodo ${period}\nGenerado: ${new Date().toLocaleString('es-CO')}\n\n`;
+  txt+=`Código\tEstudiante\t`+actNames.map((n,i)=>`Act.${i+1}:${n}`).join('\t');
+  txt+=`\tProm.Act(${bw.actividades}%)\tAutoeval(5%)\tCoeval(5%)\tFinal(${bw.final}%)`;
+  specials.forEach(sp=>txt+=`\t${sp.name}(${sp.weight}%)`);
+  txt+=`\tDEFINITIVA\n`;
+  students.forEach(s=>{
+    const av=actNames.map(n=>grades['actividad']?.[n]?.[s.id]??'');
+    const avf=av.filter(v=>v!=='');
+    const actAvg=avf.length?Math.round(avf.reduce((a,b)=>a+b,0)/avf.length*10)/10:'';
+    const ae=grades['autoeval']?.['_']?.[s.id]??'',ce=grades['coeval']?.['_']?.[s.id]??'',fi=grades['final']?.['_']?.[s.id]??'';
+    const spv=specials.map(sp=>grades['especial']?.[sp.id]?.[s.id]??'');
+    const def=grdCalcFinal(s,actNames,grades,bw,specials);
+    txt+=`${s.code||''}\t${s.name}\t${av.join('\t')}\t${actAvg}\t${ae}\t${ce}\t${fi}\t${spv.join('\t')}\t${def!=null?def.toFixed(2):''}\n`;
+  });
+  document.getElementById('exportBox').textContent=txt;
+}
+
+/* Backup */
+async function downloadBackup(){
+  toast('Generando backup…');
+  try{
+    const res=await apiGrd({action:'downloadBackup'});
+    if(!res.csv){toast('⚠ Error al generar backup');return;}
+    const blob=new Blob([res.csv],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`NotasQM_Backup_${today()}.csv`;
+    a.click(); toast('✓ Backup descargado');
+  }catch(e){toast('⚠ Error de conexión');}
+}
+
+/* Bulk modal hook */
+document.getElementById('grdBulkModal').addEventListener('show',()=>{
+  const sel=document.getElementById('grdBulkCourse');
+  sel.innerHTML=COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value=activeCourse;
+});
+document.getElementById('grdBulkModal').addEventListener('mousedown', e => {
+  if(e.target===document.getElementById('grdBulkModal')){
+    const sel=document.getElementById('grdBulkCourse');
+    sel.innerHTML=COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+    sel.value=activeCourse;
+  }
+});
+// Hook bulk button in topbar
+function openModal(id){
+  if(id==='grdBulkModal'){
+    const sel=document.getElementById('grdBulkCourse');
+    sel.innerHTML=COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+    sel.value=activeCourse;
+    document.getElementById('grdBulkNames').value='';
+  }
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+/* ══════════════════════════════════════════════════════════
+   QUERY MODULE
+══════════════════════════════════════════════════════════ */
+function showQueryModule(){
+  showScreen('queryScreen');
+  document.getElementById('qryCode').value='';
+  document.getElementById('qryResult').innerHTML='';
+  document.getElementById('qryErr').style.display='none';
+}
+function backFromQuery(){
+  showScreen('appShell');
+  if(SESSION_PWD) showDash();
+  else showScreen('loginScreen');
+}
+
+async function doQuery(){
+  const code=document.getElementById('qryCode').value.trim();
+  const err=document.getElementById('qryErr');
+  err.style.display='none';
+  if(!code){err.textContent='Ingresa tu código';err.style.display='';return;}
+  document.getElementById('qryResult').innerHTML=
+    `<div style="text-align:center;padding:28px;color:var(--muted)">
+      <div class="spin teal" style="margin:0 auto 8px"></div>Consultando…
+    </div>`;
+  try{
+    const res=await fetch(URL_GRD+'?'+new URLSearchParams({action:'queryStudent',code}));
+    const data=await res.json();
+    if(data.error==='notfound'||data.error==='empty'){
+      document.getElementById('qryResult').innerHTML='';
+      err.textContent='Código no encontrado. Verifica o consulta con tu docente.';
+      err.style.display=''; return;
+    }
+    if(data.error){
+      document.getElementById('qryResult').innerHTML='';
+      err.textContent='Error de conexión. Intenta de nuevo.';
+      err.style.display=''; return;
+    }
+    renderQueryResult(data);
+  }catch(e){
+    document.getElementById('qryResult').innerHTML='';
+    err.textContent='No se pudo conectar. Intenta más tarde.';
+    err.style.display='';
+  }
+}
+
+function qcol(n){
+  if(n===null||isNaN(n))return'var(--muted)';
+  if(n>=4.5)return'var(--n-hi)';if(n>=4.0)return'var(--n-ok)';
+  if(n>=3.0)return'var(--n-md)';if(n>=2.0)return'var(--n-lo)';return'var(--n-fl)';
+}
+
+function renderQueryResult(data){
+  const{name,course,period,components,avg,totalPct}=data;
+  const blocks=components.map(c=>{
+    const has=c.grade!==null&&c.grade!==undefined;
+    if(c.key==='actividades'){
+      const subHtml=c.actItems?.length
+        ?`<div class="act-sub">${c.actItems.map((item,i)=>`
+            <div class="act-sub-row">
+              <span class="act-sub-name">${i+1}. ${item.name}</span>
+              ${item.grade!==null
+                ?`<span class="act-sub-grade" style="color:${qcol(item.grade)}">${item.grade.toFixed(1)}</span>`
+                :`<span style="color:var(--muted);font-size:.7rem;font-style:italic">pendiente</span>`}
+            </div>`).join('')}
+          ${c.grade!==null?`<div class="act-avg-row">
+            <span class="act-avg-label">Promedio actividades</span>
+            <span class="act-avg-val" style="color:${qcol(c.grade)}">${c.grade.toFixed(1)}</span>
+          </div>`:''}
+          </div>`
+        :`<div class="comp-pending">Sin actividades registradas aún.</div>`;
+      return `<div class="comp-block"><div class="comp-head">
+          <span class="comp-name">${c.label}</span><span class="comp-pct">${c.weight}%</span>
+        </div><div class="comp-body">${subHtml}
+          ${has?`<div class="aporte-bar"><div class="aporte-fill"
+            style="width:${Math.round(c.grade/5*100)}%;background:${qcol(c.grade)}"></div></div>`:''}
+        </div></div>`;
+    }
+    const contrib=has?(c.grade*c.weight/100).toFixed(2):null;
+    return `<div class="comp-block"><div class="comp-head">
+        <span class="comp-name">${c.label}</span><span class="comp-pct">${c.weight}%</span>
+      </div><div class="comp-body">
+        ${has?`<div style="display:flex;align-items:center;justify-content:space-between">
+            <span class="comp-grade-val" style="color:${qcol(c.grade)}">${c.grade.toFixed(1)}</span>
+            <span style="font-size:.68rem;color:var(--muted)">→ ${contrib} pts</span>
+          </div>
+          <div class="aporte-bar"><div class="aporte-fill"
+            style="width:${Math.round(c.grade/5*100)}%;background:${qcol(c.grade)}"></div></div>`
+          :`<div class="comp-pending">Pendiente</div>`}
+      </div></div>`;
+  }).join('');
+
+  const pctWarn=totalPct<100
+    ?`<div class="pct-warn">⚠ Periodo en curso (${totalPct}% evaluado). El promedio puede cambiar.</div>`:'' ;
+
+  document.getElementById('qryResult').innerHTML=`
+    <div class="res-card">
+      <div class="res-header">
+        <div class="res-name">${name}</div>
+        <div class="res-meta">Curso ${course} · Periodo ${period}</div>
+      </div>
+      <div class="res-body">
+        ${blocks}
+        <div class="final-row">
+          <span class="final-label">NOTA PERIODO ${period}</span>
+          ${avg!==null
+            ?`<span class="final-val" style="color:${qcol(avg)}">${avg.toFixed(2)}</span>`
+            :`<span style="color:var(--muted);font-size:.82rem">Sin notas aún</span>`}
+        </div>
+        ${pctWarn}
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   EXPORT / CSV shared
+══════════════════════════════════════════════════════════ */
+function copyExport(){
+  navigator.clipboard.writeText(document.getElementById('exportBox').textContent)
+    .then(()=>toast('¡Copiado!'));
+}
+async function downloadCSV(){
+  const course=document.getElementById('expCourse').value;
+  const isGrd=document.getElementById('expPeriodWrap').style.display!=='none';
+  if(isGrd){
+    const period=+document.getElementById('expPeriod').value;
+    const{students,weights,actNames,grades}=grdCache[course][period];
+    const specials=weights.especiales||[];
+    const bw=computeWeights(specials);
+    let csv=`Código,Estudiante,`+actNames.map((n,i)=>`"Act.${i+1}: ${n}"`).join(',')+',';
+    csv+=`"Prom.Act (${bw.actividades}%)","Autoeval (5%)","Coeval (5%)","Final (${bw.final}%)",`;
+    csv+=specials.map(sp=>`"${sp.name} (${sp.weight}%)"`).join(',')+',DEFINITIVA\n';
+    students.forEach(s=>{
+      const av=actNames.map(n=>grades['actividad']?.[n]?.[s.id]??'');
+      const avf=av.filter(v=>v!=='');
+      const actAvg=avf.length?Math.round(avf.reduce((a,b)=>a+b,0)/avf.length*10)/10:'';
+      const ae=grades['autoeval']?.['_']?.[s.id]??'',ce=grades['coeval']?.['_']?.[s.id]??'',fi=grades['final']?.['_']?.[s.id]??'';
+      const spv=specials.map(sp=>grades['especial']?.[sp.id]?.[s.id]??'');
+      const def=grdCalcFinal(s,actNames,grades,bw,specials);
+      csv+=`${s.code||''},"${s.name}",${av.join(',')},${actAvg},${ae},${ce},${fi},${spv.join(',')},${def!=null?def.toFixed(2):''}\n`;
+    });
+    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=`notas_${course}_P${period}.csv`;a.click();
+  } else {
+    const txt=document.getElementById('exportBox').textContent;
+    const blob=new Blob(['\uFEFF'+txt],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=`asistencia_${course}_${today()}.csv`;a.click();
+  }
+  toast('CSV descargado');
+}
+
+/* ══════════════════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════════════════ */
+let _tt;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.overlay').forEach(el=>{
+  el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+});
+
+init();
+</script>
+</body>
+</html>
