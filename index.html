@@ -824,11 +824,68 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   .topbar-right .icon-btn { display: none; }
 }
 
-/* ═══ MOBILE GRADE CARDS ═══ */
+/* ═══ MOBILE GRADE VIEW — CSS Grid ═══ */
 .grade-cards { display: none; }
 @media (max-width: 700px) {
   .grade-table-wrap { display: none; }
-  .grade-cards { display: flex; flex-direction: column; gap: 10px; }
+  .grade-cards { display: flex; flex-direction: column; gap: 8px; }
+  .mgrid {
+    background: white;
+    border: 1.5px solid var(--bord);
+    border-radius: var(--r);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .mgrid-head {
+    background: var(--navy);
+    color: white;
+    padding: 8px 12px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+  }
+  .mgrid-name { font-size: .82rem; font-weight: 600; }
+  .mgrid-def {
+    font-family: 'DM Mono', monospace;
+    font-size: .9rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px;
+    background: rgba(255,255,255,.15);
+  }
+  .mgrid-body { padding: 8px 10px; }
+  .mgrid-section {
+    font-size: .62rem; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--muted);
+    padding: 6px 0 3px;
+    border-bottom: 1px solid var(--bord);
+    margin-bottom: 2px;
+    grid-column: 1 / -1;
+  }
+  .mgrid-rows {
+    display: grid;
+    grid-template-columns: 1fr 80px;
+    gap: 1px;
+  }
+  .mgrid-label {
+    font-size: .78rem;
+    color: var(--text2);
+    padding: 5px 4px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--bord);
+  }
+  .mgrid-input-cell {
+    border-bottom: 1px solid var(--bord);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card);
+  }
+  .mgrid-rows .ginp {
+    width: 70px !important;
+    text-align: center;
+  }
 }
 .gcard {
   background: white;
@@ -1774,7 +1831,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
       <div style="font-size:.58rem;color:rgba(255,255,255,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:64px" title="${n}">${n}</div>
     </th>`;
   });
-  thd+=`<th class="th-prom" title="Promedio actividades × ${baseW.actividades}%">Prom.<br>Act.<br><span style="font-size:.6rem;opacity:.7">${baseW.actividades}%</span></th>`;
+
   thd+=`<th class="th-grade" title="Autoevaluación 5%">Auto<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>`;
   thd+=`<th class="th-grade" title="Coevaluación 5%">Co<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>`;
   thd+=`<th class="th-grade" title="Evaluación final ${baseW.final}%">Ev.<br>Final<br><span style="font-size:.6rem;opacity:.7">${baseW.final}%</span></th>`;
@@ -1801,10 +1858,9 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
         onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
     });
 
-    // Prom actividades
+    // Prom actividades (calculado internamente, no mostrado como columna)
     const av=actNames.map(n=>grades['actividad']?.[n]?.[s.id]).filter(v=>v!=null);
     const actAvg=av.length?Math.round(av.reduce((a,b)=>a+b,0)/av.length*10)/10:null;
-    tds+=`<td class="td-prom ${gcl(actAvg)}">${actAvg!=null?actAvg.toFixed(1):'—'}</td>`;
 
     // Autoeval
     const ae=grades['autoeval']?.['_']?.[s.id];
@@ -1848,45 +1904,60 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     return`<tr>${tds}</tr>`;
   }).join('');
 
-  // Build mobile card view
+  // Build mobile CSS Grid editable view
   const cards = students.map((s,i) => {
     const av=actNames.map(n=>grades['actividad']?.[n]?.[s.id]).filter(v=>v!=null);
     const actAvg=av.length?Math.round(av.reduce((a,b)=>a+b,0)/av.length*10)/10:null;
-    const ae=grades['autoeval']?.['_']?.[s.id]??null;
-    const ce=grades['coeval']?.['_']?.[s.id]??null;
-    const fi=grades['final']?.['_']?.[s.id]??null;
     const def=grdCalcFinal(s,actNames,grades,baseW,specials);
-    const defCls=gcl(def);
+    const defCol=def===null?'rgba(255,255,255,.7)':def>=3?'#4ade80':def>=2?'#fbbf24':'#f87171';
 
-    const actRows=actNames.map((n,j)=>{
-      const v=grades['actividad']?.[n]?.[s.id]??null;
-      return`<div class="gcard-row">
-        <span class="gcard-label">${n.length>22?n.substring(0,22)+'…':n}</span>
-        <span class="gcard-val ${gcl(v)}">${v!=null?v.toFixed(1):'—'}</span>
-      </div>`;
+    const makeInp=(comp,item,val)=>`
+      <div class="mgrid-label">${comp==='actividad'?item.length>20?item.substring(0,20)+'…':item:
+        comp==='autoeval'?'Autoeval (5%)':comp==='coeval'?'Coeval (5%)':
+        comp==='final'?'Final ('+baseW.final+'%)':item}</div>
+      <div class="mgrid-input-cell"><input class="ginp ${gcl(val)}" type="number"
+        min="0" max="5" step="0.1" value="${val!==''?val:''}"
+        data-comp="${comp}" data-item="${comp==='actividad'?item:'_'}"
+        ${comp==='especial'?'data-item="'+item+'"':''}
+        data-sid="${s.id}" data-orig="${val}"
+        onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
+        onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></div>`;
+
+    const actInputs=actNames.map(n=>{
+      const raw=grades['actividad']?.[n]?.[s.id];
+      const val=raw!=null?raw:'';
+      return makeInp('actividad',n,val);
     }).join('');
 
-    const spRows=specials.map(sp=>{
-      const v=grades['especial']?.[sp.id]?.[s.id]??null;
-      return`<div class="gcard-row">
-        <span class="gcard-label">${sp.name.length>22?sp.name.substring(0,22)+'…':sp.name} (${sp.weight}%)</span>
-        <span class="gcard-val ${gcl(v)}">${v!=null?v.toFixed(1):'—'}</span>
-      </div>`;
+    const aeVal=grades['autoeval']?.['_']?.[s.id]??'';
+    const ceVal=grades['coeval']?.['_']?.[s.id]??'';
+    const fiVal=grades['final']?.['_']?.[s.id]??'';
+
+    const spInputs=specials.map(sp=>{
+      const v=grades['especial']?.[sp.id]?.[s.id]??'';
+      return`<div class="mgrid-label">${sp.name.length>20?sp.name.substring(0,20)+'…':sp.name} (${sp.weight}%)</div>
+        <div class="mgrid-input-cell"><input class="ginp ${gcl(v)}" type="number"
+          min="0" max="5" step="0.1" value="${v}"
+          data-comp="especial" data-item="${sp.id}" data-sid="${s.id}" data-orig="${v}"
+          onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
+          onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></div>`;
     }).join('');
 
-    return`<div class="gcard">
-      <div class="gcard-head">
-        <span class="gcard-name">${i+1}. ${s.name}</span>
-        <span class="gcard-def ${defCls}" style="color:${def>=3?'#4ade80':def>=2?'#fbbf24':'#f87171'}">${def!=null?def.toFixed(2):'0.00'}</span>
+    return`<div class="mgrid">
+      <div class="mgrid-head">
+        <span class="mgrid-name">${i+1}. ${s.name}</span>
+        <span class="mgrid-def" style="color:${defCol}">${def!=null?def.toFixed(2):'0.00'}</span>
       </div>
-      <div class="gcard-body">
-        <div class="gcard-section">Actividades (${baseW.actividades}%) — prom: ${actAvg!=null?actAvg.toFixed(1):'—'}</div>
-        ${actRows}
-        ${spRows?`<div class="gcard-section">Especiales</div>${spRows}`:''}
-        <div class="gcard-section">Evaluación</div>
-        <div class="gcard-row"><span class="gcard-label">Autoevaluación (5%)</span><span class="gcard-val ${gcl(ae)}">${ae!=null?ae.toFixed(1):'—'}</span></div>
-        <div class="gcard-row"><span class="gcard-label">Coevaluación (5%)</span><span class="gcard-val ${gcl(ce)}">${ce!=null?ce.toFixed(1):'—'}</span></div>
-        <div class="gcard-row"><span class="gcard-label">Ev. Final (${baseW.final}%)</span><span class="gcard-val ${gcl(fi)}">${fi!=null?fi.toFixed(1):'—'}</span></div>
+      <div class="mgrid-body">
+        <div class="mgrid-rows">
+          <div class="mgrid-section">Actividades (${baseW.actividades}%)</div>
+          ${actInputs}
+          ${spInputs?`<div class="mgrid-section">Especiales</div>${spInputs}`:''}
+          <div class="mgrid-section">Evaluación</div>
+          ${makeInp('autoeval','_',aeVal)}
+          ${makeInp('coeval','_',ceVal)}
+          ${makeInp('final','_',fiVal)}
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -2214,7 +2285,8 @@ async function saveSpecial(){
   }
 
   const res = await apiGrdPost({
-    action:'addSpecial', course:activeCourse, period:activePeriod, name, weight
+    action:'addSpecial', course:activeCourse, period:activePeriod,
+    name, weight, pesoAct:newAct, pesoFinal:newFin
   });
   if (res.error==='overflow') { toast(`Solo quedan ${res.available}% disponibles`); return; }
   if (!res.ok) { toast('Error al agregar'); return; }
