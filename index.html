@@ -892,20 +892,69 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 <div class="overlay" id="specialModal">
   <div class="modal">
     <div class="modal-title">➕ Componente especial</div>
-    <div class="mrow"><label class="mlabel">Nombre</label>
-      <input class="minput" id="spName" placeholder="Ej: Simulacro ICFES, Proyecto integrador…"></div>
-    <div class="mrow"><label class="mlabel">Peso (%)</label>
+    <div class="mrow">
+      <label class="mlabel">Nombre del componente</label>
+      <input class="minput" id="spName" placeholder="Ej: Simulacro ICFES, Proyecto Natalia…">
+    </div>
+    <div class="mrow">
+      <label class="mlabel">Peso del especial (%)</label>
       <input class="minput" type="number" id="spWeight" min="1" max="90"
-        oninput="updateRedistPreview()">
-      <div class="mhint" id="spHint"></div>
+        oninput="updateRedistInputs()">
     </div>
-    <div class="redist-preview" id="redistPreview" style="display:none">
-      <div class="redist-title">Cómo quedan los pesos</div>
-      <div id="redistRows"></div>
+
+    <div id="redistPanel" style="display:none;margin-top:12px">
+      <div style="font-size:.72rem;font-weight:600;color:var(--text2);margin-bottom:8px;
+        letter-spacing:.3px;text-transform:uppercase">
+        ¿De dónde quitas ese porcentaje?
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px">
+        Ajusta los nuevos pesos de los componentes base. Deben sumar exactamente 100%.
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center">
+        <label style="font-size:.8rem;color:var(--text2)">Actividades de clase</label>
+        <div style="display:flex;align-items:center;gap:5px">
+          <input class="minput" type="number" id="pAct" min="0" max="90" step="1"
+            style="width:70px;text-align:center" oninput="checkRedistTotal()">
+          <span style="font-size:.78rem;color:var(--muted)">%</span>
+        </div>
+
+        <label style="font-size:.8rem;color:var(--text2)">Autoevaluación</label>
+        <div style="display:flex;align-items:center;gap:5px">
+          <input class="minput" type="number" id="pAuto" min="0" max="20" step="1"
+            style="width:70px;text-align:center;background:#f0faf6" disabled>
+          <span style="font-size:.72rem;color:var(--ok)">% fijo</span>
+        </div>
+
+        <label style="font-size:.8rem;color:var(--text2)">Coevaluación</label>
+        <div style="display:flex;align-items:center;gap:5px">
+          <input class="minput" type="number" id="pCo" min="0" max="20" step="1"
+            style="width:70px;text-align:center;background:#f0faf6" disabled>
+          <span style="font-size:.72rem;color:var(--ok)">% fijo</span>
+        </div>
+
+        <label style="font-size:.8rem;color:var(--text2)">Evaluación final</label>
+        <div style="display:flex;align-items:center;gap:5px">
+          <input class="minput" type="number" id="pFinal" min="0" max="90" step="1"
+            style="width:70px;text-align:center" oninput="checkRedistTotal()">
+          <span style="font-size:.78rem;color:var(--muted)">%</span>
+        </div>
+
+        <label style="font-size:.8rem;color:var(--text2)">Especial (nuevo)</label>
+        <div style="display:flex;align-items:center;gap:5px">
+          <input class="minput" type="number" id="pEsp" style="width:70px;text-align:center;background:#fff8e1" readonly>
+          <span style="font-size:.78rem;color:var(--gold)">%</span>
+        </div>
+      </div>
+
+      <div id="redistTotal" style="margin-top:10px;padding:8px 12px;border-radius:8px;
+        font-size:.8rem;font-family:monospace;text-align:center;font-weight:600">
+      </div>
     </div>
+
     <div class="mbtns">
       <button class="btn btn-outline" onclick="closeModal('specialModal')">Cancelar</button>
-      <button class="btn btn-gold" onclick="saveSpecial()">Agregar</button>
+      <button class="btn btn-gold" id="spSaveBtn" onclick="saveSpecial()" disabled>Agregar</button>
     </div>
   </div>
 </div>
@@ -1808,40 +1857,87 @@ async function grdDeleteActCol(name){
 }
 
 /* Specials */
-function updateRedistPreview(){
-  const w=parseFloat(document.getElementById('spWeight').value);
-  const specials=(grdCache[activeCourse]?.[activePeriod]?.weights?.especiales||[]);
-  const used=Math.round(specials.reduce((s,e)=>s+e.weight,0)*10)/10;
-  const avail=Math.round((90-used)*10)/10;
-  const hint=document.getElementById('spHint');
-  hint.textContent=`Disponible: ${avail}% · Autoeval y Coeval no se afectan`;
-  hint.className='mhint'+(w>avail?' warn':'');
-  const prev=document.getElementById('redistPreview');
-  if(!isNaN(w)&&w>0&&w<=avail){
-    const nw=computeWeights([...specials,{id:'_',weight:w}]);
-    prev.style.display='';
-    document.getElementById('redistRows').innerHTML=[
-      {l:'Actividades',v:nw.actividades,b:60},
-      {l:'Autoevaluación',v:5,b:5,f:true},
-      {l:'Coevaluación',v:5,b:5,f:true},
-      {l:'Ev. Final',v:nw.final,b:30}
-    ].map(r=>`<div class="redist-row">
-      <span>${r.l}${r.f?' <span style="font-size:.6rem;color:var(--ok)">fijo</span>':''}</span>
-      <span style="color:${r.v<r.b?'var(--warn)':r.f?'var(--ok)':'var(--text)'}">${r.v}%${r.v<r.b?' ↓':''}</span>
-    </div>`).join('');
-  }else{prev.style.display='none';}
+function updateRedistInputs(){
+  const w = parseFloat(document.getElementById('spWeight').value);
+  const panel = document.getElementById('redistPanel');
+  const btn = document.getElementById('spSaveBtn');
+  if (isNaN(w) || w <= 0 || w > 90) {
+    panel.style.display = 'none';
+    btn.disabled = true;
+    return;
+  }
+  // Get current effective weights
+  const specials = grdCache[activeCourse]?.[activePeriod]?.weights?.especiales || [];
+  const cur = computeWeights(specials);
+  // Pre-fill with current values as suggestion
+  document.getElementById('pAct').value   = cur.actividades;
+  document.getElementById('pAuto').value  = 5;
+  document.getElementById('pCo').value    = 5;
+  document.getElementById('pFinal').value = cur.final;
+  document.getElementById('pEsp').value   = w;
+  panel.style.display = '';
+  checkRedistTotal();
 }
+
+function checkRedistTotal(){
+  const act   = parseFloat(document.getElementById('pAct').value)   || 0;
+  const auto  = 5;
+  const co    = 5;
+  const fin   = parseFloat(document.getElementById('pFinal').value)  || 0;
+  const esp   = parseFloat(document.getElementById('pEsp').value)    || 0;
+  const total = Math.round((act + auto + co + fin + esp) * 10) / 10;
+  const el    = document.getElementById('redistTotal');
+  const btn   = document.getElementById('spSaveBtn');
+  if (total === 100) {
+    el.textContent = `Total: ${total}% ✓`;
+    el.style.background = '#f0faf6';
+    el.style.color = 'var(--ok)';
+    el.style.border = '1px solid var(--ok)';
+    btn.disabled = false;
+  } else {
+    el.textContent = `Total: ${total}% — debe ser exactamente 100%`;
+    el.style.background = '#fef2f2';
+    el.style.color = 'var(--fail)';
+    el.style.border = '1px solid var(--fail)';
+    btn.disabled = true;
+  }
+}
+
 async function saveSpecial(){
-  const name=document.getElementById('spName').value.trim();
-  const weight=parseFloat(document.getElementById('spWeight').value);
-  if(!name){toast('Escribe el nombre');return;}
-  if(isNaN(weight)||weight<=0){toast('Peso inválido');return;}
-  const res=await apiGrdPost({action:'addSpecial',course:activeCourse,period:activePeriod,name,weight});
-  if(res.error==='overflow'){toast(`Solo quedan ${res.available}% disponibles`);return;}
-  if(!res.ok){toast('Error al agregar');return;}
+  const name   = document.getElementById('spName').value.trim();
+  const weight = parseFloat(document.getElementById('spWeight').value);
+  const newAct = parseFloat(document.getElementById('pAct').value);
+  const newFin = parseFloat(document.getElementById('pFinal').value);
+  if (!name)  { toast('Escribe el nombre'); return; }
+  if (isNaN(weight) || weight <= 0) { toast('Peso inválido'); return; }
+
+  // Validate total
+  const total = Math.round((newAct + 5 + 5 + newFin + weight) * 10) / 10;
+  if (total !== 100) { toast('Los porcentajes no suman 100%'); return; }
+
+  // The "especial weight" in the backend is derived from how much was taken from base
+  // Base is always actividades=60, final=30 → remaining for specials = (60-newAct)+(30-newFin)
+  // But we store as absolute special weight and recompute bases accordingly
+  // We need to verify the new structure matches what user set
+  // newAct = 60 - fromAct, newFin = 30 - fromFin, fromAct+fromFin = weight
+  const fromAct  = Math.round((60 - newAct) * 10) / 10;
+  const fromFin  = Math.round((30 - newFin) * 10) / 10;
+  const impliedW = Math.round((fromAct + fromFin) * 10) / 10;
+
+  if (Math.abs(impliedW - weight) > 0.01) {
+    toast(`Con Act=${newAct}% y Final=${newFin}%, el especial implica ${impliedW}%, no ${weight}%. Ajusta los valores.`);
+    return;
+  }
+
+  const res = await apiGrdPost({
+    action:'addSpecial', course:activeCourse, period:activePeriod, name, weight
+  });
+  if (res.error==='overflow') { toast(`Solo quedan ${res.available}% disponibles`); return; }
+  if (!res.ok) { toast('Error al agregar'); return; }
   closeModal('specialModal');
-  grdCache[activeCourse][activePeriod].weights.especiales.push({id:res.id,name:res.name,weight:res.weight});
-  grdRenderMain();toast(`"${name}" agregado · pesos redistribuidos`);
+  grdCache[activeCourse][activePeriod].weights.especiales.push({id:res.id, name:res.name, weight:res.weight});
+  grdRenderMain();
+  toast(`"${name}" agregado · Actividades ${newAct}% · Final ${newFin}%`);
 }
 async function grdRemoveSpecial(spId){
   const sp=grdCache[activeCourse][activePeriod].weights.especiales.find(e=>e.id===spId);
