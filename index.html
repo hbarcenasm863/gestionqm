@@ -993,6 +993,10 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 /* ═══════════════════════════════════════════
    RESPONSIVE — MÓVIL
 ═══════════════════════════════════════════ */
+.mob-date-row { display:none }
+@media (max-width: 700px) {
+  .mob-date-row { display:flex; align-items:center; gap:5px; font-size:.76rem; color:var(--muted); }
+}
 @media (max-width: 640px) {
   :root { --sw: 54px; }
   .sidebar-head, .cct, .cbtn span:not(.cdot),
@@ -1562,6 +1566,30 @@ async function apiGrdPost(body) {
 /* ═══════════════════════════════════════════
    ATTENDANCE MODULE
 ═══════════════════════════════════════════ */
+
+
+function syncMobDate(date) {
+  const main = document.getElementById('dateInput');
+  if (main) main.value = date;
+  const mob = document.getElementById('dateInputMob');
+  if (mob) mob.value = date;
+  renderAttMain();
+  // Also sync mob date when main changes
+}
+
+// Sync mob date input when renderAttMain is called
+const _origRenderAtt = renderAttMain;
+function loadHistDate(date) {
+  const inp = document.getElementById('dateInput');
+  if (inp) {
+    inp.value = date;
+    renderAttMain();
+    // Scroll to top of main area
+    document.getElementById('mainArea').scrollTop = 0;
+    toast('Cargando asistencia del ' + date);
+  }
+}
+
 function today() { return new Date().toISOString().split('T')[0]; }
 function getDate() { return document.getElementById('dateInput')?.value||today(); }
 function attKey(c,d){ return `${c}_${d}`; }
@@ -1576,7 +1604,10 @@ async function loadAttCourse(course) {
     <div class="date-pill">📅<input type="date" id="dateInput" onchange="renderAttMain()"></div>
     <button class="icon-btn" onclick="openAttExport()">⬇</button>
     <button class="icon-btn" onclick="openAttBulk()">📋</button>`;
-  document.getElementById('dateInput').value=today();
+  // Preserve current date if already set, otherwise use today
+  const existingDate = document.getElementById('dateInput')?.value;
+  if (!existingDate) document.getElementById('dateInput').value=today();
+  else document.getElementById('dateInput').value=existingDate;
   if (!attCache[course]) {
     document.getElementById('mainArea').innerHTML=
       `<div class="spin-wrap"><div class="spin"></div>Cargando asistencia ${course}…</div>`;
@@ -1594,6 +1625,11 @@ async function loadAttCourse(course) {
 
 function renderAttMain() {
   const c=activeCourse, date=getDate();
+  // Sync mobile date input
+  setTimeout(()=>{
+    const mob=document.getElementById('dateInputMob');
+    if(mob) mob.value=date;
+  },0);
   const data=attCache[c]||{students:[],attendance:{}};
   const att=getAtt(c,date), sts=data.students;
   sts.sort((a,b)=>a.name.localeCompare(b.name,'es'));
@@ -1639,10 +1675,16 @@ function renderAttMain() {
       <div class="stat"><span class="stat-n" style="color:var(--J)">${J}</span><span class="stat-l">Justificado</span></div>
       <div class="stat"><span class="stat-n" style="color:var(--muted)">${U}</span><span class="stat-l">Sin marcar</span></div>
     </div>
-    <div class="mark-row">
+    <div class="mark-row" style="flex-wrap:wrap">
       <span class="mark-label">Marcar todos:</span>
       <button class="mabtn P" onclick="attMarkAll('P')">✓ Todos Presente</button>
       <button class="mabtn A" onclick="attMarkAll('A')">✗ Todos Ausente</button>
+      <div class="mob-date-row">
+        📅 <input type="date" id="dateInputMob"
+          style="border:1.5px solid var(--bord);border-radius:7px;padding:4px 8px;
+          font-size:.76rem;background:white;color:var(--text);outline:none"
+          onchange="syncMobDate(this.value)">
+      </div>
     </div>
     <div class="tbl-wrap"><table class="tbl">
       <thead><tr><th>Estudiante</th><th style="width:150px">Estado</th><th style="width:36px"></th></tr></thead>
@@ -1657,7 +1699,10 @@ function renderAttMain() {
 }
 
 function buildAttHistory(course,dates,students){
-  const thd=dates.map(d=>{const[,m,dy]=d.split('-');return`<th>${dy}/${m}</th>`;}).join('');
+  const thd=dates.map(d=>{
+    const[,m,dy]=d.split('-');
+    return`<th style="cursor:pointer" onclick="loadHistDate('${d}')" title="Cargar ${d}">${dy}/${m}<br><span style="font-size:.55rem;color:rgba(255,255,255,.5)">cargar</span></th>`;
+  }).join('');
   const body=students.map(s=>{
     const cells=dates.map(d=>{
       const st=(attCache[course]?.attendance?.[`${course}_${d}`]||{})[s.id];
