@@ -1,0 +1,17 @@
+{
+  "name": "HBMol",
+  "short_name": "HBMol",
+  "description": "Gestión escolar — Química Colegio Rufino José Cuervo IED",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a2e5a",
+  "theme_color": "#1a2e5a",
+  "icons": [
+    {
+      "src": "hbmol.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
