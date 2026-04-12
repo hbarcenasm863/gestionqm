@@ -947,6 +947,45 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   </div>
 </div>
 
+
+<!-- MODAL: IMPORTAR JSON -->
+<div class="overlay" id="importModal">
+  <div class="modal modal-wide">
+    <div class="modal-title">📥 Importar notas desde JSON</div>
+    <div class="mrow">
+      <label class="mlabel">Curso destino</label>
+      <select class="minput" id="importCourse"></select>
+    </div>
+    <div class="mrow">
+      <label class="mlabel">Periodo</label>
+      <select class="minput" id="importPeriod">
+        <option value="1">Periodo 1</option>
+        <option value="2">Periodo 2</option>
+        <option value="3">Periodo 3</option>
+      </select>
+    </div>
+    <div class="mrow">
+      <label class="mlabel">Archivo JSON</label>
+      <input type="file" id="importFile" accept=".json"
+        style="font-size:.82rem;color:var(--text2)"
+        onchange="previewImport()">
+    </div>
+    <div id="importPreview" style="display:none;margin-top:10px">
+      <div id="importStats" style="font-size:.78rem;color:var(--text2);margin-bottom:8px"></div>
+      <div id="importLog" style="font-size:.72rem;font-family:var(--font-mono,monospace);
+        background:var(--card);border:1px solid var(--bord);border-radius:8px;
+        padding:10px;max-height:160px;overflow-y:auto;color:var(--text2);
+        white-space:pre-wrap;line-height:1.6"></div>
+    </div>
+    <div class="mbtns">
+      <button class="btn btn-outline" onclick="closeModal('importModal')">Cancelar</button>
+      <button class="btn btn-navy" id="importBtn" onclick="executeImport()" disabled>
+        Importar notas
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1358,6 +1397,7 @@ async function grdLoadView(course,period){
       onclick="grdLoadView('${course}',${p})">P${p}</button>`).join('')}</div>
     <button class="icon-btn" onclick="openGrdExport()">⬇</button>
     <button class="icon-btn" onclick="downloadBackup()" title="Backup CSV">💾</button>
+    <button class="icon-btn" onclick="openImportModal()">📥</button>
     <button class="icon-btn" onclick="openGrdBulk()">📋</button>`;
   if(!grdCache[course])grdCache[course]={};
   if(!grdCache[course][period]){
@@ -1984,6 +2024,177 @@ async function downloadCSV(){
     a.download=`asistencia_${course}_${today()}.csv`;a.click();
   }
   toast('CSV descargado');
+}
+
+
+/* ═══ IMPORT JSON ═══ */
+let importData = null;
+
+function openImportModal() {
+  const sel = document.getElementById('importCourse');
+  sel.innerHTML = COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value = activeCourse;
+  document.getElementById('importPeriod').value = activePeriod;
+  document.getElementById('importFile').value = '';
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importBtn').disabled = true;
+  importData = null;
+  openModal('importModal');
+}
+
+function previewImport() {
+  const file = document.getElementById('importFile').files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      importData = JSON.parse(e.target.result);
+      if (!Array.isArray(importData)) throw new Error('El archivo no es un array JSON válido');
+
+      const course = document.getElementById('importCourse').value;
+      const students = grdCache[course]?.[+document.getElementById('importPeriod').value]?.students || [];
+      const codeMap = {};
+      students.forEach(s => { if(s.code) codeMap[s.code] = s; });
+
+      let found = 0, notFound = 0, log = '';
+      importData.forEach(item => {
+        const s = codeMap[item.codigo];
+        if (s) {
+          found++;
+          const acts = Object.keys(item.actividades || {}).length;
+          const comps = ['autoeval','coeval','final'].filter(k=>item[k]!=null).length;
+          const esp = item.especial ? 1 : 0;
+          log += `✓ ${item.codigo} ${s.name.substring(0,25)} — ${acts} act, ${comps} comp${esp?' +especial':''}
+`;
+        } else {
+          notFound++;
+          log += `✗ ${item.codigo} — no encontrado en ${course}
+`;
+        }
+      });
+
+      document.getElementById('importStats').innerHTML =
+        `<strong>${found}</strong> estudiantes encontrados · ` +
+        `<span style="color:var(--fail)">${notFound} no encontrados</span> · ` +
+        `${importData.length} total en el archivo`;
+      document.getElementById('importLog').textContent = log;
+      document.getElementById('importPreview').style.display = '';
+      document.getElementById('importBtn').disabled = found === 0;
+    } catch(err) {
+      toast('⚠ Archivo inválido: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function executeImport() {
+  if (!importData) return;
+  const course = document.getElementById('importCourse').value;
+  const period = +document.getElementById('importPeriod').value;
+
+  // Load course data if not cached
+  if (!grdCache[course]?.[period]) {
+    toast('Cargando datos del curso…');
+    const data = await apiGrd({action:'getAll', course, period});
+    if (!grdCache[course]) grdCache[course] = {};
+    grdCache[course][period] = data;
+  }
+
+  const students = grdCache[course][period].students;
+  const codeMap = {};
+  students.forEach(s => { if(s.code) codeMap[s.code] = s; });
+
+  const btn = document.getElementById('importBtn');
+  btn.textContent = 'Importando…'; btn.disabled = true;
+
+  let ok = 0, errors = 0;
+
+  for (const item of importData) {
+    const s = codeMap[item.codigo];
+    if (!s) continue;
+
+    try {
+      // Save activities
+      for (const [actName, nota] of Object.entries(item.actividades || {})) {
+        await apiGrdPost({
+          action:'saveGrade', course, period,
+          component:'actividad', itemId:actName,
+          studentId:s.id, grade:nota
+        });
+        // Update local cache
+        if (!grdCache[course][period].grades.actividad)
+          grdCache[course][period].grades.actividad = {};
+        if (!grdCache[course][period].grades.actividad[actName])
+          grdCache[course][period].grades.actividad[actName] = {};
+        grdCache[course][period].grades.actividad[actName][s.id] = nota;
+      }
+
+      // Save autoeval
+      if (item.autoeval != null) {
+        await apiGrdPost({action:'saveGrade', course, period,
+          component:'autoeval', itemId:'_', studentId:s.id, grade:item.autoeval});
+        if (!grdCache[course][period].grades.autoeval)
+          grdCache[course][period].grades.autoeval = {};
+        if (!grdCache[course][period].grades.autoeval['_'])
+          grdCache[course][period].grades.autoeval['_'] = {};
+        grdCache[course][period].grades.autoeval['_'][s.id] = item.autoeval;
+      }
+
+      // Save coeval
+      if (item.coeval != null) {
+        await apiGrdPost({action:'saveGrade', course, period,
+          component:'coeval', itemId:'_', studentId:s.id, grade:item.coeval});
+        if (!grdCache[course][period].grades.coeval)
+          grdCache[course][period].grades.coeval = {};
+        if (!grdCache[course][period].grades.coeval['_'])
+          grdCache[course][period].grades.coeval['_'] = {};
+        grdCache[course][period].grades.coeval['_'][s.id] = item.coeval;
+      }
+
+      // Save final
+      if (item.final != null) {
+        await apiGrdPost({action:'saveGrade', course, period,
+          component:'final', itemId:'_', studentId:s.id, grade:item.final});
+        if (!grdCache[course][period].grades.final)
+          grdCache[course][period].grades.final = {};
+        if (!grdCache[course][period].grades.final['_'])
+          grdCache[course][period].grades.final['_'] = {};
+        grdCache[course][period].grades.final['_'][s.id] = item.final;
+      }
+
+      // Save especial
+      if (item.especial) {
+        // Find the special component ID by name
+        const specials = grdCache[course][period].weights?.especiales || [];
+        const sp = specials.find(e =>
+          e.name.trim().toLowerCase() === item.especial.nombre.trim().toLowerCase()
+        );
+        if (sp) {
+          await apiGrdPost({action:'saveGrade', course, period,
+            component:'especial', itemId:sp.id,
+            studentId:s.id, grade:item.especial.nota});
+          if (!grdCache[course][period].grades.especial)
+            grdCache[course][period].grades.especial = {};
+          if (!grdCache[course][period].grades.especial[sp.id])
+            grdCache[course][period].grades.especial[sp.id] = {};
+          grdCache[course][period].grades.especial[sp.id][s.id] = item.especial.nota;
+        }
+      }
+
+      ok++;
+    } catch(err) {
+      errors++;
+    }
+  }
+
+  closeModal('importModal');
+  importData = null;
+
+  // Reload view
+  if (course === activeCourse && period === activePeriod) grdRenderMain();
+  renderNav();
+
+  toast(`✓ ${ok} estudiantes importados${errors ? ' · ⚠ '+errors+' errores' : ''}`);
 }
 
 /* ═══ MODALS ═══ */
