@@ -761,6 +761,137 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
 
+
+
+/* ═══ HAMBURGER MENU (mobile) ═══ */
+.hamburger {
+  display: none;
+  background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.2);
+  border-radius: 8px;
+  color: white;
+  width: 36px; height: 36px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mob-menu {
+  display: none;
+  position: fixed;
+  top: 56px; right: 0; left: 0;
+  background: var(--navy);
+  z-index: 150;
+  padding: 8px 0;
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+.mob-menu.open { display: block; }
+.mob-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 20px;
+  color: rgba(255,255,255,.85);
+  font-size: .88rem;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  transition: background .15s;
+}
+.mob-menu-item:hover { background: rgba(255,255,255,.08); }
+.mob-menu-item:last-child { border-bottom: none; }
+.mob-menu-sep {
+  height: 1px;
+  background: rgba(255,255,255,.12);
+  margin: 4px 0;
+}
+.mob-menu-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+}
+.mob-menu-overlay.open { display: block; }
+@media (max-width: 700px) {
+  .hamburger { display: flex; }
+  .topbar-center { display: none !important; }
+  .topbar-right .icon-btn { display: none; }
+}
+
+/* ═══ MOBILE GRADE CARDS ═══ */
+.grade-cards { display: none; }
+@media (max-width: 700px) {
+  .grade-table-wrap { display: none; }
+  .grade-cards { display: flex; flex-direction: column; gap: 10px; }
+}
+.gcard {
+  background: white;
+  border: 1.5px solid var(--bord);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.gcard-head {
+  background: var(--navy);
+  color: white;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.gcard-name { font-size: .82rem; font-weight: 600; }
+.gcard-def {
+  font-family: 'DM Mono', monospace;
+  font-size: .95rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.15);
+}
+.gcard-body { padding: 10px 12px; }
+.gcard-acts-grid {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 3px 8px;
+  align-items: center;
+  font-size: .78rem;
+  padding: 4px 0;
+}
+.gcard-acts-grid .act-name { color: var(--text2); }
+.gcard-acts-grid .act-nota { font-family: 'DM Mono',monospace; font-weight:600; text-align:right; }
+.gcard-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--bord);
+  font-size: .8rem;
+  gap: 8px;
+}
+.gcard-row:last-child { border-bottom: none; }
+.gcard-label { color: var(--text2); }
+.gcard-val {
+  font-family: 'DM Mono', monospace;
+  font-weight: 600;
+  font-size: .82rem;
+}
+.gcard-section {
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 0 3px;
+  border-bottom: 1px solid var(--bord);
+  margin-bottom: 2px;
+}
+
 /* ═══════════════════════════════════════════
    PRINT / PDF
 ═══════════════════════════════════════════ */
@@ -905,8 +1036,12 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
     <div class="topbar-right">
       <button class="icon-btn" onclick="showDash()" title="Inicio">⊞</button>
       <button class="icon-btn" onclick="logout()" title="Cerrar sesión">🔒</button>
+      <button class="hamburger" onclick="toggleMobMenu()" id="hambBtn">☰</button>
     </div>
   </header>
+  <!-- MOBILE MENU -->
+  <div class="mob-menu-overlay" id="mobOverlay" onclick="closeMobMenu()"></div>
+  <div class="mob-menu" id="mobMenu"></div>
   <div class="app-body">
     <nav class="sidebar" id="sidebar" style="display:none">
       <div class="sidebar-head" id="sidebarHead">Cursos</div>
@@ -1140,7 +1275,25 @@ const BASE_LABELS = {actividades:'Actividades',autoeval:'Autoevaluación',coeval
 const BASE_KEYS   = ['actividades','autoeval','coeval','final'];
 
 /* ═══ STATE ═══ */
-let SESSION_PWD  = sessionStorage.getItem('gqm_pwd') || '';
+// SESSION: cleared on page reload (beforeunload sets a flag)
+// If reloaded, require password again
+let SESSION_PWD = '';
+(function(){
+  const wasReloaded = !sessionStorage.getItem('gqm_tab_active');
+  const stored = sessionStorage.getItem('gqm_pwd');
+  if (stored && !wasReloaded) {
+    SESSION_PWD = stored;
+  } else {
+    sessionStorage.removeItem('gqm_pwd');
+  }
+  // Mark tab as active — cleared by beforeunload
+  sessionStorage.setItem('gqm_tab_active', '1');
+})();
+
+window.addEventListener('beforeunload', () => {
+  // Remove tab_active so next load (reload/F5) asks for password
+  sessionStorage.removeItem('gqm_tab_active');
+});
 let activeModule = 'dash';
 let activeCourse = localStorage.getItem('gqm_course') || COURSES[0];
 let activePeriod = +localStorage.getItem('gqm_period') || 1;
@@ -1576,10 +1729,10 @@ function grdRenderMain(){
     </div>
 
     <div class="period-ctrl">
-      <span class="period-ctrl-label">👁 VISIBLE PARA ESTUDIANTES</span>
+      <span class="period-ctrl-label">📌 PERIODO ACTIVO DEL CURSO</span>
       <div style="display:flex;gap:4px">${PERIODS.map(p=>`<button class="pa-btn ${ap===p?'active':''}"
         onclick="grdSetActivePeriod(${p})">P${p}</button>`).join('')}</div>
-      <span style="font-size:.7rem;color:var(--gold)">Curso ${activeCourse} → estudiantes ven P${ap}</span>
+      <span style="font-size:.7rem;color:var(--gold)">P${ap} carga por defecto · estudiantes ven todos los periodos con notas</span>
     </div>
 
     <div class="weights-panel">
@@ -1695,10 +1848,54 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     return`<tr>${tds}</tr>`;
   }).join('');
 
-  return`<div class="tbl-wrap"><table class="tbl">
+  // Build mobile card view
+  const cards = students.map((s,i) => {
+    const av=actNames.map(n=>grades['actividad']?.[n]?.[s.id]).filter(v=>v!=null);
+    const actAvg=av.length?Math.round(av.reduce((a,b)=>a+b,0)/av.length*10)/10:null;
+    const ae=grades['autoeval']?.['_']?.[s.id]??null;
+    const ce=grades['coeval']?.['_']?.[s.id]??null;
+    const fi=grades['final']?.['_']?.[s.id]??null;
+    const def=grdCalcFinal(s,actNames,grades,baseW,specials);
+    const defCls=gcl(def);
+
+    const actRows=actNames.map((n,j)=>{
+      const v=grades['actividad']?.[n]?.[s.id]??null;
+      return`<div class="gcard-row">
+        <span class="gcard-label">${n.length>22?n.substring(0,22)+'…':n}</span>
+        <span class="gcard-val ${gcl(v)}">${v!=null?v.toFixed(1):'—'}</span>
+      </div>`;
+    }).join('');
+
+    const spRows=specials.map(sp=>{
+      const v=grades['especial']?.[sp.id]?.[s.id]??null;
+      return`<div class="gcard-row">
+        <span class="gcard-label">${sp.name.length>22?sp.name.substring(0,22)+'…':sp.name} (${sp.weight}%)</span>
+        <span class="gcard-val ${gcl(v)}">${v!=null?v.toFixed(1):'—'}</span>
+      </div>`;
+    }).join('');
+
+    return`<div class="gcard">
+      <div class="gcard-head">
+        <span class="gcard-name">${i+1}. ${s.name}</span>
+        <span class="gcard-def ${defCls}" style="color:${def>=3?'#4ade80':def>=2?'#fbbf24':'#f87171'}">${def!=null?def.toFixed(2):'0.00'}</span>
+      </div>
+      <div class="gcard-body">
+        <div class="gcard-section">Actividades (${baseW.actividades}%) — prom: ${actAvg!=null?actAvg.toFixed(1):'—'}</div>
+        ${actRows}
+        ${spRows?`<div class="gcard-section">Especiales</div>${spRows}`:''}
+        <div class="gcard-section">Evaluación</div>
+        <div class="gcard-row"><span class="gcard-label">Autoevaluación (5%)</span><span class="gcard-val ${gcl(ae)}">${ae!=null?ae.toFixed(1):'—'}</span></div>
+        <div class="gcard-row"><span class="gcard-label">Coevaluación (5%)</span><span class="gcard-val ${gcl(ce)}">${ce!=null?ce.toFixed(1):'—'}</span></div>
+        <div class="gcard-row"><span class="gcard-label">Ev. Final (${baseW.final}%)</span><span class="gcard-val ${gcl(fi)}">${fi!=null?fi.toFixed(1):'—'}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return`<div class="grade-table-wrap"><div class="tbl-wrap"><table class="tbl">
     <thead><tr>${thd}</tr></thead>
     <tbody>${rows}</tbody>
-  </table></div>`;
+  </table></div></div>
+  <div class="grade-cards">${cards}</div>`;
 }
 
 function grdBuildStats(students,actNames,grades,baseW,specials){
@@ -2245,6 +2442,56 @@ function printPDF() {
     document.body.insertBefore(header, document.body.firstChild);
     document.body.appendChild(footer);
   }, 1000);
+}
+
+
+/* ═══ MOBILE MENU ═══ */
+function buildMobMenuItems() {
+  const items = [];
+  if (activeModule === 'att') {
+    items.push({icon:'📋', label:'Lista masiva', fn:'openAttBulk()'});
+    items.push({icon:'⬇', label:'Exportar asistencia', fn:'openAttExport()'});
+    items.push({sep:true});
+  }
+  if (activeModule === 'grd') {
+    items.push({icon:'+ Actividad', label:'Nueva actividad', fn:'grdOpenActColModal()'});
+    items.push({icon:'+ Especial', label:'Componente especial', fn:"openModal('specialModal')"});
+    items.push({icon:'📥', label:'Importar notas JSON', fn:'openImportModal()'});
+    items.push({icon:'📋', label:'Lista masiva', fn:'openGrdBulk()'});
+    items.push({icon:'🖨', label:'Generar PDF', fn:'printPDF()'});
+    items.push({icon:'⬇', label:'Exportar notas', fn:'openGrdExport()'});
+    items.push({icon:'💾', label:'Backup CSV', fn:'downloadBackup()'});
+    items.push({sep:true});
+  }
+  items.push({icon:'⊞', label:'Inicio', fn:'showDash()'});
+  items.push({icon:'↺', label:'Actualizar datos', fn:'refreshModule()'});
+  items.push({icon:'🔒', label:'Cerrar sesión', fn:'logout()'});
+  return items;
+}
+
+function toggleMobMenu() {
+  const menu = document.getElementById('mobMenu');
+  const overlay = document.getElementById('mobOverlay');
+  if (menu.classList.contains('open')) {
+    closeMobMenu();
+  } else {
+    // Build items dynamically based on current module
+    const items = buildMobMenuItems();
+    menu.innerHTML = items.map(item => {
+      if (item.sep) return '<div class="mob-menu-sep"></div>';
+      return `<button class="mob-menu-item" onclick="closeMobMenu();${item.fn}">
+        <span style="font-size:1rem;width:20px">${item.icon}</span>
+        <span>${item.label}</span>
+      </button>`;
+    }).join('');
+    menu.classList.add('open');
+    overlay.classList.add('open');
+  }
+}
+
+function closeMobMenu() {
+  document.getElementById('mobMenu').classList.remove('open');
+  document.getElementById('mobOverlay').classList.remove('open');
 }
 
 /* ═══ IMPORT JSON ═══ */
