@@ -1275,6 +1275,60 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 </div>
 
 
+
+<!-- MODAL: EDITAR PESOS BASE -->
+<div class="overlay" id="weightsModal">
+  <div class="modal">
+    <div class="modal-title">✏ Editar pesos de evaluación</div>
+    <div style="font-size:.76rem;color:var(--muted);margin-bottom:14px;line-height:1.6">
+      Define libremente cómo se distribuye el 100% del periodo.<br>
+      Autoeval y Coeval se pueden ajustar también.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 80px;gap:8px 12px;align-items:center">
+      <label style="font-size:.84rem;color:var(--text2)">Actividades de clase</label>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input class="minput" type="number" id="wAct" min="0" max="100" step="1"
+          style="width:60px;text-align:center" oninput="checkWeightsTotal()">
+        <span style="font-size:.78rem;color:var(--muted)">%</span>
+      </div>
+      <label style="font-size:.84rem;color:var(--text2)">Autoevaluación</label>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input class="minput" type="number" id="wAuto" min="0" max="100" step="1"
+          style="width:60px;text-align:center" oninput="checkWeightsTotal()">
+        <span style="font-size:.78rem;color:var(--muted)">%</span>
+      </div>
+      <label style="font-size:.84rem;color:var(--text2)">Coevaluación</label>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input class="minput" type="number" id="wCo" min="0" max="100" step="1"
+          style="width:60px;text-align:center" oninput="checkWeightsTotal()">
+        <span style="font-size:.78rem;color:var(--muted)">%</span>
+      </div>
+      <label style="font-size:.84rem;color:var(--text2)">Evaluación final</label>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input class="minput" type="number" id="wFinal" min="0" max="100" step="1"
+          style="width:60px;text-align:center" oninput="checkWeightsTotal()">
+        <span style="font-size:.78rem;color:var(--muted)">%</span>
+      </div>
+    </div>
+
+    <div id="weightsEspPanel" style="margin-top:12px;display:none">
+      <div style="font-size:.7rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+        color:var(--muted);margin-bottom:8px">Componentes especiales</div>
+      <div id="weightsEspRows"></div>
+    </div>
+
+    <div id="weightsTotalBar" style="margin-top:12px;padding:8px 12px;border-radius:8px;
+      font-size:.82rem;font-weight:600;text-align:center;font-family:monospace"></div>
+
+    <div class="mbtns">
+      <button class="btn btn-outline" onclick="closeModal('weightsModal')">Cancelar</button>
+      <button class="btn btn-navy" id="weightsSaveBtn" onclick="saveWeights()" disabled>
+        Guardar pesos
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: IMPORTAR JSON -->
 <div class="overlay" id="importModal">
   <div class="modal modal-wide">
@@ -1320,7 +1374,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
    CONFIG — URLs hardcodeadas
 ═══════════════════════════════════════════ */
 const URL_ATT = 'https://script.google.com/macros/s/AKfycbxQ4v_lub4LYr4Ff9cDKL7ZT5NvyPB_Ji70G4eJP2jkMTl9sqNakkLzcx-_M3qHHOr0/exec';
-const URL_GRD = 'https://script.google.com/macros/s/AKfycbzOnYz4TCjDleTS26S-xqDnRUyGjIvgFsJ7MfCgWmZEItZ7NxYUXgEZsCubYl8ruMb0/exec';
+const URL_GRD = 'https://script.google.com/macros/s/AKfycbwc1_rykS0bG-fe1YUYkHAdcouixhN5Com46HE-RkD6MH1cmXGY5RcittkgdjnvNL7k/exec';
 
 const COURSES = ['1004','1005','1006','1101','1102','1103','1104'];
 const COLORS  = {
@@ -1752,6 +1806,10 @@ async function grdLoadView(course,period){
     const data=await apiGrd({action:'getAll',course,period});
     if(data.error==='auth'){logout();return;}
     grdCache[course][period]=data;
+    // If server sends base weights, store them
+    if(data.weights?.base){
+      grdCache[course][period].weights.base=data.weights.base;
+    }
   }
   grdRenderMain();
 }
@@ -1798,8 +1856,11 @@ function grdRenderMain(){
           ${Math.round(totalW*10)/10}% / 100%
         </span>
       </div>
-      <div class="wp-grid">${chips}</div>
-      <div class="mhint" style="margin-top:7px">Autoeval y Coeval fijos al 5%. Los especiales descuentan de Actividades primero, luego de Ev. Final.</div>
+      <div class="wp-grid" id="wpGrid_${activeCourse}_${activePeriod}">${chips}</div>
+      <div style="margin-top:9px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:.7rem;color:var(--muted)">Editar pesos base:</span>
+        <button class="btn btn-outline btn-sm" onclick="openWeightsEditor()">✏ Editar pesos</button>
+      </div>
     </div>
 
     ${grdBuildStats(students,actNames,grades,baseW,specials)}
@@ -2516,6 +2577,112 @@ function printPDF() {
   }, 1000);
 }
 
+
+
+/* ═══ WEIGHTS EDITOR ═══ */
+function openWeightsEditor() {
+  const data = grdCache[activeCourse]?.[activePeriod];
+  if (!data) return;
+  const specials = data.weights?.especiales || [];
+  const w = computeWeights(specials);
+
+  document.getElementById('wAct').value   = w.actividades;
+  document.getElementById('wAuto').value  = w.autoeval;
+  document.getElementById('wCo').value    = w.coeval;
+  document.getElementById('wFinal').value = w.final;
+
+  // Show specials as read-only info
+  const espPanel = document.getElementById('weightsEspPanel');
+  const espRows  = document.getElementById('weightsEspRows');
+  if (specials.length) {
+    espPanel.style.display = '';
+    espRows.innerHTML = specials.map(sp =>
+      `<div style="display:grid;grid-template-columns:1fr 80px;gap:6px 12px;
+        align-items:center;margin-bottom:6px">
+        <label style="font-size:.82rem;color:var(--text2)">${sp.name}</label>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input class="minput" type="number" id="wEsp_${sp.id}"
+            value="${sp.weight}" min="0" max="100" step="1"
+            style="width:60px;text-align:center" oninput="checkWeightsTotal()">
+          <span style="font-size:.78rem;color:var(--muted)">%</span>
+        </div>
+      </div>`
+    ).join('');
+  } else {
+    espPanel.style.display = 'none';
+  }
+
+  checkWeightsTotal();
+  openModal('weightsModal');
+}
+
+function checkWeightsTotal() {
+  const act   = parseFloat(document.getElementById('wAct').value)   || 0;
+  const auto  = parseFloat(document.getElementById('wAuto').value)  || 0;
+  const co    = parseFloat(document.getElementById('wCo').value)    || 0;
+  const fin   = parseFloat(document.getElementById('wFinal').value) || 0;
+
+  const specials = grdCache[activeCourse]?.[activePeriod]?.weights?.especiales || [];
+  let espTotal = 0;
+  specials.forEach(sp => {
+    const v = parseFloat(document.getElementById('wEsp_'+sp.id)?.value) || sp.weight;
+    espTotal += v;
+  });
+
+  const total = Math.round((act + auto + co + fin + espTotal) * 10) / 10;
+  const bar   = document.getElementById('weightsTotalBar');
+  const btn   = document.getElementById('weightsSaveBtn');
+
+  if (Math.abs(total - 100) < 0.05) {
+    bar.textContent = `Total: ${total}% ✓`;
+    bar.style.background = '#f0faf6';
+    bar.style.color = 'var(--ok)';
+    bar.style.border = '1px solid var(--ok)';
+    btn.disabled = false;
+  } else {
+    bar.textContent = `Total: ${total}% — debe ser exactamente 100%`;
+    bar.style.background = '#fef2f2';
+    bar.style.color = 'var(--fail)';
+    bar.style.border = '1px solid var(--fail)';
+    btn.disabled = true;
+  }
+}
+
+async function saveWeights() {
+  const act   = parseFloat(document.getElementById('wAct').value);
+  const auto  = parseFloat(document.getElementById('wAuto').value);
+  const co    = parseFloat(document.getElementById('wCo').value);
+  const fin   = parseFloat(document.getElementById('wFinal').value);
+
+  const specials = grdCache[activeCourse]?.[activePeriod]?.weights?.especiales || [];
+  const newSpecials = specials.map(sp => ({
+    ...sp,
+    weight: parseFloat(document.getElementById('wEsp_'+sp.id)?.value) || sp.weight
+  }));
+
+  // Save to backend
+  const res = await apiGrdPost({
+    action: 'saveWeights',
+    course: activeCourse,
+    period: activePeriod,
+    pesoAct: act, pesoAuto: auto, pesoCoeval: co, pesoFinal: fin,
+    especiales: newSpecials
+  });
+
+  if (!res.ok) { toast('⚠ Error guardando pesos'); return; }
+
+  // Update local cache immediately
+  const data = grdCache[activeCourse][activePeriod];
+  data.weights = {
+    especiales: newSpecials.map(sp => ({...sp, pesoAct: act, pesoFinal: fin}))
+  };
+  // Store base weights directly in a new field
+  data.weights.base = { actividades: act, autoeval: auto, coeval: co, final: fin };
+
+  closeModal('weightsModal');
+  grdRenderMain();
+  toast(`Pesos guardados: Act ${act}% · Auto ${auto}% · Co ${co}% · Final ${fin}%`);
+}
 
 /* ═══ MOBILE MENU ═══ */
 function buildMobMenuItems() {
