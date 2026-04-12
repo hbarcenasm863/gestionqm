@@ -1387,15 +1387,6 @@ function grdRenderMain(){
     <button class="wp-del" onclick="grdRemoveSpecial('${sp.id}')">×</button>
   </div>`).join('');
 
-  const allComps=[
-    ...BASE_KEYS.map(k=>({key:k,label:BASE_LABELS[k],pct:baseW[k]})),
-    ...specials.map(sp=>({key:'especial_'+sp.id,label:sp.name,pct:sp.weight}))
-  ];
-  const tabsHtml=allComps.map(c=>`
-    <button class="ctab ${tab===c.key?'active':''}" onclick="grdSetTab('${c.key}')">
-      ${c.label}<span class="ctab-pct">${c.pct}%</span>
-    </button>`).join('');
-
   document.getElementById('mainArea').innerHTML=`
     <div class="page-head">
       <div>
@@ -1404,6 +1395,7 @@ function grdRenderMain(){
       </div>
       <div class="head-actions">
         <button class="btn btn-outline btn-sm" onclick="openModal('specialModal')">+ Especial</button>
+        <button class="btn btn-gold btn-sm" onclick="grdOpenActColModal()">+ Actividad</button>
       </div>
     </div>
 
@@ -1425,8 +1417,7 @@ function grdRenderMain(){
     </div>
 
     ${grdBuildStats(students,actNames,grades,baseW,specials)}
-    <div class="comp-tabs">${tabsHtml}</div>
-    ${grdBuildTabContent(tab,students,actNames,grades,baseW,specials)}
+    ${grdBuildUnifiedTable(students,actNames,grades,baseW,specials)}
 
     <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
       <input class="minput" id="newGrdStuName" placeholder="Nombre del estudiante" style="max-width:200px"
@@ -1435,6 +1426,103 @@ function grdRenderMain(){
         onkeydown="if(event.key==='Enter')grdAddStu()">
       <button class="btn btn-outline btn-sm" onclick="grdAddStu()">+ Agregar</button>
     </div>`;
+}
+
+
+function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
+  if(!students.length) return `<div class="empty"><div class="empty-ico">📓</div>Sin estudiantes aún. Usa 📋 para importar.</div>`;
+  students=[...students].sort((a,b)=>a.name.localeCompare(b.name,'es'));
+
+  // Build headers
+  // Name | Act1 | Act2 ... | Prom.Act | Autoeval | Coeval | Final | Especial... | DEFINITIVA
+  let thd=`<th class="th-name">Estudiante</th>`;
+  actNames.forEach((n,i)=>{
+    thd+=`<th class="th-grade" title="${n}">
+      <div style="display:flex;align-items:center;justify-content:center;gap:2px;font-size:.62rem">
+        Act.${i+1}
+        <button class="del-col-btn" onclick="grdDeleteActCol('${n}')" title="Eliminar ${n}">×</button>
+      </div>
+      <div style="font-size:.58rem;color:rgba(255,255,255,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:64px" title="${n}">${n}</div>
+    </th>`;
+  });
+  thd+=`<th class="th-prom" title="Promedio actividades × ${baseW.actividades}%">Prom.<br>Act.<br><span style="font-size:.6rem;opacity:.7">${baseW.actividades}%</span></th>`;
+  thd+=`<th class="th-grade" title="Autoevaluación 5%">Auto<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>`;
+  thd+=`<th class="th-grade" title="Coevaluación 5%">Co<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>`;
+  thd+=`<th class="th-grade" title="Evaluación final ${baseW.final}%">Ev.<br>Final<br><span style="font-size:.6rem;opacity:.7">${baseW.final}%</span></th>`;
+  specials.forEach(sp=>{
+    thd+=`<th class="th-grade" title="${sp.name} ${sp.weight}%">${sp.name.substring(0,8)}<br><span style="font-size:.6rem;opacity:.7">${sp.weight}%</span></th>`;
+  });
+  thd+=`<th class="th-def">DEFINI<br>TIVA</th>`;
+
+  // Build rows
+  const rows=students.map((s,i)=>{
+    let tds=`<td class="td-name" title="${s.name}">
+      <span class="stu-num">${i+1}</span>
+      <span class="stu-name-txt" onclick="grdOpenEditStu('${s.id}')" title="Editar · ${s.name}">${s.name}</span>
+      ${s.code?`<span class="code-chip"> ${s.code}</span>`:`<span class="no-code" title="Sin código">⚠</span>`}
+    </td>`;
+
+    // Activity inputs
+    actNames.forEach(n=>{
+      const raw=grades['actividad']?.[n]?.[s.id];
+      const val=raw!=null?raw:'';
+      tds+=`<td><input class="ginp ${gcl(val)}" type="number" min="0" max="5" step="0.1"
+        value="${val}" data-comp="actividad" data-item="${n}" data-sid="${s.id}" data-orig="${val}"
+        onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
+        onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
+    });
+
+    // Prom actividades
+    const av=actNames.map(n=>grades['actividad']?.[n]?.[s.id]).filter(v=>v!=null);
+    const actAvg=av.length?Math.round(av.reduce((a,b)=>a+b,0)/av.length*10)/10:null;
+    tds+=`<td class="td-prom ${gcl(actAvg)}">${actAvg!=null?actAvg.toFixed(1):'—'}</td>`;
+
+    // Autoeval
+    const ae=grades['autoeval']?.['_']?.[s.id];
+    const aeVal=ae!=null?ae:'';
+    tds+=`<td><input class="ginp ${gcl(aeVal)}" type="number" min="0" max="5" step="0.1"
+      value="${aeVal}" data-comp="autoeval" data-item="_" data-sid="${s.id}" data-orig="${aeVal}"
+      onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
+      onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
+
+    // Coeval
+    const ce=grades['coeval']?.['_']?.[s.id];
+    const ceVal=ce!=null?ce:'';
+    tds+=`<td><input class="ginp ${gcl(ceVal)}" type="number" min="0" max="5" step="0.1"
+      value="${ceVal}" data-comp="coeval" data-item="_" data-sid="${s.id}" data-orig="${ceVal}"
+      onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
+      onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
+
+    // Final
+    const fi=grades['final']?.['_']?.[s.id];
+    const fiVal=fi!=null?fi:'';
+    tds+=`<td><input class="ginp ${gcl(fiVal)}" type="number" min="0" max="5" step="0.1"
+      value="${fiVal}" data-comp="final" data-item="_" data-sid="${s.id}" data-orig="${fiVal}"
+      onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
+      onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
+
+    // Especiales
+    specials.forEach(sp=>{
+      const sg=grades['especial']?.[sp.id]?.[s.id];
+      const sgVal=sg!=null?sg:'';
+      tds+=`<td><input class="ginp ${gcl(sgVal)}" type="number" min="0" max="5" step="0.1"
+        value="${sgVal}" data-comp="especial" data-item="${sp.id}" data-sid="${s.id}" data-orig="${sgVal}"
+        onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
+        onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
+    });
+
+    // Definitiva
+    const def=grdCalcFinal(s,actNames,grades,baseW,specials);
+    const defCls=gcl(def);
+    tds+=`<td class="td-def ${defCls}">${def!==null?def.toFixed(2):'0.00'}</td>`;
+
+    return`<tr>${tds}</tr>`;
+  }).join('');
+
+  return`<div class="tbl-wrap"><table class="tbl">
+    <thead><tr>${thd}</tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
 }
 
 function grdBuildStats(students,actNames,grades,baseW,specials){
@@ -1605,11 +1693,11 @@ function grdNavKey(e,inp){
 }
 
 function getColCount(){
+  // In unified table: actNames + autoeval + coeval + final + specials (all are inputs)
   const data=grdCache[activeCourse]?.[activePeriod];
   if(!data)return 1;
-  const tab=grdTabKey();
-  if(tab==='actividades')return data.actNames.length+1; // +1 for prom col (not input)
-  return 1;
+  const specials=data.weights?.especiales||[];
+  return data.actNames.length + 3 + specials.length;
 }
 
 async function grdHandleChange(inp){
