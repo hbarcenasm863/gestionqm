@@ -1768,9 +1768,26 @@ function buildAttExport(){
    GRADES MODULE
 ═══════════════════════════════════════════ */
 function computeWeights(specials){
-  const sp=Math.round(specials.reduce((s,e)=>s+e.weight,0)*10)/10;
-  const fA=Math.min(sp,60),fF=Math.max(0,sp-60);
-  return{actividades:Math.round((60-fA)*10)/10,autoeval:5,coeval:5,final:Math.round((30-fF)*10)/10};
+  // Prioridad 1: pesos base guardados en caché (desde hoja Pesos del Sheets)
+  const base=grdCache[activeCourse]?.[activePeriod]?.weights?.base;
+  if(base&&base.actividades!=null){
+    return{actividades:base.actividades,autoeval:base.autoeval,
+           coeval:base.coeval,final:base.final};
+  }
+  // Prioridad 2: pesos almacenados en especiales (pesoAct/pesoFinal)
+  let pesoAct=null,pesoFin=null,pesoAuto=5,pesoCo=5;
+  for(let i=specials.length-1;i>=0;i--){
+    if(specials[i].pesoAct!=null&&specials[i].pesoFinal!=null){
+      pesoAct=specials[i].pesoAct;pesoFin=specials[i].pesoFinal;break;
+    }
+  }
+  // Prioridad 3: redistribución automática
+  if(pesoAct===null||pesoFin===null){
+    const sp=Math.round(specials.reduce((s,e)=>s+e.weight,0)*10)/10;
+    const fA=Math.min(sp,60),fF=Math.max(0,sp-60);
+    pesoAct=Math.round((60-fA)*10)/10;pesoFin=Math.round((30-fF)*10)/10;
+  }
+  return{actividades:pesoAct,autoeval:pesoAuto,coeval:pesoCo,final:pesoFin};
 }
 function gcl(n){
   if(n===''||n===null||n===undefined||isNaN(parseFloat(n)))return'';
@@ -1806,9 +1823,17 @@ async function grdLoadView(course,period){
     const data=await apiGrd({action:'getAll',course,period});
     if(data.error==='auth'){logout();return;}
     grdCache[course][period]=data;
-    // If server sends base weights, store them
+    // Store base weights from server directly in cache
     if(data.weights?.base){
       grdCache[course][period].weights.base=data.weights.base;
+    } else if(data.weights?.actividades!=null){
+      // Server sent weights directly with actividades/final fields
+      grdCache[course][period].weights.base={
+        actividades:data.weights.actividades,
+        autoeval:data.weights.autoeval||5,
+        coeval:data.weights.coeval||5,
+        final:data.weights.final
+      };
     }
   }
   grdRenderMain();
