@@ -44,6 +44,13 @@
 
   --P:#16a34a;--A:#dc2626;--T:#d97706;--J:#7c3aed;--E:#0891b2;
   --n-hi:#15803d;--n-ok:#4d7c0f;--n-md:#b45309;--n-lo:#c2410c;--n-fl:#b91c1c;
+  /* Column group backgrounds */
+  --col-act:    #ffffff;        /* actividades — blanco normal */
+  --col-eval:   #f0f7ff;        /* autoeval / coeval — azul muy suave */
+  --col-esp:    #fffbeb;        /* especiales — amarillo muy suave */
+  --col-def:    #fef3d0;        /* definitiva — dorado suave */
+  --col-eval-h: #dbeafe;        /* header autoeval/coeval */
+  --col-esp-h:  #fef9c3;        /* header especiales */
 
   --sw: 200px;
   --r:  10px;
@@ -501,9 +508,15 @@ body {
   max-width: 200px;
 }
 .tbl tr:nth-child(even) td { background: #f8fafd; }
+.tbl tr:nth-child(even) td.td-eval { background: #e8f0fd !important; }
+.tbl tr:nth-child(even) td.td-esp  { background: #fef5d0 !important; }
+.tbl tr:nth-child(even) td.td-def  { background: #fde68a !important; }
 .tbl tr:nth-child(even) td:first-child { background: #f8fafd; }
-.tbl tr:hover td { background: var(--gold-lt) !important; }
-.tbl tr:hover td:first-child { background: var(--gold-lt) !important; }
+.tbl tr:hover td { background: #f0f9ff !important; }
+.tbl tr:hover td.td-eval { background: #dbeafe !important; }
+.tbl tr:hover td.td-esp  { background: #fef08a !important; }
+.tbl tr:hover td.td-def  { background: #fde68a !important; }
+.tbl tr:hover td:first-child { background: #f0f9ff !important; }
 
 /* Grade input */
 .ginp {
@@ -2317,11 +2330,11 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     </th>`;
   });
 
-  thd+=`<th class="th-grade" title="Autoevaluación 5%">Auto<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>`;
-  thd+=`<th class="th-grade" title="Coevaluación 5%">Co<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>`;
+  thd+=`<th class="th-grade th-eval" title="Autoevaluación 5%">Auto<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>`;
+  thd+=`<th class="th-grade th-eval" title="Coevaluación 5%">Co<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>`;
   thd+=`<th class="th-grade" title="Evaluación final ${baseW.final}%">Ev.<br>Final<br><span style="font-size:.6rem;opacity:.7">${baseW.final}%</span></th>`;
   specials.forEach(sp=>{
-    thd+=`<th class="th-grade" title="${sp.name} ${sp.weight}%">${sp.name.substring(0,8)}<br><span style="font-size:.6rem;opacity:.7">${sp.weight}%</span></th>`;
+    thd+=`<th class="th-grade th-esp" title="${sp.name} ${sp.weight}%">${sp.name.substring(0,8)}<br><span style="font-size:.6rem;opacity:.7">${sp.weight}%</span></th>`;
   });
   thd+=`<th class="th-def">DEFINI<br>TIVA</th>`;
 
@@ -2350,7 +2363,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     // Autoeval
     const ae=grades['autoeval']?.['_']?.[s.id];
     const aeVal=ae!=null?ae:'';
-    tds+=`<td><input class="ginp ${gcl(aeVal)}" type="number" min="0" max="5" step="0.1"
+    tds+=`<td class="td-eval"><input class="ginp ${gcl(aeVal)}" type="number" min="0" max="5" step="0.1"
       value="${aeVal}" data-comp="autoeval" data-item="_" data-sid="${s.id}" data-orig="${aeVal}"
       onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
       onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
@@ -2358,7 +2371,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     // Coeval
     const ce=grades['coeval']?.['_']?.[s.id];
     const ceVal=ce!=null?ce:'';
-    tds+=`<td><input class="ginp ${gcl(ceVal)}" type="number" min="0" max="5" step="0.1"
+    tds+=`<td class="td-eval"><input class="ginp ${gcl(ceVal)}" type="number" min="0" max="5" step="0.1"
       value="${ceVal}" data-comp="coeval" data-item="_" data-sid="${s.id}" data-orig="${ceVal}"
       onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
       onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
@@ -2366,7 +2379,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     // Final
     const fi=grades['final']?.['_']?.[s.id];
     const fiVal=fi!=null?fi:'';
-    tds+=`<td><input class="ginp ${gcl(fiVal)}" type="number" min="0" max="5" step="0.1"
+    tds+=`<td class="td-eval"><input class="ginp ${gcl(fiVal)}" type="number" min="0" max="5" step="0.1"
       value="${fiVal}" data-comp="final" data-item="_" data-sid="${s.id}" data-orig="${fiVal}"
       onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
       onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
@@ -2375,7 +2388,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     specials.forEach(sp=>{
       const sg=grades['especial']?.[sp.id]?.[s.id];
       const sgVal=sg!=null?sg:'';
-      tds+=`<td><input class="ginp ${gcl(sgVal)}" type="number" min="0" max="5" step="0.1"
+      tds+=`<td class="td-esp"><input class="ginp ${gcl(sgVal)}" type="number" min="0" max="5" step="0.1"
         value="${sgVal}" data-comp="especial" data-item="${sp.id}" data-sid="${s.id}" data-orig="${sgVal}"
         onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
         onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
