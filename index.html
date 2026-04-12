@@ -1377,7 +1377,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 /* ═══════════════════════════════════════════
    CONFIG — URLs hardcodeadas
 ═══════════════════════════════════════════ */
-const URL_ATT = 'https://script.google.com/macros/s/AKfycbxQ4v_lub4LYr4Ff9cDKL7ZT5NvyPB_Ji70G4eJP2jkMTl9sqNakkLzcx-_M3qHHOr0/exec';
+const URL_ATT = 'https://script.google.com/macros/s/AKfycbw8iw4JUDM8jdXQHjmktuTjVo0P5_rwilXTzDJSp_JoyOWSt-icuOPW2DyPZznLd3hP/exec';
 const URL_GRD = 'https://script.google.com/macros/s/AKfycbz4JB72kFE3b6f1F9CluNRsDYEZtQizcwnSZJzQFV-2OilO39_24yhqI-gGEvLcPq3B/exec';
 
 const COURSES = ['1004','1005','1006','1101','1102','1103','1104'];
@@ -1580,14 +1580,15 @@ function syncMobDate(date) {
 // Sync mob date input when renderAttMain is called
 const _origRenderAtt = renderAttMain;
 function loadHistDate(date) {
+  // Normalize date just in case
+  const cleanDate = date.toString().split('T')[0].substring(0,10);
   const inp = document.getElementById('dateInput');
-  if (inp) {
-    inp.value = date;
-    renderAttMain();
-    // Scroll to top of main area
-    document.getElementById('mainArea').scrollTop = 0;
-    toast('Cargando asistencia del ' + date);
-  }
+  const mob = document.getElementById('dateInputMob');
+  if (inp) inp.value = cleanDate;
+  if (mob) mob.value = cleanDate;
+  renderAttMain();
+  document.getElementById('mainArea').scrollTop = 0;
+  toast('Sesión del ' + cleanDate);
 }
 
 function today() { return new Date().toISOString().split('T')[0]; }
@@ -1617,7 +1618,9 @@ async function loadAttCourse(course) {
     ]);
     attCache[course]={students,attendance:{}};
     Object.keys(attendance).forEach(date=>{
-      attCache[course].attendance[`${course}_${date}`]=attendance[date];
+      // Normalize date — strip time component if present (e.g. "2025-04-12T05:00:00.000Z")
+      const cleanDate = date.toString().split('T')[0].substring(0,10);
+      attCache[course].attendance[`${course}_${cleanDate}`]=attendance[date];
     });
   }
   renderAttMain();
@@ -1700,8 +1703,9 @@ function renderAttMain() {
 
 function buildAttHistory(course,dates,students){
   const thd=dates.map(d=>{
-    const[,m,dy]=d.split('-');
-    return`<th style="cursor:pointer" onclick="loadHistDate('${d}')" title="Cargar ${d}">${dy}/${m}<br><span style="font-size:.55rem;color:rgba(255,255,255,.5)">cargar</span></th>`;
+    const parts=d.split('-');
+    const m=parts[1]||'', dy=parts[2]||'';
+    return`<th style="cursor:pointer;min-width:42px" onclick="loadHistDate('${d}')" title="Cargar ${d}">${dy}/${m}<br><span style="font-size:.55rem;color:rgba(255,255,255,.5)">✏</span></th>`;
   }).join('');
   const body=students.map(s=>{
     const cells=dates.map(d=>{
