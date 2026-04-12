@@ -34,7 +34,7 @@
   --text2:   #3d4f6b;
   --muted:   #7a8ba8;
 
-  --P:#16a34a;--A:#dc2626;--T:#d97706;--J:#7c3aed;
+  --P:#16a34a;--A:#dc2626;--T:#d97706;--J:#7c3aed;--E:#0891b2;
   --n-hi:#15803d;--n-ok:#4d7c0f;--n-md:#b45309;--n-lo:#c2410c;--n-fl:#b91c1c;
 
   --sw: 200px;
@@ -532,6 +532,7 @@ body {
 .sbt.on-A { background: #fee2e2; border-color: var(--A); color: var(--A); }
 .sbt.on-T { background: #fef3c7; border-color: var(--T); color: var(--T); }
 .sbt.on-J { background: #ede9fe; border-color: var(--J); color: var(--J); }
+.sbt.on-E { background: #e0f2fe; border-color: var(--E); color: var(--E); }
 
 .mark-row { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
 .mark-label { font-size: .74rem; color: var(--muted); font-weight: 500; }
@@ -659,7 +660,7 @@ body {
 .htable tr:nth-child(even) td:first-child { background: #f8fafd; }
 .hP{color:var(--P);font-weight:700}.hA{color:var(--A);font-weight:700}
 .hT{color:var(--T);font-weight:700}.hJ{color:var(--J);font-weight:700}
-.h0{color:var(--bord2)}
+.hE{color:var(--E);font-weight:700}.h0{color:var(--bord2)}
 
 /* MODALS */
 .overlay {
@@ -1280,6 +1281,40 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 
 
 
+
+<!-- MODAL: CONSOLIDADO ASISTENCIA -->
+<div class="overlay" id="consolidadoModal">
+  <div class="modal modal-wide">
+    <div class="modal-title">📊 Consolidado de Asistencia</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+      <div>
+        <label class="mlabel">Curso</label>
+        <select class="minput" id="consCourse"></select>
+      </div>
+      <div>
+        <label class="mlabel">Fecha inicio</label>
+        <input class="minput" type="date" id="consFrom">
+      </div>
+      <div>
+        <label class="mlabel">Fecha fin</label>
+        <input class="minput" type="date" id="consTo">
+      </div>
+    </div>
+    <button class="btn btn-navy" style="width:100%;justify-content:center;margin-bottom:14px"
+      onclick="generarConsolidado()">Generar consolidado</button>
+    <div id="consResult"></div>
+    <div class="mbtns" id="consBtns" style="display:none">
+      <button class="btn btn-outline" onclick="closeModal('consolidadoModal')">Cerrar</button>
+      <button class="btn btn-outline" onclick="copiarConsolidado()">📋 Copiar</button>
+      <button class="btn btn-navy" onclick="imprimirConsolidado()">🖨 Imprimir</button>
+      <button class="btn btn-gold" onclick="exportarConsolidado()">⬇ CSV</button>
+    </div>
+    <div class="mbtns" id="consBtnsInit">
+      <button class="btn btn-outline" onclick="closeModal('consolidadoModal')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: EDITAR PESOS BASE -->
 <div class="overlay" id="weightsModal">
   <div class="modal">
@@ -1596,6 +1631,189 @@ function getDate() { return document.getElementById('dateInput')?.value||today()
 function attKey(c,d){ return `${c}_${d}`; }
 function getAtt(c,d){ return attCache[c]?.attendance?.[attKey(c,d)]||{}; }
 
+
+/* ═══ CONSOLIDADO ASISTENCIA ═══ */
+function openConsolidado() {
+  const sel = document.getElementById('consCourse');
+  sel.innerHTML = COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value = activeCourse;
+  // Default: last 90 days
+  const today = new Date();
+  const from  = new Date(today); from.setDate(from.getDate()-90);
+  document.getElementById('consFrom').value = from.toISOString().split('T')[0];
+  document.getElementById('consTo').value   = today.toISOString().split('T')[0];
+  document.getElementById('consResult').innerHTML = '';
+  document.getElementById('consBtns').style.display = 'none';
+  document.getElementById('consBtnsInit').style.display = '';
+  openModal('consolidadoModal');
+}
+
+async function generarConsolidado() {
+  const course = document.getElementById('consCourse').value;
+  const from   = document.getElementById('consFrom').value;
+  const to     = document.getElementById('consTo').value;
+  if (!from || !to) { toast('Selecciona el rango de fechas'); return; }
+  if (from > to)    { toast('La fecha inicio debe ser anterior al fin'); return; }
+
+  // Load attendance if not cached
+  if (!attCache[course]) {
+    document.getElementById('consResult').innerHTML =
+      '<div class="spin-wrap"><div class="spin"></div>Cargando datos…</div>';
+    const [students, attendance] = await Promise.all([
+      apiAtt({action:'getStudents', course}),
+      apiAtt({action:'getAllAttendance', course})
+    ]);
+    attCache[course] = {students, attendance:{}};
+    Object.keys(attendance).forEach(date => {
+      const clean = date.toString().split('T')[0].substring(0,10);
+      attCache[course].attendance[`${course}_${clean}`] = attendance[date];
+    });
+  }
+
+  const data     = attCache[course];
+  const students = [...data.students].sort((a,b)=>a.name.localeCompare(b.name,'es'));
+  const prefix   = `${course}_`;
+
+  // Filter dates in range
+  const dates = Object.keys(data.attendance)
+    .filter(k => k.startsWith(prefix))
+    .map(k => k.replace(prefix,''))
+    .filter(d => d >= from && d <= to)
+    .sort();
+
+  if (!dates.length) {
+    document.getElementById('consResult').innerHTML =
+      '<div class="empty"><div class="empty-ico">📭</div>No hay registros en ese rango de fechas.</div>';
+    return;
+  }
+
+  // Calculate per student
+  const rows = students.map((s,i) => {
+    let P=0, A=0, T=0, J=0, E=0, sin=0;
+    dates.forEach(d => {
+      const st = (data.attendance[`${course}_${d}`]||{})[s.id];
+      if      (st==='P') P++;
+      else if (st==='A') A++;
+      else if (st==='T') T++;
+      else if (st==='J') J++;
+      else if (st==='E') E++;
+      else               sin++;
+    });
+    const total  = dates.length;
+    const pct    = total > 0 ? Math.round((P+T)/total*100) : 0;
+    const fallas = A;
+    return { i:i+1, name:s.name, total, P, A, T, J, E, sin, pct, fallas };
+  });
+
+  // Build table
+  const tbody = rows.map(r => {
+    const riskCls = r.fallas >= 5 ? 'style="background:#fef2f2"' : '';
+    return `<tr ${riskCls}>
+      <td style="text-align:center;font-size:.72rem;color:var(--muted)">${r.i}</td>
+      <td style="text-align:left;font-size:.82rem">${r.name}</td>
+      <td style="text-align:center;font-weight:600">${r.total}</td>
+      <td style="text-align:center;color:var(--ok);font-weight:600">${r.P}</td>
+      <td style="text-align:center;color:var(--fail);font-weight:700">${r.A}</td>
+      <td style="text-align:center;color:var(--T);font-weight:600">${r.T}</td>
+      <td style="text-align:center;color:var(--J);font-weight:600">${r.J}</td>
+      <td style="text-align:center;color:var(--E);font-weight:600">${r.E}</td>
+      <td style="text-align:center;color:var(--muted);font-size:.78rem">${r.sin}</td>
+      <td style="text-align:center;font-family:'DM Mono',monospace;font-weight:700;
+        color:${r.pct>=80?'var(--ok)':r.pct>=60?'var(--warn)':'var(--fail)'}">${r.pct}%</td>
+    </tr>`;
+  }).join('');
+
+  const totalClases = dates.length;
+  const resumen = `
+    <div style="font-size:.76rem;color:var(--muted);margin-bottom:10px">
+      Curso <strong>${course}</strong> · ${totalClases} clase${totalClases!==1?'s':''} entre
+      <strong>${from}</strong> y <strong>${to}</strong>
+    </div>
+    <div style="overflow-x:auto;border:1.5px solid var(--bord);border-radius:var(--r)">
+      <table style="width:100%;border-collapse:collapse;font-size:.8rem;background:white">
+        <thead>
+          <tr style="background:var(--navy);color:white">
+            <th style="padding:8px 6px;text-align:center;font-size:.65rem">#</th>
+            <th style="padding:8px 10px;text-align:left;min-width:160px">Estudiante</th>
+            <th style="padding:8px 6px;text-align:center" title="Total clases">Total</th>
+            <th style="padding:8px 6px;text-align:center;color:#4ade80">P</th>
+            <th style="padding:8px 6px;text-align:center;color:#f87171">A</th>
+            <th style="padding:8px 6px;text-align:center;color:#fbbf24">T</th>
+            <th style="padding:8px 6px;text-align:center;color:#a78bfa">J</th>
+            <th style="padding:8px 6px;text-align:center;color:#67e8f9">E</th>
+            <th style="padding:8px 6px;text-align:center;font-size:.62rem;color:rgba(255,255,255,.6)">S/M</th>
+            <th style="padding:8px 6px;text-align:center">% Asist.</th>
+          </tr>
+        </thead>
+        <tbody>${tbody}</tbody>
+      </table>
+    </div>
+    <div style="font-size:.68rem;color:var(--muted);margin-top:6px">
+      P=Presente · A=Ausente · T=Tardanza · J=Justificado · E=Evasión · S/M=Sin marcar · Rojo=5+ ausencias
+    </div>`;
+
+  document.getElementById('consResult').innerHTML = resumen;
+  document.getElementById('consBtns').style.display = '';
+  document.getElementById('consBtnsInit').style.display = 'none';
+
+  // Store for export
+  window._consData = { course, from, to, dates, rows };
+}
+
+function copiarConsolidado() {
+  if (!window._consData) return;
+  const { course, from, to, rows, dates } = window._consData;
+  let txt = `CONSOLIDADO ASISTENCIA\nCurso ${course} · ${dates.length} clases · ${from} a ${to}\n\n`;
+  txt += `#\tEstudiante\tTotal\tPresente\tAusente\tTardanza\tJustificado\tSin marcar\t% Asistencia\n`;
+  rows.forEach(r => {
+    txt += `${r.i}\t${r.name}\t${r.total}\t${r.P}\t${r.A}\t${r.T}\t${r.J}\t${r.sin}\t${r.pct}%\n`;
+  });
+  navigator.clipboard.writeText(txt).then(() => toast('¡Copiado!'));
+}
+
+function exportarConsolidado() {
+  if (!window._consData) return;
+  const { course, from, to, rows, dates } = window._consData;
+  let csv = `\uFEFF#,Estudiante,Total clases,Presente,Ausente,Tardanza,Justificado,Sin marcar,% Asistencia\n`;
+  rows.forEach(r => {
+    csv += `${r.i},"${r.name}",${r.total},${r.P},${r.A},${r.T},${r.J},${r.sin},${r.pct}%\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `consolidado_${course}_${from}_${to}.csv`;
+  a.click();
+  toast('CSV descargado');
+}
+
+function imprimirConsolidado() {
+  const content = document.getElementById('consResult').innerHTML;
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>Consolidado Asistencia</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:20px;font-size:11pt}
+      h2{color:#1a2e5a;margin-bottom:4px}
+      table{width:100%;border-collapse:collapse;margin-top:10px}
+      th{background:#1a2e5a;color:white;padding:6px 8px;text-align:center;font-size:9pt}
+      th:nth-child(2){text-align:left}
+      td{padding:5px 8px;border:1px solid #ccc;text-align:center;font-size:10pt}
+      td:nth-child(2){text-align:left}
+      tr:nth-child(even) td{background:#f8f8f8}
+      .legend{font-size:8pt;color:#666;margin-top:8px}
+      @media print{@page{margin:1.5cm;size:A4 landscape}}
+    </style>
+  </head><body>
+    <h2>Consolidado de Asistencia — Colegio Rufino José Cuervo IED</h2>
+    <p style="font-size:9pt;color:#666">Química · Generado: ${new Date().toLocaleString('es-CO')}</p>
+    ${content}
+    <div class="legend">P=Presente · A=Ausente · T=Tardanza · J=Justificado · E=Evasión · S/M=Sin marcar</div>
+  </body></html>`);
+  win.document.close();
+  win.print();
+}
+
 async function loadAttCourse(course) {
   activeCourse=course; localStorage.setItem('gqm_course',course);
   renderNav();
@@ -1603,6 +1821,7 @@ async function loadAttCourse(course) {
     <button class="mod-tab att active" onclick="openModule('att')">📋 <span>Asistencia</span></button>
     <button class="mod-tab grd" onclick="openModule('grd')">📝 <span>Notas</span></button>
     <div class="date-pill">📅<input type="date" id="dateInput" onchange="renderAttMain()"></div>
+    <button class="icon-btn" onclick="openConsolidado()" title="Consolidado">📊</button>
     <button class="icon-btn" onclick="openAttExport()">⬇</button>
     <button class="icon-btn" onclick="openAttBulk()">📋</button>`;
   // Preserve current date if already set, otherwise use today
@@ -1650,6 +1869,7 @@ function renderAttMain() {
           <button class="sbt ${st==='A'?'on-A':''}" onclick="attMark('${s.id}','A')" title="Ausente">A</button>
           <button class="sbt ${st==='T'?'on-T':''}" onclick="attMark('${s.id}','T')" title="Tardanza">T</button>
           <button class="sbt ${st==='J'?'on-J':''}" onclick="attMark('${s.id}','J')" title="Justificado">J</button>
+          <button class="sbt ${st==='E'?'on-E':''}" onclick="attMark('${s.id}','E')" title="Evasión">E</button>
         </div></td>
         <td><button onclick="attRemoveStu('${s.id}')"
           style="background:none;border:none;color:var(--bord2);cursor:pointer;font-size:.95rem;padding:0 3px;transition:color .12s"
@@ -1676,6 +1896,7 @@ function renderAttMain() {
       <div class="stat"><span class="stat-n" style="color:var(--A)">${A}</span><span class="stat-l">Ausente</span></div>
       <div class="stat"><span class="stat-n" style="color:var(--T)">${T}</span><span class="stat-l">Tardanza</span></div>
       <div class="stat"><span class="stat-n" style="color:var(--J)">${J}</span><span class="stat-l">Justificado</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--E)">${E}</span><span class="stat-l">Evasión</span></div>
       <div class="stat"><span class="stat-n" style="color:var(--muted)">${U}</span><span class="stat-l">Sin marcar</span></div>
     </div>
     <div class="mark-row" style="flex-wrap:wrap">
@@ -2766,6 +2987,7 @@ function buildMobMenuItems() {
   const items = [];
   if (activeModule === 'att') {
     items.push({icon:'📋', label:'Lista masiva', fn:'openAttBulk()'});
+    items.push({icon:'📊', label:'Consolidado de asistencia', fn:'openConsolidado()'});
     items.push({icon:'⬇', label:'Exportar asistencia', fn:'openAttExport()'});
     items.push({sep:true});
   }
