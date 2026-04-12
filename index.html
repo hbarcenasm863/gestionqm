@@ -2255,7 +2255,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     // Definitiva
     const def=grdCalcFinal(s,actNames,grades,baseW,specials);
     const defCls=gcl(def);
-    tds+=`<td class="td-def ${defCls}">${def!==null?def.toFixed(2):'0.00'}</td>`;
+    tds+=`<td class="td-def ${defCls}" data-def-sid="${s.id}">${def!==null?def.toFixed(2):'0.00'}</td>`;
 
     return`<tr>${tds}</tr>`;
   }).join('');
@@ -2302,7 +2302,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     return`<div class="mgrid">
       <div class="mgrid-head">
         <span class="mgrid-name">${i+1}. ${s.name}</span>
-        <span class="mgrid-def" style="color:${defCol}">${def!=null?def.toFixed(2):'0.00'}</span>
+        <span class="mgrid-def" id="mgrid-def-${s.id}" style="color:${defCol}">${def!=null?def.toFixed(2):'0.00'}</span>
       </div>
       <div class="mgrid-body">
         <div class="mgrid-rows">
@@ -2334,11 +2334,11 @@ function grdBuildStats(students,actNames,grades,baseW,specials){
   const pass=avgs.filter(x=>x>=3).length,fail=avgs.filter(x=>x<3).length;
   const hi=Math.max(...avgs),lo=Math.min(...avgs);
   return`<div class="stats-row">
-    <div class="stat"><span class="stat-n ${gcl(mean)}">${mean.toFixed(2)}</span><span class="stat-l">Promedio</span></div>
-    <div class="stat"><span class="stat-n" style="color:var(--ok)">${pass}</span><span class="stat-l">Aprobando</span></div>
-    <div class="stat"><span class="stat-n" style="color:var(--fail)">${fail}</span><span class="stat-l">En riesgo</span></div>
-    <div class="stat"><span class="stat-n ${gcl(hi)}">${hi.toFixed(1)}</span><span class="stat-l">Máx</span></div>
-    <div class="stat"><span class="stat-n ${gcl(lo)}">${lo.toFixed(1)}</span><span class="stat-l">Mín</span></div>
+    <div class="stat"><span class="stat-n ${gcl(mean)}" data-stat="mean">${mean.toFixed(2)}</span><span class="stat-l">Promedio</span></div>
+    <div class="stat"><span class="stat-n" style="color:var(--ok)" data-stat="pass">${pass}</span><span class="stat-l">Aprobando</span></div>
+    <div class="stat"><span class="stat-n" style="color:var(--fail)" data-stat="fail">${fail}</span><span class="stat-l">En riesgo</span></div>
+    <div class="stat"><span class="stat-n ${gcl(hi)}" data-stat="hi">${hi.toFixed(1)}</span><span class="stat-l">Máx</span></div>
+    <div class="stat"><span class="stat-n ${gcl(lo)}" data-stat="lo">${lo.toFixed(1)}</span><span class="stat-l">Mín</span></div>
   </div>`;
 }
 
@@ -2456,6 +2456,53 @@ function grdUpdateColor(inp){
   if(!d.grades[comp])d.grades[comp]={};
   if(!d.grades[comp][item])d.grades[comp][item]={};
   d.grades[comp][item][sid]=isNaN(v)?null:v;
+  // Recalculate definitiva in real time
+  grdUpdateDefCell(sid, d);
+}
+
+
+function grdUpdateStats(){
+  const data=grdCache[activeCourse]?.[activePeriod];
+  if(!data)return;
+  const{students,weights,actNames,grades}=data;
+  const specials=weights?.especiales||[];
+  const baseW=computeWeights(specials);
+  const avgs=students.map(s=>grdCalcFinal(s,actNames,grades,baseW,specials)).filter(x=>x!==null);
+  if(!avgs.length)return;
+  const mean=Math.round(avgs.reduce((a,b)=>a+b,0)/avgs.length*100)/100;
+  const pass=avgs.filter(x=>x>=3).length;
+  const fail=avgs.filter(x=>x<3).length;
+  const hi=Math.max(...avgs), lo=Math.min(...avgs);
+  const statEls=document.querySelectorAll('[data-stat]');
+  statEls.forEach(el=>{
+    const t=el.dataset.stat;
+    if(t==='mean'){el.textContent=mean.toFixed(2);el.className='stat-n '+gcl(mean);}
+    else if(t==='pass'){el.textContent=pass;}
+    else if(t==='fail'){el.textContent=fail;}
+    else if(t==='hi'){el.textContent=hi.toFixed(1);el.className='stat-n '+gcl(hi);}
+    else if(t==='lo'){el.textContent=lo.toFixed(1);el.className='stat-n '+gcl(lo);}
+  });
+}
+function grdUpdateDefCell(sid, data){
+  const{students,weights,actNames,grades}=data;
+  const specials=weights?.especiales||[];
+  const baseW=computeWeights(specials);
+  const s=students.find(x=>x.id===sid);
+  if(!s)return;
+  const def=grdCalcFinal(s,actNames,grades,baseW,specials);
+  // Update all definitiva cells for this student (desktop table + mobile card)
+  document.querySelectorAll(`[data-def-sid="${sid}"]`).forEach(el=>{
+    el.textContent=def!==null?def.toFixed(2):'0.00';
+    el.className='td-def '+gcl(def);
+  });
+  const card=document.getElementById('mgrid-def-'+sid);
+  if(card){
+    card.textContent=def!==null?def.toFixed(2):'0.00';
+    card.style.color=def===null?'rgba(255,255,255,.7)':def>=3?'#4ade80':def>=2?'#fbbf24':'#f87171';
+  }
+  // Update stats row
+  clearTimeout(window._statsTimer);
+  window._statsTimer=setTimeout(grdUpdateStats, 300);
 }
 
 function grdOnFocus(inp){
