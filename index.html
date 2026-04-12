@@ -1290,6 +1290,49 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 
 
 
+
+<!-- MODAL: SISTEMATIZADORA -->
+<div class="overlay" id="sistModal">
+  <div class="modal">
+    <div class="modal-title">📤 Exportar para sistematizadora</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <div style="flex:1"><label class="mlabel">Curso</label>
+        <select class="minput" id="sistCourse"></select></div>
+      <div style="flex:1"><label class="mlabel">Periodo</label>
+        <select class="minput" id="sistPeriod">
+          <option value="1">Periodo 1</option>
+          <option value="2">Periodo 2</option>
+          <option value="3">Periodo 3</option>
+        </select></div>
+    </div>
+    <div style="margin-bottom:10px">
+      <label class="mlabel">Formato de nota</label>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <label style="display:flex;align-items:center;gap:5px;font-size:.82rem;cursor:pointer">
+          <input type="radio" name="sistDec" value="1" checked> 1 decimal (3.5)
+        </label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:.82rem;cursor:pointer">
+          <input type="radio" name="sistDec" value="2"> 2 decimales (3.52)
+        </label>
+      </div>
+    </div>
+    <button class="btn btn-navy" style="width:100%;justify-content:center;margin-bottom:10px"
+      onclick="generarSistematizadora()">Generar</button>
+    <div id="sistResult" style="display:none">
+      <div id="sistStats" style="font-size:.74rem;color:var(--muted);margin-bottom:6px"></div>
+      <div id="sistBox" class="expbox" style="min-height:120px"></div>
+      <div class="mbtns">
+        <button class="btn btn-outline" onclick="closeModal('sistModal')">Cerrar</button>
+        <button class="btn btn-outline" onclick="copiarSist()">📋 Copiar</button>
+        <button class="btn btn-gold" onclick="descargarSist()">⬇ CSV</button>
+      </div>
+    </div>
+    <div id="sistInitBtns" class="mbtns">
+      <button class="btn btn-outline" onclick="closeModal('sistModal')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: CONSOLIDADO ASISTENCIA -->
 <div class="overlay" id="consolidadoModal">
   <div class="modal modal-wide">
@@ -1822,6 +1865,83 @@ function imprimirConsolidado() {
   win.print();
 }
 
+
+/* ═══ SISTEMATIZADORA ═══ */
+function exportSistematizadora() {
+  const sel = document.getElementById('sistCourse');
+  sel.innerHTML = COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value = activeCourse;
+  document.getElementById('sistPeriod').value = activePeriod;
+  document.getElementById('sistResult').style.display = 'none';
+  document.getElementById('sistInitBtns').style.display = '';
+  openModal('sistModal');
+}
+
+async function generarSistematizadora() {
+  const course  = document.getElementById('sistCourse').value;
+  const period  = +document.getElementById('sistPeriod').value;
+  const dec     = +document.querySelector('input[name="sistDec"]:checked').value;
+
+  // Load if not cached
+  if (!grdCache[course]?.[period]) {
+    document.getElementById('sistBox').textContent = 'Cargando…';
+    document.getElementById('sistResult').style.display = '';
+    const data = await apiGrd({action:'getAll', course, period});
+    if (!grdCache[course]) grdCache[course] = {};
+    grdCache[course][period] = data;
+    if (data.weights?.base) grdCache[course][period].weights.base = data.weights.base;
+    else if (data.weights?.actividades != null) {
+      grdCache[course][period].weights.base = {
+        actividades:data.weights.actividades, autoeval:data.weights.autoeval||5,
+        coeval:data.weights.coeval||5, final:data.weights.final
+      };
+    }
+  }
+
+  const {students, weights, actNames, grades} = grdCache[course][period];
+  const specials = weights?.especiales || [];
+  const baseW    = computeWeights(specials);
+  const sorted   = [...students].sort((a,b) => a.name.localeCompare(b.name,'es'));
+
+  let txt = '';
+  sorted.forEach(s => {
+    const def = grdCalcFinal(s, actNames, grades, baseW, specials);
+    const nota = def !== null ? def.toFixed(dec) : '0.' + '0'.repeat(dec);
+    txt += `${s.name}\t${nota}\n`;
+  });
+
+  document.getElementById('sistBox').textContent = txt;
+  document.getElementById('sistStats').textContent =
+    `Curso ${course} · Periodo ${period} · ${sorted.length} estudiantes · ${dec} decimal${dec>1?'es':''}`;
+  document.getElementById('sistResult').style.display = '';
+  document.getElementById('sistInitBtns').style.display = 'none';
+
+  // Store for export
+  window._sistData = { course, period, dec, sorted, actNames, grades, baseW, specials };
+}
+
+function copiarSist() {
+  navigator.clipboard.writeText(document.getElementById('sistBox').textContent)
+    .then(() => toast('¡Copiado! Pega directo en la sistematizadora'));
+}
+
+function descargarSist() {
+  if (!window._sistData) return;
+  const {course, period, dec, sorted, actNames, grades, baseW, specials} = window._sistData;
+  let csv = '\uFEFFNombre,Definitiva\n';
+  sorted.forEach(s => {
+    const def = grdCalcFinal(s, actNames, grades, baseW, specials);
+    const nota = def !== null ? def.toFixed(dec) : '0.' + '0'.repeat(dec);
+    csv += `"${s.name}",${nota}\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `sistematizadora_${course}_P${period}.csv`;
+  a.click();
+  toast('CSV descargado');
+}
+
 async function loadAttCourse(course) {
   activeCourse=course; localStorage.setItem('gqm_course',course);
   renderNav();
@@ -2090,6 +2210,7 @@ async function grdLoadView(course,period){
     <div class="period-tabs">${PERIODS.map(p=>`<button class="ptab ${p===period?'active':''}"
       onclick="grdLoadView('${course}',${p})">P${p}</button>`).join('')}</div>
     <button class="icon-btn" onclick="printPDF()" title="Generar PDF">🖨</button>
+    <button class="icon-btn" onclick="exportSistematizadora()" title="Exportar sistematizadora">📤</button>
     <button class="icon-btn" onclick="openGrdExport()">⬇</button>
     <button class="icon-btn" onclick="downloadBackup()" title="Backup CSV">💾</button>
     <button class="icon-btn" onclick="openImportModal()">📥</button>
@@ -3052,6 +3173,7 @@ function buildMobMenuItems() {
     items.push({icon:'📥', label:'Importar notas JSON', fn:'openImportModal()'});
     items.push({icon:'📋', label:'Lista masiva', fn:'openGrdBulk()'});
     items.push({icon:'🖨', label:'Generar PDF', fn:'printPDF()'});
+    items.push({icon:'📤', label:'Exportar sistematizadora', fn:'exportSistematizadora()'});
     items.push({icon:'⬇', label:'Exportar notas', fn:'openGrdExport()'});
     items.push({icon:'💾', label:'Backup CSV', fn:'downloadBackup()'});
     items.push({sep:true});
