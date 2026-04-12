@@ -760,6 +760,48 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
+
+/* ═══════════════════════════════════════════
+   PRINT / PDF
+═══════════════════════════════════════════ */
+@media print {
+  body { background: white !important; font-family: 'DM Sans', Arial, sans-serif; }
+  .topbar, .sidebar, .period-ctrl, .weights-panel,
+  .stats-row, .head-actions, .btn, .icon-btn,
+  #mainArea > div:last-child, .del-col-btn,
+  .stu-name-txt { display: none !important; }
+  #appShell { display: block !important; height: auto !important; overflow: visible !important; }
+  .app-body { display: block !important; overflow: visible !important; }
+  .main { padding: 0 !important; overflow: visible !important; }
+  .tbl-wrap { overflow: visible !important; box-shadow: none !important; border: none !important; }
+  .tbl { font-size: 8pt !important; min-width: 0 !important; width: 100% !important; }
+  .tbl th { background: #1a2e5a !important; color: white !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    padding: 5pt 4pt !important; font-size: 7pt !important; }
+  .tbl td { padding: 4pt !important; border: 0.5pt solid #ccc !important; }
+  .tbl td.td-name { position: static !important; max-width: none !important;
+    white-space: normal !important; width: auto !important; }
+  .tbl td.td-def { background: #fef3d0 !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .tbl td.td-prom { background: #f0faf6 !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .tbl tr:nth-child(even) td { background: #f8f8f8 !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .ginp { border: none !important; background: none !important;
+    width: auto !important; text-align: center; }
+  .g-hi { color: #15803d !important; } .g-ok { color: #4d7c0f !important; }
+  .g-md { color: #b45309 !important; } .g-lo { color: #c2410c !important; }
+  .g-fl { color: #b91c1c !important; }
+  .print-header { display: block !important; }
+  .print-footer { display: block !important; }
+  .page-head { margin-bottom: 8pt !important; }
+  .course-label { font-size: 12pt !important; color: #1a2e5a !important; }
+  .course-meta { font-size: 8pt !important; }
+  @page { margin: 1.5cm; size: A4 landscape; }
+}
+.print-header { display: none; }
+.print-footer { display: none; }
+
 /* ═══════════════════════════════════════════
    RESPONSIVE — MÓVIL
 ═══════════════════════════════════════════ */
@@ -806,6 +848,50 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
     <button class="login-btn" onclick="doLogin()">Ingresar</button>
   </div>
 </div>
+</div>
+
+
+<!-- PRINT HEADER (only visible when printing) -->
+<div class="print-header" id="printHeader" style="display:none">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;
+    border-bottom:2pt solid #1a2e5a;padding-bottom:8pt;margin-bottom:10pt">
+    <div style="display:flex;align-items:center;gap:12pt">
+      <div style="width:44pt;height:44pt;background:#1a2e5a;border-radius:6pt;
+        display:flex;align-items:center;justify-content:center;
+        font-size:18pt;color:#c8960c;font-weight:800;
+        -webkit-print-color-adjust:exact;print-color-adjust:exact">⚗</div>
+      <div>
+        <div style="font-size:13pt;font-weight:700;color:#1a2e5a">COLEGIO RUFINO JOSÉ CUERVO IED</div>
+        <div style="font-size:9pt;color:#555">Bogotá D.C., Colombia</div>
+        <div style="font-size:9pt;color:#555">Área: Ciencias Naturales — Química</div>
+      </div>
+    </div>
+    <div style="text-align:right;font-size:8pt;color:#555;line-height:1.7">
+      <div style="font-size:11pt;font-weight:700;color:#1a2e5a">REGISTRO DE NOTAS</div>
+      <div id="phCurso"></div>
+      <div id="phPeriodo"></div>
+      <div id="phFecha"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT FOOTER -->
+<div class="print-footer" id="printFooter" style="display:none;margin-top:20pt;
+  border-top:1pt solid #ccc;padding-top:10pt">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end">
+    <div style="font-size:8pt;color:#555">
+      <div>Docente: <strong>Harvey Barcenas Morales</strong></div>
+      <div>Colegio Rufino José Cuervo IED — Química</div>
+    </div>
+    <div style="text-align:center;font-size:8pt;color:#555">
+      <div style="width:120pt;border-top:1pt solid #333;margin-bottom:3pt"></div>
+      <div>Firma del docente</div>
+    </div>
+    <div style="text-align:right;font-size:8pt;color:#555">
+      <div>Generado con HBMol</div>
+      <div id="pfFecha"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ APP SHELL ═══ -->
@@ -1444,6 +1530,7 @@ async function grdLoadView(course,period){
     <button class="mod-tab grd active" onclick="openModule('grd')">📝 <span>Notas</span></button>
     <div class="period-tabs">${PERIODS.map(p=>`<button class="ptab ${p===period?'active':''}"
       onclick="grdLoadView('${course}',${p})">P${p}</button>`).join('')}</div>
+    <button class="icon-btn" onclick="printPDF()" title="Generar PDF">🖨</button>
     <button class="icon-btn" onclick="openGrdExport()">⬇</button>
     <button class="icon-btn" onclick="downloadBackup()" title="Backup CSV">💾</button>
     <button class="icon-btn" onclick="openImportModal()">📥</button>
@@ -2122,6 +2209,43 @@ async function downloadCSV(){
   toast('CSV descargado');
 }
 
+
+
+/* ═══ PDF / PRINT ═══ */
+function printPDF() {
+  const course  = activeCourse;
+  const period  = activePeriod;
+  const fecha   = new Date().toLocaleDateString('es-CO', {
+    weekday:'long', year:'numeric', month:'long', day:'numeric'
+  });
+
+  // Fill header data
+  document.getElementById('phCurso').textContent   = `Curso: ${course}`;
+  document.getElementById('phPeriodo').textContent = `Periodo: ${period}`;
+  document.getElementById('phFecha').textContent   = `Fecha: ${fecha}`;
+  document.getElementById('pfFecha').textContent   = fecha;
+
+  // Show header/footer for print
+  document.getElementById('printHeader').style.display = 'block';
+  document.getElementById('printFooter').style.display = 'block';
+
+  // Move header/footer into mainArea for print layout
+  const main = document.getElementById('mainArea');
+  const header = document.getElementById('printHeader');
+  const footer = document.getElementById('printFooter');
+  main.insertBefore(header, main.firstChild);
+  main.appendChild(footer);
+
+  window.print();
+
+  // Restore after print
+  setTimeout(() => {
+    document.getElementById('printHeader').style.display = 'none';
+    document.getElementById('printFooter').style.display = 'none';
+    document.body.insertBefore(header, document.body.firstChild);
+    document.body.appendChild(footer);
+  }, 1000);
+}
 
 /* ═══ IMPORT JSON ═══ */
 let importData = null;
