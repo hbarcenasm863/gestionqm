@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>HBMol — Colegio Rufino José Cuervo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HBMol">
+<meta name="theme-color" content="#1a2e5a">
+<link rel="apple-touch-icon" href="hbmol.png">
+<link rel="icon" type="image/png" href="hbmol.png">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════
@@ -1030,7 +1038,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 <div id="loginScreen" style="display:none">
 <div class="login-page">
   <div class="login-card">
-    <div class="login-emblem">⚗️</div>
+    <div class="login-emblem"><img src="hbmol.png" style="width:44px;height:44px;border-radius:10px;object-fit:cover"></div>
     <div class="login-title">HBMol</div>
     <div class="login-subtitle">Química · Colegio Rufino José Cuervo IED<br>Bogotá, Colombia</div>
     <label class="login-label" for="pwdInput">Contraseña de acceso</label>
@@ -1091,7 +1099,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 <div id="appShell">
   <header class="topbar">
     <div class="topbar-logo">
-      <div class="topbar-logo-icon">⚗️</div>
+      <div class="topbar-logo-icon"><img src="hbmol.png" style="width:20px;height:20px;border-radius:4px;object-fit:cover"></div>
       <span>HBMol</span>
     </div>
     <div class="topbar-center" id="topbarCenter"></div>
