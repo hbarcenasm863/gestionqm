@@ -1856,7 +1856,7 @@ function renderAttMain() {
   const att=getAtt(c,date), sts=data.students;
   sts.sort((a,b)=>a.name.localeCompare(b.name,'es'));
   const cnt=s=>sts.filter(x=>att[x.id]===s).length;
-  const P=cnt('P'),A=cnt('A'),T=cnt('T'),J=cnt('J'),U=sts.length-P-A-T-J;
+  const P=cnt('P'),A=cnt('A'),T=cnt('T'),J=cnt('J'),E=cnt('E'),U=sts.length-P-A-T-J-E;
 
   const rows=sts.length===0
     ?`<div class="empty"><div class="empty-ico">👤</div>Sin estudiantes. Usa 📋 para importar la lista.</div>`
