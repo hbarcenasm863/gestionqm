@@ -1873,7 +1873,8 @@ function imprimirConsolidado() {
     <p style="font-size:9pt;color:#666">Química · Generado: ${new Date().toLocaleString('es-CO')}</p>
     ${content}
     <div class="legend">P=Presente · A=Ausente · T=Tardanza · J=Justificado · E=Evasión · S/M=Sin marcar</div>
-  </body></html>`);
+  
+</body></html>`);
   win.document.close();
   win.print();
 }
@@ -3409,5 +3410,7 @@ function toast(msg){
 
 init();
 </script>
+
 </body>
+<script>if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));</script>
 </html>
