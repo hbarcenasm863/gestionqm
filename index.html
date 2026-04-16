@@ -1719,20 +1719,27 @@ async function generarConsolidado() {
   if (!from || !to) { toast('Selecciona el rango de fechas'); return; }
   if (from > to)    { toast('La fecha inicio debe ser anterior al fin'); return; }
 
-  // Load attendance if not cached
-  if (!attCache[course]) {
-    document.getElementById('consResult').innerHTML =
-      '<div class="spin-wrap"><div class="spin"></div>Cargando datos…</div>';
-    const [students, attendance] = await Promise.all([
-      apiAtt({action:'getStudents', course}),
-      apiAtt({action:'getAllAttendance', course})
-    ]);
-    attCache[course] = {students, attendance:{}};
-    Object.keys(attendance).forEach(date => {
-      const clean = date.toString().split('T')[0].substring(0,10);
-      attCache[course].attendance[`${course}_${clean}`] = attendance[date];
-    });
-  }
+  // Always reload from server for consolidado to get fresh data
+  document.getElementById('consResult').innerHTML =
+    '<div class="spin-wrap"><div class="spin"></div>Cargando datos frescos…</div>';
+  document.getElementById('sistResult') && (document.getElementById('sistResult').style.display='none');
+  const [stuFresh, attFresh] = await Promise.all([
+    apiAtt({action:'getStudents', course}),
+    apiAtt({action:'getAllAttendance', course})
+  ]);
+  attCache[course] = {students:stuFresh, attendance:{}};
+  Object.keys(attFresh).forEach(rawDate => {
+    // Normalize: handle Date objects, ISO strings, Colombian format dd/mm/yyyy
+    let clean = rawDate.toString();
+    if (clean.includes('T')) clean = clean.split('T')[0];
+    if (clean.includes('/')) {
+      // dd/mm/yyyy → yyyy-mm-dd
+      const p = clean.split('/');
+      if (p.length === 3) clean = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+    }
+    clean = clean.substring(0, 10);
+    attCache[course].attendance[`${course}_${clean}`] = attFresh[rawDate];
+  });
 
   const data     = attCache[course];
   const students = [...data.students].sort((a,b)=>a.name.localeCompare(b.name,'es'));
@@ -1742,7 +1749,11 @@ async function generarConsolidado() {
   const dates = Object.keys(data.attendance)
     .filter(k => k.startsWith(prefix))
     .map(k => k.replace(prefix,''))
-    .filter(d => d >= from && d <= to)
+    .filter(d => {
+      // Extra normalization just in case
+      const dn = d.substring(0,10);
+      return dn >= from && dn <= to;
+    })
     .sort();
 
   if (!dates.length) {
