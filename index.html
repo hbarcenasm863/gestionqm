@@ -24,15 +24,15 @@
   --bord:    #e2e8f2;
   --bord2:   #c8d4e8;
 
-  --navy:    #1a2e5a;   /* azul marino principal */
-  --navy2:   #243870;   /* navy más claro */
-  --gold:    #c8960c;   /* dorado */
-  --gold-lt: #fef3d0;   /* dorado claro fondo */
-  --gold-md: #f5d06a;   /* dorado medio */
+  --navy:    #1a2e5a;
+  --navy2:   #243870;
+  --gold:    #c8960c;
+  --gold-lt: #fef3d0;
+  --gold-md: #f5d06a;
 
-  --att:     #1a6b5a;   /* verde asistencia */
+  --att:     #1a6b5a;
   --att-lt:  #e8f5f1;
-  --grd:     #1a3d6b;   /* azul notas */
+  --grd:     #1a3d6b;
   --grd-lt:  #e8f0fb;
 
   --ok:      #16a34a;
@@ -44,13 +44,12 @@
 
   --P:#16a34a;--A:#dc2626;--T:#d97706;--J:#7c3aed;--E:#0891b2;
   --n-hi:#15803d;--n-ok:#4d7c0f;--n-md:#b45309;--n-lo:#c2410c;--n-fl:#b91c1c;
-  /* Column group backgrounds */
-  --col-act:    #ffffff;        /* actividades — blanco normal */
-  --col-eval:   #f0f7ff;        /* autoeval / coeval — azul muy suave */
-  --col-esp:    #fffbeb;        /* especiales — amarillo muy suave */
-  --col-def:    #fef3d0;        /* definitiva — dorado suave */
-  --col-eval-h: #dbeafe;        /* header autoeval/coeval */
-  --col-esp-h:  #fef9c3;        /* header especiales */
+  --col-act:    #ffffff;
+  --col-eval:   #f0f7ff;
+  --col-esp:    #fffbeb;
+  --col-def:    #fef3d0;
+  --col-eval-h: #dbeafe;
+  --col-esp-h:  #fef9c3;
 
   --sw: 200px;
   --r:  10px;
@@ -562,7 +561,7 @@ body {
   font-size: .74rem; font-weight: 600;
   cursor: pointer; border: 1.5px solid;
   font-family: 'DM Sans', sans-serif;
-  transition: all .12s;
+  transition: all .12px;
 }
 .mabtn.P { border-color: var(--P); color: var(--P); background: #f0fdf4; }
 .mabtn.P:hover { background: var(--P); color: white; }
@@ -781,9 +780,6 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   box-shadow: 0 4px 16px rgba(26,46,90,.3);
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
-
-
-
 
 /* ═══ HAMBURGER MENU (mobile) ═══ */
 .hamburger {
@@ -1013,7 +1009,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 .print-footer { display: none; }
 
 /* ═══════════════════════════════════════════
-   RESPONSIVE — MÓVIL
+   RESPONSIVE — MOVIL
 ═══════════════════════════════════════════ */
 .mob-date-row { display:none }
 @media (max-width: 700px) {
@@ -1047,7 +1043,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 </head>
 <body>
 
-<!-- ═══ LOGIN ═══ -->
+<!-- LOGIN -->
 <div id="loginScreen" style="display:none">
 <div class="login-page">
   <div class="login-card">
@@ -1064,8 +1060,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 </div>
 </div>
 
-
-<!-- PRINT HEADER (only visible when printing) -->
+<!-- PRINT HEADER -->
 <div class="print-header" id="printHeader" style="display:none">
   <div style="display:flex;align-items:flex-start;justify-content:space-between;
     border-bottom:2pt solid #1a2e5a;padding-bottom:8pt;margin-bottom:10pt">
@@ -1108,7 +1103,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   </div>
 </div>
 
-<!-- ═══ APP SHELL ═══ -->
+<!-- APP SHELL -->
 <div id="appShell">
   <header class="topbar">
     <div class="topbar-logo">
@@ -1122,7 +1117,6 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
       <button class="hamburger" onclick="toggleMobMenu()" id="hambBtn">☰</button>
     </div>
   </header>
-  <!-- MOBILE MENU -->
   <div class="mob-menu-overlay" id="mobOverlay" onclick="closeMobMenu()"></div>
   <div class="mob-menu" id="mobMenu"></div>
   <div class="app-body">
@@ -1137,8 +1131,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   </div>
 </div>
 
-<!-- ═══ MODALS ═══ -->
-<!-- Attendance bulk -->
+<!-- MODALS -->
 <div class="overlay" id="attBulkModal">
   <div class="modal">
     <div class="modal-title">📋 Importar lista — Asistencia</div>
@@ -1153,7 +1146,6 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   </div>
 </div>
 
-<!-- Grades bulk -->
 <div class="overlay" id="grdBulkModal">
   <div class="modal">
     <div class="modal-title">📋 Importar lista — Notas</div>
@@ -1172,7 +1164,6 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   </div>
 </div>
 
-<!-- Edit student -->
 <div class="overlay" id="editStuModal">
   <div class="modal">
     <div class="modal-title">✏ Editar estudiante</div>
@@ -1192,7 +1183,6 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   </div>
 </div>
 
-<!-- Special component -->
 <div class="overlay" id="specialModal">
   <div class="modal">
     <div class="modal-title">➕ Componente especial</div>
@@ -1205,7 +1195,6 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
       <input class="minput" type="number" id="spWeight" min="1" max="90"
         oninput="updateRedistInputs()">
     </div>
-
     <div id="redistPanel" style="display:none;margin-top:12px">
       <div style="font-size:.72rem;font-weight:600;color:var(--text2);margin-bottom:8px;
         letter-spacing:.3px;text-transform:uppercase">
@@ -1214,7 +1203,6 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
       <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px">
         Ajusta los nuevos pesos de los componentes base. Deben sumar exactamente 100%.
       </div>
-
       <div style="display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center">
         <label style="font-size:.8rem;color:var(--text2)">Actividades de clase</label>
         <div style="display:flex;align-items:center;gap:5px">
@@ -1222,40 +1210,34 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
             style="width:70px;text-align:center" oninput="checkRedistTotal()">
           <span style="font-size:.78rem;color:var(--muted)">%</span>
         </div>
-
         <label style="font-size:.8rem;color:var(--text2)">Autoevaluación</label>
         <div style="display:flex;align-items:center;gap:5px">
           <input class="minput" type="number" id="pAuto" min="0" max="20" step="1"
             style="width:70px;text-align:center;background:#f0faf6" disabled>
           <span style="font-size:.72rem;color:var(--ok)">% fijo</span>
         </div>
-
         <label style="font-size:.8rem;color:var(--text2)">Coevaluación</label>
         <div style="display:flex;align-items:center;gap:5px">
           <input class="minput" type="number" id="pCo" min="0" max="20" step="1"
             style="width:70px;text-align:center;background:#f0faf6" disabled>
           <span style="font-size:.72rem;color:var(--ok)">% fijo</span>
         </div>
-
         <label style="font-size:.8rem;color:var(--text2)">Evaluación final</label>
         <div style="display:flex;align-items:center;gap:5px">
           <input class="minput" type="number" id="pFinal" min="0" max="90" step="1"
             style="width:70px;text-align:center" oninput="checkRedistTotal()">
           <span style="font-size:.78rem;color:var(--muted)">%</span>
         </div>
-
         <label style="font-size:.8rem;color:var(--text2)">Especial (nuevo)</label>
         <div style="display:flex;align-items:center;gap:5px">
           <input class="minput" type="number" id="pEsp" style="width:70px;text-align:center;background:#fff8e1" readonly>
           <span style="font-size:.78rem;color:var(--gold)">%</span>
         </div>
       </div>
-
       <div id="redistTotal" style="margin-top:10px;padding:8px 12px;border-radius:8px;
         font-size:.8rem;font-family:monospace;text-align:center;font-weight:600">
       </div>
     </div>
-
     <div class="mbtns">
       <button class="btn btn-outline" onclick="closeModal('specialModal')">Cancelar</button>
       <button class="btn btn-gold" id="spSaveBtn" onclick="saveSpecial()" disabled>Agregar</button>
@@ -1263,7 +1245,6 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   </div>
 </div>
 
-<!-- New activity column -->
 <div class="overlay" id="actColModal">
   <div class="modal">
     <div class="modal-title">📝 Nueva actividad de clase</div>
@@ -1277,7 +1258,6 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   </div>
 </div>
 
-<!-- Export -->
 <div class="overlay" id="exportModal">
   <div class="modal modal-wide">
     <div class="modal-title" id="expModalTitle">⬇ Exportar</div>
@@ -1299,10 +1279,6 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
     </div>
   </div>
 </div>
-
-
-
-
 
 <!-- MODAL: SISTEMATIZADORA -->
 <div class="overlay" id="sistModal">
@@ -1413,16 +1389,13 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
         <span style="font-size:.78rem;color:var(--muted)">%</span>
       </div>
     </div>
-
     <div id="weightsEspPanel" style="margin-top:12px;display:none">
       <div style="font-size:.7rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
         color:var(--muted);margin-bottom:8px">Componentes especiales</div>
       <div id="weightsEspRows"></div>
     </div>
-
     <div id="weightsTotalBar" style="margin-top:12px;padding:8px 12px;border-radius:8px;
       font-size:.82rem;font-weight:600;text-align:center;font-family:monospace"></div>
-
     <div class="mbtns">
       <button class="btn btn-outline" onclick="closeModal('weightsModal')">Cancelar</button>
       <button class="btn btn-navy" id="weightsSaveBtn" onclick="saveWeights()" disabled>
@@ -1474,46 +1447,43 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 
 <script>
 /* ═══════════════════════════════════════════
-   CONFIG — URLs hardcodeadas
+   CONFIG
 ═══════════════════════════════════════════ */
-const URL_ATT = 'https://script.google.com/macros/s/AKfycbw8iw4JUDM8jdXQHjmktuTjVo0P5_rwilXTzDJSp_JoyOWSt-icuOPW2DyPZznLd3hP/exec';
-const URL_GRD = 'https://script.google.com/macros/s/AKfycbyMvkV4zJS3AjXuaVIBTa-gjtRpMDs2WyIGJ0XyJWBtv8MB7Ozsx-7dIR8CbGKTUa_x/exec';
+var URL_ATT = 'https://script.google.com/macros/s/AKfycbw8iw4JUDM8jdXQHjmktuTjVo0P5_rwilXTzDJSp_JoyOWSt-icuOPW2DyPZznLd3hP/exec';
+var URL_GRD = 'https://script.google.com/macros/s/AKfycbyMvkV4zJS3AjXuaVIBTa-gjtRpMDs2WyIGJ0XyJWBtv8MB7Ozsx-7dIR8CbGKTUa_x/exec';
 
-const COURSES = ['1004','1005','1006','1101','1102','1103','1104'];
-const COLORS  = {
+var COURSES = ['1004','1005','1006','1101','1102','1103','1104'];
+var COLORS  = {
   '1004':'#1a6b5a','1005':'#1a3d6b','1006':'#c8960c',
   '1101':'#7c3aed','1102':'#16a34a','1103':'#c2410c','1104':'#0369a1'
 };
-const PERIODS = [1,2,3];
-const BASE_LABELS = {actividades:'Actividades',autoeval:'Autoevaluación',coeval:'Coevaluación',final:'Ev. Final'};
-const BASE_KEYS   = ['actividades','autoeval','coeval','final'];
+var PERIODS = [1,2,3];
+var BASE_LABELS = {actividades:'Actividades',autoeval:'Autoevaluación',coeval:'Coevaluación',final:'Ev. Final'};
+var BASE_KEYS   = ['actividades','autoeval','coeval','final'];
 
 /* ═══ STATE ═══ */
-// SESSION: cleared on page reload (beforeunload sets a flag)
-// If reloaded, require password again
-let SESSION_PWD = '';
+var SESSION_PWD = '';
 (function(){
-  const wasReloaded = !sessionStorage.getItem('gqm_tab_active');
-  const stored = sessionStorage.getItem('gqm_pwd');
+  var wasReloaded = !sessionStorage.getItem('gqm_tab_active');
+  var stored = sessionStorage.getItem('gqm_pwd');
   if (stored && !wasReloaded) {
     SESSION_PWD = stored;
   } else {
     sessionStorage.removeItem('gqm_pwd');
   }
-  // Mark tab as active — cleared by beforeunload
   sessionStorage.setItem('gqm_tab_active', '1');
 })();
 
-window.addEventListener('beforeunload', () => {
-  // Remove tab_active so next load (reload/F5) asks for password
+window.addEventListener('beforeunload', function() {
   sessionStorage.removeItem('gqm_tab_active');
 });
-let activeModule = 'dash';
-let activeCourse = localStorage.getItem('gqm_course') || COURSES[0];
-let activePeriod = +localStorage.getItem('gqm_period') || 1;
-let attCache={}, grdCache={}, grdConfig={};
-let attHistOpen=true, grdActiveTab={};
-let pendingSaves={}, saveTimers={};
+
+var activeModule = 'dash';
+var activeCourse = localStorage.getItem('gqm_course') || COURSES[0];
+var activePeriod = +localStorage.getItem('gqm_period') || 1;
+var attCache={}, grdCache={}, grdConfig={};
+var attHistOpen=true, grdActiveTab={};
+var pendingSaves={}, saveTimers={};
 
 /* ═══ SCREENS ═══ */
 function showScreen(id) {
@@ -1531,14 +1501,14 @@ function init() {
 
 /* ═══ LOGIN ═══ */
 async function doLogin() {
-  const pwd = document.getElementById('pwdInput').value;
+  var pwd = document.getElementById('pwdInput').value;
   if (!pwd) return;
-  const btn = document.querySelector('.login-btn');
-  const errEl = document.getElementById('loginErr');
+  var btn = document.querySelector('.login-btn');
+  var errEl = document.getElementById('loginErr');
   btn.textContent = 'Verificando…'; btn.disabled = true;
   errEl.style.display = 'none';
   try {
-    const res = await apiGrd({ action:'getStudents', course:COURSES[0] }, pwd);
+    var res = await apiGrd({ action:'getStudents', course:COURSES[0] }, pwd);
     if (res.error === 'auth') {
       errEl.style.display = '';
       btn.textContent = 'Ingresar'; btn.disabled = false; return;
@@ -1578,31 +1548,26 @@ function showDash() {
   activeModule = 'dash';
   document.getElementById('sidebar').style.display = 'none';
   document.getElementById('topbarCenter').innerHTML = '';
-  const hr = new Date().getHours();
-  const gr = hr<12?'Buenos días':hr<18?'Buenas tardes':'Buenas noches';
-  const dt = new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
-  document.getElementById('mainArea').innerHTML = `
-    <div class="dashboard">
-      <div class="dash-inner">
-        <div class="dash-greeting">${gr}, <span>Harvey</span> ⚗️</div>
-        <div class="dash-school">Colegio Rufino José Cuervo IED · Química 10° y 11°</div>
-        <div class="dash-cards">
-          <div class="dash-card att" onclick="openModule('att')">
-            <div class="dash-card-icon">📋</div>
-            <div class="dash-card-title">Asistencia</div>
-            <div class="dash-card-desc">Llamado a lista, historial por curso y exportación</div>
-            <div class="dash-arrow">→</div>
-          </div>
-          <div class="dash-card grd" onclick="openModule('grd')">
-            <div class="dash-card-icon">📝</div>
-            <div class="dash-card-title">Notas</div>
-            <div class="dash-card-desc">Registro, promedios ponderados y backup automático</div>
-            <div class="dash-arrow">→</div>
-          </div>
-        </div>
-        <div class="dash-meta">${dt}</div>
-      </div>
-    </div>`;
+  var hr = new Date().getHours();
+  var gr = hr<12?'Buenos días':hr<18?'Buenas tardes':'Buenas noches';
+  var dt = new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('mainArea').innerHTML =
+    '<div class="dashboard"><div class="dash-inner">' +
+    '<div class="dash-greeting">' + gr + ', <span>Harvey</span> ⚗️</div>' +
+    '<div class="dash-school">Colegio Rufino José Cuervo IED · Química 10° y 11°</div>' +
+    '<div class="dash-cards">' +
+    '<div class="dash-card att" onclick="openModule(\'att\')">' +
+    '<div class="dash-card-icon">📋</div>' +
+    '<div class="dash-card-title">Asistencia</div>' +
+    '<div class="dash-card-desc">Llamado a lista, historial por curso y exportación</div>' +
+    '<div class="dash-arrow">→</div></div>' +
+    '<div class="dash-card grd" onclick="openModule(\'grd\')">' +
+    '<div class="dash-card-icon">📝</div>' +
+    '<div class="dash-card-title">Notas</div>' +
+    '<div class="dash-card-desc">Registro, promedios ponderados y backup automático</div>' +
+    '<div class="dash-arrow">→</div></div>' +
+    '</div><div class="dash-meta">' + dt + '</div>' +
+    '</div></div>';
 }
 
 function openModule(mod) {
@@ -1622,19 +1587,19 @@ function refreshModule() {
 function renderNav() {
   document.getElementById('sidebarHead').textContent =
     activeModule==='att' ? 'Asistencia' : 'Notas';
-  document.getElementById('courseNav').innerHTML = COURSES.map(c => {
-    const isActive = c === activeCourse;
-    const cls = isActive ? (activeModule==='att'?'active-att':'active-grd') : '';
-    const count = activeModule==='att'
-      ? (attCache[c]?.students?.length ?? '·')
-      : (grdCache[c]?.[activePeriod]?.students?.length ?? '·');
-    const ap = grdConfig[c]||1;
-    const badge = activeModule==='grd' ? `<span class="ap-badge">P${ap}</span>` : '';
-    return `<button class="cbtn ${cls}" onclick="selectCourse('${c}')">
-      <span class="cdot" style="background:${COLORS[c]}"></span>
-      <span>${c}</span>${badge}
-      <span class="cct">${count}</span>
-    </button>`;
+  document.getElementById('courseNav').innerHTML = COURSES.map(function(c) {
+    var isActive = c === activeCourse;
+    var cls = isActive ? (activeModule==='att'?'active-att':'active-grd') : '';
+    var count = activeModule==='att'
+      ? (attCache[c]&&attCache[c].students ? attCache[c].students.length : '·')
+      : (grdCache[c]&&grdCache[c][activePeriod]&&grdCache[c][activePeriod].students ? grdCache[c][activePeriod].students.length : '·');
+    var ap = grdConfig[c]||1;
+    var badge = activeModule==='grd' ? '<span class="ap-badge">P' + ap + '</span>' : '';
+    return '<button class="cbtn ' + cls + '" onclick="selectCourse(\'' + c + '\')">' +
+      '<span class="cdot" style="background:' + COLORS[c] + '"></span>' +
+      '<span>' + c + '</span>' + badge +
+      '<span class="cct">' + count + '</span>' +
+      '</button>';
   }).join('');
 }
 
@@ -1646,67 +1611,84 @@ function selectCourse(c) {
 
 /* ═══ API ═══ */
 async function apiAtt(params) {
-  const r = await fetch(URL_ATT+'?'+new URLSearchParams({...params,pwd:SESSION_PWD}),{method:'GET',redirect:'follow'});
+  var r = await fetch(URL_ATT+'?'+new URLSearchParams(Object.assign({},params,{pwd:SESSION_PWD})),{method:'GET',redirect:'follow'});
   return r.json();
 }
 async function apiAttPost(body) {
-  const r = await fetch(URL_ATT,{method:'POST',body:JSON.stringify({...body,pwd:SESSION_PWD}),redirect:'follow'});
+  var r = await fetch(URL_ATT,{method:'POST',body:JSON.stringify(Object.assign({},body,{pwd:SESSION_PWD})),redirect:'follow'});
   return r.json();
 }
 async function apiGrd(params,pwd) {
-  const r = await fetch(URL_GRD+'?'+new URLSearchParams({...params,pwd:pwd||SESSION_PWD}),{method:'GET',redirect:'follow'});
+  var r = await fetch(URL_GRD+'?'+new URLSearchParams(Object.assign({},params,{pwd:pwd||SESSION_PWD})),{method:'GET',redirect:'follow'});
   return r.json();
 }
 async function apiGrdPost(body) {
-  const r = await fetch(URL_GRD,{method:'POST',body:JSON.stringify({...body,pwd:SESSION_PWD}),redirect:'follow'});
+  var r = await fetch(URL_GRD,{method:'POST',body:JSON.stringify(Object.assign({},body,{pwd:SESSION_PWD})),redirect:'follow'});
   return r.json();
+}
+
+/* ═══════════════════════════════════════════
+   NORMALIZAR FECHA — función utilitaria
+   Acepta: ISO string, "dd/mm/yyyy", Date object
+   Devuelve: "yyyy-mm-dd" o null si inválida
+═══════════════════════════════════════════ */
+function normAttDate(raw) {
+  var clean = raw.toString().trim();
+  // ISO con hora: "2026-04-14T05:00:00.000Z"
+  if (clean.indexOf('T') !== -1) clean = clean.split('T')[0];
+  // Formato colombiano dd/mm/yyyy
+  if (clean.indexOf('/') !== -1) {
+    var p = clean.split('/').map(function(x){ return x.trim(); });
+    if (p.length === 3) {
+      var d = p[0].padStart(2,'0');
+      var m = p[1].padStart(2,'0');
+      var y = p[2].length === 2 ? '20' + p[2] : p[2];
+      clean = y + '-' + m + '-' + d;
+    }
+  }
+  clean = clean.trim().substring(0,10);
+  // Validar formato yyyy-mm-dd
+  if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
+  return null;
 }
 
 /* ═══════════════════════════════════════════
    ATTENDANCE MODULE
 ═══════════════════════════════════════════ */
-
-
 function syncMobDate(date) {
-  const main = document.getElementById('dateInput');
+  var main = document.getElementById('dateInput');
   if (main) main.value = date;
-  const mob = document.getElementById('dateInputMob');
+  var mob = document.getElementById('dateInputMob');
   if (mob) mob.value = date;
   renderAttMain();
-  // Also sync mob date when main changes
 }
 
-// Sync mob date input when renderAttMain is called
-const _origRenderAtt = renderAttMain;
 function loadHistDate(date) {
-  const cleanDate = date.toString().split('T')[0].substring(0,10);
-  const inp = document.getElementById('dateInput');
-  const mob = document.getElementById('dateInputMob');
+  var cleanDate = date.toString().split('T')[0].substring(0,10);
+  var inp = document.getElementById('dateInput');
+  var mob = document.getElementById('dateInputMob');
   if (inp) inp.value = cleanDate;
   if (mob) mob.value = cleanDate;
   renderAttMain();
-  // Scroll to top of main area
-  const main = document.getElementById('mainArea');
+  var main = document.getElementById('mainArea');
   if (main) main.scrollTo({top:0, behavior:'smooth'});
   toast('Editando sesión del ' + cleanDate);
 }
 
 function today() { return new Date().toISOString().split('T')[0]; }
-function getDate() { return document.getElementById('dateInput')?.value||today(); }
-function attKey(c,d){ return `${c}_${d}`; }
-function getAtt(c,d){ return attCache[c]?.attendance?.[attKey(c,d)]||{}; }
-
+function getDate() { return document.getElementById('dateInput') ? document.getElementById('dateInput').value : today(); }
+function attKey(c,d){ return c + '_' + d; }
+function getAtt(c,d){ return (attCache[c]&&attCache[c].attendance&&attCache[c].attendance[attKey(c,d)]) ? attCache[c].attendance[attKey(c,d)] : {}; }
 
 /* ═══ CONSOLIDADO ASISTENCIA ═══ */
 function openConsolidado() {
-  const sel = document.getElementById('consCourse');
-  sel.innerHTML = COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  var sel = document.getElementById('consCourse');
+  sel.innerHTML = COURSES.map(function(c){ return '<option value="' + c + '">' + c + '</option>'; }).join('');
   sel.value = activeCourse;
-  // Default: last 90 days
-  const today = new Date();
-  const from  = new Date(today); from.setDate(from.getDate()-90);
+  var todayDate = new Date();
+  var from = new Date(todayDate); from.setDate(from.getDate()-90);
   document.getElementById('consFrom').value = from.toISOString().split('T')[0];
-  document.getElementById('consTo').value   = today.toISOString().split('T')[0];
+  document.getElementById('consTo').value   = todayDate.toISOString().split('T')[0];
   document.getElementById('consResult').innerHTML = '';
   document.getElementById('consBtns').style.display = 'none';
   document.getElementById('consBtnsInit').style.display = '';
@@ -1714,47 +1696,41 @@ function openConsolidado() {
 }
 
 async function generarConsolidado() {
-  const course = document.getElementById('consCourse').value;
-  const from   = document.getElementById('consFrom').value;
-  const to     = document.getElementById('consTo').value;
+  var course = document.getElementById('consCourse').value;
+  var from   = document.getElementById('consFrom').value;
+  var to     = document.getElementById('consTo').value;
   if (!from || !to) { toast('Selecciona el rango de fechas'); return; }
   if (from > to)    { toast('La fecha inicio debe ser anterior al fin'); return; }
 
-  // Always reload from server for consolidado to get fresh data
   document.getElementById('consResult').innerHTML =
     '<div class="spin-wrap"><div class="spin"></div>Cargando datos frescos…</div>';
-  document.getElementById('sistResult') && (document.getElementById('sistResult').style.display='none');
-  const [stuFresh, attFresh] = await Promise.all([
-    apiAtt({action:'getStudents', course}),
-    apiAtt({action:'getAllAttendance', course})
+
+  var results = await Promise.all([
+    apiAtt({action:'getStudents', course:course}),
+    apiAtt({action:'getAllAttendance', course:course})
   ]);
-  attCache[course] = {students:stuFresh, attendance:{}};
-  Object.keys(attFresh).forEach(rawDate => {
-    // Normalize: handle Date objects, ISO strings, Colombian format dd/mm/yyyy
-    let clean = rawDate.toString();
-    if (clean.includes('T')) clean = clean.split('T')[0];
-    if (clean.includes('/')) {
-      // dd/mm/yyyy → yyyy-mm-dd
-      const p = clean.split('/');
-      if (p.length === 3) clean = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+  var stuFresh = results[0];
+  var attFresh = results[1];
+
+  // ── FIX: normalización robusta de fechas ──────────────────────────
+  attCache[course] = {students: stuFresh, attendance: {}};
+  Object.keys(attFresh).forEach(function(rawDate) {
+    var clean = normAttDate(rawDate);
+    if (clean) {
+      attCache[course].attendance[course + '_' + clean] = attFresh[rawDate];
     }
-    clean = clean.substring(0, 10);
-    attCache[course].attendance[`${course}_${clean}`] = attFresh[rawDate];
   });
+  // ─────────────────────────────────────────────────────────────────
 
-  const data     = attCache[course];
-  const students = [...data.students].sort((a,b)=>a.name.localeCompare(b.name,'es'));
-  const prefix   = `${course}_`;
+  var data     = attCache[course];
+  var students = data.students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
+  var prefix   = course + '_';
 
-  // Filter dates in range
-  const dates = Object.keys(data.attendance)
-    .filter(k => k.startsWith(prefix))
-    .map(k => k.replace(prefix,''))
-    .filter(d => {
-      // Extra normalization just in case
-      const dn = d.substring(0,10);
-      return dn >= from && dn <= to;
-    })
+  // Filtrar fechas en rango
+  var dates = Object.keys(data.attendance)
+    .filter(function(k){ return k.indexOf(prefix) === 0; })
+    .map(function(k){ return k.replace(prefix,''); })
+    .filter(function(d){ return d >= from && d <= to; })
     .sort();
 
   if (!dates.length) {
@@ -1763,11 +1739,12 @@ async function generarConsolidado() {
     return;
   }
 
-  // Calculate per student
-  const rows = students.map((s,i) => {
-    let P=0, A=0, T=0, J=0, E=0, sin=0;
-    dates.forEach(d => {
-      const st = (data.attendance[`${course}_${d}`]||{})[s.id];
+  // Calcular por estudiante
+  var rows = students.map(function(s, i) {
+    var P=0, A=0, T=0, J=0, E=0, sin=0;
+    dates.forEach(function(d) {
+      var dayAtt = data.attendance[course + '_' + d] || {};
+      var st = dayAtt[s.id];
       if      (st==='P') P++;
       else if (st==='A') A++;
       else if (st==='T') T++;
@@ -1775,127 +1752,115 @@ async function generarConsolidado() {
       else if (st==='E') E++;
       else               sin++;
     });
-    const total  = dates.length;
-    const pct    = total > 0 ? Math.round((P+T)/total*100) : 0;
-    const fallas = A;
-    return { i:i+1, name:s.name, total, P, A, T, J, E, sin, pct, fallas };
+    var total = dates.length;
+    var pct   = total > 0 ? Math.round((P+T)/total*100) : 0;
+    return { i:i+1, name:s.name, total:total, P:P, A:A, T:T, J:J, E:E, sin:sin, pct:pct, fallas:A };
   });
 
-  // Build table
-  const tbody = rows.map(r => {
-    const riskCls = r.fallas >= 5 ? 'style="background:#fef2f2"' : '';
-    return `<tr ${riskCls}>
-      <td style="text-align:center;font-size:.72rem;color:var(--muted)">${r.i}</td>
-      <td style="text-align:left;font-size:.82rem">${r.name}</td>
-      <td style="text-align:center;font-weight:600">${r.total}</td>
-      <td style="text-align:center;color:var(--ok);font-weight:600">${r.P}</td>
-      <td style="text-align:center;color:var(--fail);font-weight:700">${r.A}</td>
-      <td style="text-align:center;color:var(--T);font-weight:600">${r.T}</td>
-      <td style="text-align:center;color:var(--J);font-weight:600">${r.J}</td>
-      <td style="text-align:center;color:var(--E);font-weight:600">${r.E}</td>
-      <td style="text-align:center;color:var(--muted);font-size:.78rem">${r.sin}</td>
-      <td style="text-align:center;font-family:'DM Mono',monospace;font-weight:700;
-        color:${r.pct>=80?'var(--ok)':r.pct>=60?'var(--warn)':'var(--fail)'}">${r.pct}%</td>
-    </tr>`;
+  // Construir tabla
+  var tbody = rows.map(function(r) {
+    var riskCls = r.fallas >= 5 ? 'style="background:#fef2f2"' : '';
+    return '<tr ' + riskCls + '>' +
+      '<td style="text-align:center;font-size:.72rem;color:var(--muted)">' + r.i + '</td>' +
+      '<td style="text-align:left;font-size:.82rem">' + r.name + '</td>' +
+      '<td style="text-align:center;font-weight:600">' + r.total + '</td>' +
+      '<td style="text-align:center;color:var(--ok);font-weight:600">' + r.P + '</td>' +
+      '<td style="text-align:center;color:var(--fail);font-weight:700">' + r.A + '</td>' +
+      '<td style="text-align:center;color:var(--T);font-weight:600">' + r.T + '</td>' +
+      '<td style="text-align:center;color:var(--J);font-weight:600">' + r.J + '</td>' +
+      '<td style="text-align:center;color:var(--E);font-weight:600">' + r.E + '</td>' +
+      '<td style="text-align:center;color:var(--muted);font-size:.78rem">' + r.sin + '</td>' +
+      '<td style="text-align:center;font-family:\'DM Mono\',monospace;font-weight:700;' +
+        'color:' + (r.pct>=80?'var(--ok)':r.pct>=60?'var(--warn)':'var(--fail)') + '">' + r.pct + '%</td>' +
+      '</tr>';
   }).join('');
 
-  const totalClases = dates.length;
-  const resumen = `
-    <div style="font-size:.76rem;color:var(--muted);margin-bottom:10px">
-      Curso <strong>${course}</strong> · ${totalClases} clase${totalClases!==1?'s':''} entre
-      <strong>${from}</strong> y <strong>${to}</strong>
-    </div>
-    <div style="overflow-x:auto;border:1.5px solid var(--bord);border-radius:var(--r)">
-      <table style="width:100%;border-collapse:collapse;font-size:.8rem;background:white">
-        <thead>
-          <tr style="background:var(--navy);color:white">
-            <th style="padding:8px 6px;text-align:center;font-size:.65rem">#</th>
-            <th style="padding:8px 10px;text-align:left;min-width:160px">Estudiante</th>
-            <th style="padding:8px 6px;text-align:center" title="Total clases">Total</th>
-            <th style="padding:8px 6px;text-align:center;color:#4ade80">P</th>
-            <th style="padding:8px 6px;text-align:center;color:#f87171">A</th>
-            <th style="padding:8px 6px;text-align:center;color:#fbbf24">T</th>
-            <th style="padding:8px 6px;text-align:center;color:#a78bfa">J</th>
-            <th style="padding:8px 6px;text-align:center;color:#67e8f9">E</th>
-            <th style="padding:8px 6px;text-align:center;font-size:.62rem;color:rgba(255,255,255,.6)">S/M</th>
-            <th style="padding:8px 6px;text-align:center">% Asist.</th>
-          </tr>
-        </thead>
-        <tbody>${tbody}</tbody>
-      </table>
-    </div>
-    <div style="font-size:.68rem;color:var(--muted);margin-top:6px">
-      P=Presente · A=Ausente · T=Tardanza · J=Justificado · E=Evasión · S/M=Sin marcar · Rojo=5+ ausencias
-    </div>`;
+  var totalClases = dates.length;
+  var resumen =
+    '<div style="font-size:.76rem;color:var(--muted);margin-bottom:10px">' +
+    'Curso <strong>' + course + '</strong> · ' + totalClases + ' clase' + (totalClases!==1?'s':'') + ' entre ' +
+    '<strong>' + from + '</strong> y <strong>' + to + '</strong></div>' +
+    '<div style="overflow-x:auto;border:1.5px solid var(--bord);border-radius:var(--r)">' +
+    '<table style="width:100%;border-collapse:collapse;font-size:.8rem;background:white">' +
+    '<thead><tr style="background:var(--navy);color:white">' +
+    '<th style="padding:8px 6px;text-align:center;font-size:.65rem">#</th>' +
+    '<th style="padding:8px 10px;text-align:left;min-width:160px">Estudiante</th>' +
+    '<th style="padding:8px 6px;text-align:center" title="Total clases">Total</th>' +
+    '<th style="padding:8px 6px;text-align:center;color:#4ade80">P</th>' +
+    '<th style="padding:8px 6px;text-align:center;color:#f87171">A</th>' +
+    '<th style="padding:8px 6px;text-align:center;color:#fbbf24">T</th>' +
+    '<th style="padding:8px 6px;text-align:center;color:#a78bfa">J</th>' +
+    '<th style="padding:8px 6px;text-align:center;color:#67e8f9">E</th>' +
+    '<th style="padding:8px 6px;text-align:center;font-size:.62rem;color:rgba(255,255,255,.6)">S/M</th>' +
+    '<th style="padding:8px 6px;text-align:center">% Asist.</th>' +
+    '</tr></thead>' +
+    '<tbody>' + tbody + '</tbody>' +
+    '</table></div>' +
+    '<div style="font-size:.68rem;color:var(--muted);margin-top:6px">' +
+    'P=Presente · A=Ausente · T=Tardanza · J=Justificado · E=Evasión · S/M=Sin marcar · Rojo=5+ ausencias</div>';
 
   document.getElementById('consResult').innerHTML = resumen;
   document.getElementById('consBtns').style.display = '';
   document.getElementById('consBtnsInit').style.display = 'none';
 
-  // Store for export
-  window._consData = { course, from, to, dates, rows };
+  window._consData = { course:course, from:from, to:to, dates:dates, rows:rows };
 }
 
 function copiarConsolidado() {
   if (!window._consData) return;
-  const { course, from, to, rows, dates } = window._consData;
-  let txt = `CONSOLIDADO ASISTENCIA\nCurso ${course} · ${dates.length} clases · ${from} a ${to}\n\n`;
-  txt += `#\tEstudiante\tTotal\tPresente\tAusente\tTardanza\tJustificado\tSin marcar\t% Asistencia\n`;
-  rows.forEach(r => {
-    txt += `${r.i}\t${r.name}\t${r.total}\t${r.P}\t${r.A}\t${r.T}\t${r.J}\t${r.sin}\t${r.pct}%\n`;
+  var d = window._consData;
+  var txt = 'CONSOLIDADO ASISTENCIA\nCurso ' + d.course + ' · ' + d.dates.length + ' clases · ' + d.from + ' a ' + d.to + '\n\n';
+  txt += '#\tEstudiante\tTotal\tPresente\tAusente\tTardanza\tJustificado\tSin marcar\t% Asistencia\n';
+  d.rows.forEach(function(r) {
+    txt += r.i + '\t' + r.name + '\t' + r.total + '\t' + r.P + '\t' + r.A + '\t' + r.T + '\t' + r.J + '\t' + r.sin + '\t' + r.pct + '%\n';
   });
-  navigator.clipboard.writeText(txt).then(() => toast('¡Copiado!'));
+  navigator.clipboard.writeText(txt).then(function(){ toast('¡Copiado!'); });
 }
 
 function exportarConsolidado() {
   if (!window._consData) return;
-  const { course, from, to, rows, dates } = window._consData;
-  let csv = `\uFEFF#,Estudiante,Total clases,Presente,Ausente,Tardanza,Justificado,Sin marcar,% Asistencia\n`;
-  rows.forEach(r => {
-    csv += `${r.i},"${r.name}",${r.total},${r.P},${r.A},${r.T},${r.J},${r.sin},${r.pct}%\n`;
+  var d = window._consData;
+  var csv = '\uFEFF#,Estudiante,Total clases,Presente,Ausente,Tardanza,Justificado,Sin marcar,% Asistencia\n';
+  d.rows.forEach(function(r) {
+    csv += r.i + ',"' + r.name + '",' + r.total + ',' + r.P + ',' + r.A + ',' + r.T + ',' + r.J + ',' + r.sin + ',' + r.pct + '%\n';
   });
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-  const a = document.createElement('a');
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `consolidado_${course}_${from}_${to}.csv`;
+  a.download = 'consolidado_' + d.course + '_' + d.from + '_' + d.to + '.csv';
   a.click();
   toast('CSV descargado');
 }
 
 function imprimirConsolidado() {
-  const content = document.getElementById('consResult').innerHTML;
-  const win = window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html><head>
-    <meta charset="UTF-8">
-    <title>Consolidado Asistencia</title>
-    <style>
-      body{font-family:Arial,sans-serif;padding:20px;font-size:11pt}
-      h2{color:#1a2e5a;margin-bottom:4px}
-      table{width:100%;border-collapse:collapse;margin-top:10px}
-      th{background:#1a2e5a;color:white;padding:6px 8px;text-align:center;font-size:9pt}
-      th:nth-child(2){text-align:left}
-      td{padding:5px 8px;border:1px solid #ccc;text-align:center;font-size:10pt}
-      td:nth-child(2){text-align:left}
-      tr:nth-child(even) td{background:#f8f8f8}
-      .legend{font-size:8pt;color:#666;margin-top:8px}
-      @media print{@page{margin:1.5cm;size:A4 landscape}}
-    </style>
-  </head><body>
-    <h2>Consolidado de Asistencia — Colegio Rufino José Cuervo IED</h2>
-    <p style="font-size:9pt;color:#666">Química · Generado: ${new Date().toLocaleString('es-CO')}</p>
-    ${content}
-    <div class="legend">P=Presente · A=Ausente · T=Tardanza · J=Justificado · E=Evasión · S/M=Sin marcar</div>
-  
-</body></html>`);
+  var content = document.getElementById('consResult').innerHTML;
+  var win = window.open('','_blank');
+  win.document.write('<!DOCTYPE html><html><head>' +
+    '<meta charset="UTF-8"><title>Consolidado Asistencia</title>' +
+    '<style>body{font-family:Arial,sans-serif;padding:20px;font-size:11pt}' +
+    'h2{color:#1a2e5a;margin-bottom:4px}' +
+    'table{width:100%;border-collapse:collapse;margin-top:10px}' +
+    'th{background:#1a2e5a;color:white;padding:6px 8px;text-align:center;font-size:9pt}' +
+    'th:nth-child(2){text-align:left}' +
+    'td{padding:5px 8px;border:1px solid #ccc;text-align:center;font-size:10pt}' +
+    'td:nth-child(2){text-align:left}' +
+    'tr:nth-child(even) td{background:#f8f8f8}' +
+    '.legend{font-size:8pt;color:#666;margin-top:8px}' +
+    '@media print{@page{margin:1.5cm;size:A4 landscape}}</style>' +
+    '</head><body>' +
+    '<h2>Consolidado de Asistencia — Colegio Rufino José Cuervo IED</h2>' +
+    '<p style="font-size:9pt;color:#666">Química · Generado: ' + new Date().toLocaleString('es-CO') + '</p>' +
+    content +
+    '<div class="legend">P=Presente · A=Ausente · T=Tardanza · J=Justificado · E=Evasión · S/M=Sin marcar</div>' +
+    '</body></html>');
   win.document.close();
   win.print();
 }
 
-
 /* ═══ SISTEMATIZADORA ═══ */
 function exportSistematizadora() {
-  const sel = document.getElementById('sistCourse');
-  sel.innerHTML = COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  var sel = document.getElementById('sistCourse');
+  sel.innerHTML = COURSES.map(function(c){ return '<option value="' + c + '">' + c + '</option>'; }).join('');
   sel.value = activeCourse;
   document.getElementById('sistPeriod').value = activePeriod;
   document.getElementById('sistResult').style.display = 'none';
@@ -1904,66 +1869,60 @@ function exportSistematizadora() {
 }
 
 async function generarSistematizadora() {
-  const course  = document.getElementById('sistCourse').value;
-  const period  = +document.getElementById('sistPeriod').value;
-  const dec     = +document.querySelector('input[name="sistDec"]:checked').value;
-
-  // Load if not cached
-  if (!grdCache[course]?.[period]) {
+  var course  = document.getElementById('sistCourse').value;
+  var period  = +document.getElementById('sistPeriod').value;
+  var dec     = +document.querySelector('input[name="sistDec"]:checked').value;
+  if (!grdCache[course] || !grdCache[course][period]) {
     document.getElementById('sistBox').textContent = 'Cargando…';
     document.getElementById('sistResult').style.display = '';
-    const data = await apiGrd({action:'getAll', course, period});
+    var data = await apiGrd({action:'getAll', course:course, period:period});
     if (!grdCache[course]) grdCache[course] = {};
     grdCache[course][period] = data;
-    if (data.weights?.base) grdCache[course][period].weights.base = data.weights.base;
-    else if (data.weights?.actividades != null) {
+    if (data.weights&&data.weights.base) grdCache[course][period].weights.base = data.weights.base;
+    else if (data.weights&&data.weights.actividades != null) {
       grdCache[course][period].weights.base = {
         actividades:data.weights.actividades, autoeval:data.weights.autoeval||5,
         coeval:data.weights.coeval||5, final:data.weights.final
       };
     }
   }
-
-  const {students, weights, actNames, grades} = grdCache[course][period];
-  const specials = weights?.especiales || [];
-  const baseW    = computeWeights(specials);
-  const sorted   = [...students].sort((a,b) => a.name.localeCompare(b.name,'es'));
-
-  let txt = '';
-  sorted.forEach(s => {
-    const def = grdCalcFinal(s, actNames, grades, baseW, specials);
-    const nota = def !== null ? def.toFixed(dec) : '0.' + '0'.repeat(dec);
-    txt += `${s.name}\t${nota}\n`;
+  var ref = grdCache[course][period];
+  var students = ref.students, weights = ref.weights, actNames = ref.actNames, grades = ref.grades;
+  var specials = weights.especiales || [];
+  var baseW    = computeWeights(specials);
+  var sorted   = students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
+  var txt = '';
+  sorted.forEach(function(s) {
+    var def = grdCalcFinal(s, actNames, grades, baseW, specials);
+    var nota = def !== null ? def.toFixed(dec) : '0.' + new Array(dec+1).join('0');
+    txt += s.name + '\t' + nota + '\n';
   });
-
   document.getElementById('sistBox').textContent = txt;
   document.getElementById('sistStats').textContent =
-    `Curso ${course} · Periodo ${period} · ${sorted.length} estudiantes · ${dec} decimal${dec>1?'es':''}`;
+    'Curso ' + course + ' · Periodo ' + period + ' · ' + sorted.length + ' estudiantes · ' + dec + ' decimal' + (dec>1?'es':'');
   document.getElementById('sistResult').style.display = '';
   document.getElementById('sistInitBtns').style.display = 'none';
-
-  // Store for export
-  window._sistData = { course, period, dec, sorted, actNames, grades, baseW, specials };
+  window._sistData = { course:course, period:period, dec:dec, sorted:sorted, actNames:actNames, grades:grades, baseW:baseW, specials:specials };
 }
 
 function copiarSist() {
   navigator.clipboard.writeText(document.getElementById('sistBox').textContent)
-    .then(() => toast('¡Copiado! Pega directo en la sistematizadora'));
+    .then(function(){ toast('¡Copiado! Pega directo en la sistematizadora'); });
 }
 
 function descargarSist() {
   if (!window._sistData) return;
-  const {course, period, dec, sorted, actNames, grades, baseW, specials} = window._sistData;
-  let csv = '\uFEFFNombre,Definitiva\n';
-  sorted.forEach(s => {
-    const def = grdCalcFinal(s, actNames, grades, baseW, specials);
-    const nota = def !== null ? def.toFixed(dec) : '0.' + '0'.repeat(dec);
-    csv += `"${s.name}",${nota}\n`;
+  var d = window._sistData;
+  var csv = '\uFEFFNombre,Definitiva\n';
+  d.sorted.forEach(function(s) {
+    var def = grdCalcFinal(s, d.actNames, d.grades, d.baseW, d.specials);
+    var nota = def !== null ? def.toFixed(d.dec) : '0.' + new Array(d.dec+1).join('0');
+    csv += '"' + s.name + '",' + nota + '\n';
   });
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-  const a = document.createElement('a');
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `sistematizadora_${course}_P${period}.csv`;
+  a.download = 'sistematizadora_' + d.course + '_P' + d.period + '.csv';
   a.click();
   toast('CSV descargado');
 }
@@ -1971,225 +1930,228 @@ function descargarSist() {
 async function loadAttCourse(course) {
   activeCourse=course; localStorage.setItem('gqm_course',course);
   renderNav();
-  document.getElementById('topbarCenter').innerHTML=`
-    <button class="mod-tab att active" onclick="openModule('att')">📋 <span>Asistencia</span></button>
-    <button class="mod-tab grd" onclick="openModule('grd')">📝 <span>Notas</span></button>
-    <div class="date-pill">📅<input type="date" id="dateInput" onchange="renderAttMain()"></div>
-    <button class="icon-btn" onclick="openConsolidado()" title="Consolidado">📊</button>
-    <button class="icon-btn" onclick="openAttExport()">⬇</button>
-    <button class="icon-btn" onclick="openAttBulk()">📋</button>`;
-  // Preserve current date if already set, otherwise use today
-  const existingDate = document.getElementById('dateInput')?.value;
-  if (!existingDate) document.getElementById('dateInput').value=today();
-  else document.getElementById('dateInput').value=existingDate;
+  document.getElementById('topbarCenter').innerHTML=
+    '<button class="mod-tab att active" onclick="openModule(\'att\')">📋 <span>Asistencia</span></button>' +
+    '<button class="mod-tab grd" onclick="openModule(\'grd\')">📝 <span>Notas</span></button>' +
+    '<div class="date-pill">📅<input type="date" id="dateInput" onchange="renderAttMain()"></div>' +
+    '<button class="icon-btn" onclick="openConsolidado()" title="Consolidado">📊</button>' +
+    '<button class="icon-btn" onclick="openAttExport()">⬇</button>' +
+    '<button class="icon-btn" onclick="openAttBulk()">📋</button>';
+
+  var existingDate = document.getElementById('dateInput') ? document.getElementById('dateInput').value : '';
+  if (!existingDate) document.getElementById('dateInput').value = today();
+  else document.getElementById('dateInput').value = existingDate;
+
   if (!attCache[course]) {
-    document.getElementById('mainArea').innerHTML=
-      `<div class="spin-wrap"><div class="spin"></div>Cargando asistencia ${course}…</div>`;
-    const [students,attendance]=await Promise.all([
-      apiAtt({action:'getStudents',course}),
-      apiAtt({action:'getAllAttendance',course})
+    document.getElementById('mainArea').innerHTML =
+      '<div class="spin-wrap"><div class="spin"></div>Cargando asistencia ' + course + '…</div>';
+    var attResults = await Promise.all([
+      apiAtt({action:'getStudents', course:course}),
+      apiAtt({action:'getAllAttendance', course:course})
     ]);
-    attCache[course]={students,attendance:{}};
-    Object.keys(attendance).forEach(date=>{
-      // Normalize date — strip time component if present (e.g. "2025-04-12T05:00:00.000Z")
-      const cleanDate = date.toString().split('T')[0].substring(0,10);
-      attCache[course].attendance[`${course}_${cleanDate}`]=attendance[date];
+    var students = attResults[0];
+    var attendance = attResults[1];
+
+    // ── FIX: normalización robusta de fechas ──────────────────────────
+    attCache[course] = {students: students, attendance: {}};
+    Object.keys(attendance).forEach(function(rawDate) {
+      var clean = normAttDate(rawDate);
+      if (clean) {
+        attCache[course].attendance[course + '_' + clean] = attendance[rawDate];
+      }
     });
+    // ─────────────────────────────────────────────────────────────────
   }
   renderAttMain();
 }
 
 function renderAttMain() {
-  const c=activeCourse, date=getDate();
-  // Sync mobile date input
-  setTimeout(()=>{
-    const mob=document.getElementById('dateInputMob');
+  var c=activeCourse, date=getDate();
+  setTimeout(function(){
+    var mob=document.getElementById('dateInputMob');
     if(mob) mob.value=date;
   },0);
-  const data=attCache[c]||{students:[],attendance:{}};
-  const att=getAtt(c,date), sts=data.students;
-  sts.sort((a,b)=>a.name.localeCompare(b.name,'es'));
-  const cnt=s=>sts.filter(x=>att[x.id]===s).length;
-  const P=cnt('P'),A=cnt('A'),T=cnt('T'),J=cnt('J'),E=cnt('E'),U=sts.length-P-A-T-J-E;
+  var data=attCache[c]||{students:[],attendance:{}};
+  var att=getAtt(c,date), sts=data.students;
+  sts.sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
+  function cnt(s){ return sts.filter(function(x){ return att[x.id]===s; }).length; }
+  var P=cnt('P'),A=cnt('A'),T=cnt('T'),J=cnt('J'),E=cnt('E'),U=sts.length-P-A-T-J-E;
 
-  const rows=sts.length===0
-    ?`<div class="empty"><div class="empty-ico">👤</div>Sin estudiantes. Usa 📋 para importar la lista.</div>`
-    :sts.map((s,i)=>{
-      const st=att[s.id]||'';
-      return `<tr>
-        <td><span style="font-size:.65rem;color:var(--muted);margin-right:4px;font-family:'DM Mono',monospace">${i+1}</span>${s.name}</td>
-        <td><div class="sbts">
-          <button class="sbt ${st==='P'?'on-P':''}" onclick="attMark('${s.id}','P')" title="Presente">P</button>
-          <button class="sbt ${st==='A'?'on-A':''}" onclick="attMark('${s.id}','A')" title="Ausente">A</button>
-          <button class="sbt ${st==='T'?'on-T':''}" onclick="attMark('${s.id}','T')" title="Tardanza">T</button>
-          <button class="sbt ${st==='J'?'on-J':''}" onclick="attMark('${s.id}','J')" title="Justificado">J</button>
-          <button class="sbt ${st==='E'?'on-E':''}" onclick="attMark('${s.id}','E')" title="Evasión">E</button>
-        </div></td>
-        <td><button onclick="attRemoveStu('${s.id}')"
-          style="background:none;border:none;color:var(--bord2);cursor:pointer;font-size:.95rem;padding:0 3px;transition:color .12s"
-          onmouseover="this.style.color='var(--fail)'" onmouseout="this.style.color='var(--bord2)'">×</button></td>
-      </tr>`;
-    }).join('');
+  var rows = sts.length===0
+    ? '<div class="empty"><div class="empty-ico">👤</div>Sin estudiantes. Usa 📋 para importar la lista.</div>'
+    : sts.map(function(s,i){
+        var st=att[s.id]||'';
+        return '<tr>' +
+          '<td><span style="font-size:.65rem;color:var(--muted);margin-right:4px;font-family:\'DM Mono\',monospace">' + (i+1) + '</span>' + s.name + '</td>' +
+          '<td><div class="sbts">' +
+          '<button class="sbt ' + (st==='P'?'on-P':'') + '" onclick="attMark(\'' + s.id + '\',\'P\')" title="Presente">P</button>' +
+          '<button class="sbt ' + (st==='A'?'on-A':'') + '" onclick="attMark(\'' + s.id + '\',\'A\')" title="Ausente">A</button>' +
+          '<button class="sbt ' + (st==='T'?'on-T':'') + '" onclick="attMark(\'' + s.id + '\',\'T\')" title="Tardanza">T</button>' +
+          '<button class="sbt ' + (st==='J'?'on-J':'') + '" onclick="attMark(\'' + s.id + '\',\'J\')" title="Justificado">J</button>' +
+          '<button class="sbt ' + (st==='E'?'on-E':'') + '" onclick="attMark(\'' + s.id + '\',\'E\')" title="Evasión">E</button>' +
+          '</div></td>' +
+          '<td><button onclick="attRemoveStu(\'' + s.id + '\')" ' +
+          'style="background:none;border:none;color:var(--bord2);cursor:pointer;font-size:.95rem;padding:0 3px;transition:color .12s" ' +
+          'onmouseover="this.style.color=\'var(--fail)\'" onmouseout="this.style.color=\'var(--bord2)\'">×</button></td>' +
+          '</tr>';
+      }).join('');
 
-  // History dates
-  const prefix=`${c}_`;
-  const dates=Object.keys(attCache[c]?.attendance||{})
-    .filter(k=>k.startsWith(prefix)).map(k=>k.replace(prefix,''))
+  var prefix=course+'_'.replace('course',c);
+  prefix = c + '_';
+  var dates=Object.keys(attCache[c]&&attCache[c].attendance ? attCache[c].attendance : {})
+    .filter(function(k){ return k.indexOf(prefix)===0; })
+    .map(function(k){ return k.replace(prefix,''); })
     .sort().reverse().slice(0,4);
-  const histHtml=dates.length===0?'':buildAttHistory(c,dates,sts);
+  var histHtml=dates.length===0?'':buildAttHistory(c,dates,sts);
 
-  document.getElementById('mainArea').innerHTML=`
-    <div class="page-head">
-      <div>
-        <div class="course-label">Curso ${c}</div>
-        <div class="course-meta">${sts.length} estudiante${sts.length!==1?'s':''} · ${date}</div>
-      </div>
-    </div>
-    <div class="stats-row">
-      <div class="stat"><span class="stat-n" style="color:var(--P)">${P}</span><span class="stat-l">Presente</span></div>
-      <div class="stat"><span class="stat-n" style="color:var(--A)">${A}</span><span class="stat-l">Ausente</span></div>
-      <div class="stat"><span class="stat-n" style="color:var(--T)">${T}</span><span class="stat-l">Tardanza</span></div>
-      <div class="stat"><span class="stat-n" style="color:var(--J)">${J}</span><span class="stat-l">Justificado</span></div>
-      <div class="stat"><span class="stat-n" style="color:var(--E)">${E}</span><span class="stat-l">Evasión</span></div>
-      <div class="stat"><span class="stat-n" style="color:var(--muted)">${U}</span><span class="stat-l">Sin marcar</span></div>
-    </div>
-    <div class="mark-row" style="flex-wrap:wrap">
-      <span class="mark-label">Marcar todos:</span>
-      <button class="mabtn P" onclick="attMarkAll('P')">✓ Todos Presente</button>
-      <button class="mabtn A" onclick="attMarkAll('A')">✗ Todos Ausente</button>
-      <div class="mob-date-row">
-        📅 <input type="date" id="dateInputMob"
-          style="border:1.5px solid var(--bord);border-radius:7px;padding:4px 8px;
-          font-size:.76rem;background:white;color:var(--text);outline:none"
-          onchange="syncMobDate(this.value)">
-      </div>
-    </div>
-    <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Estudiante</th><th style="width:150px">Estado</th><th style="width:36px"></th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>
-    <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
-      <input class="minput" id="newAttStu" placeholder="Nombre del estudiante (Enter)"
-        style="max-width:280px" onkeydown="if(event.key==='Enter')attAddStu()">
-      <button class="btn btn-outline btn-sm" onclick="attAddStu()">+ Agregar</button>
-    </div>
-    ${histHtml}`;
+  document.getElementById('mainArea').innerHTML=
+    '<div class="page-head">' +
+    '<div><div class="course-label">Curso ' + c + '</div>' +
+    '<div class="course-meta">' + sts.length + ' estudiante' + (sts.length!==1?'s':'') + ' · ' + date + '</div></div>' +
+    '</div>' +
+    '<div class="stats-row">' +
+    '<div class="stat"><span class="stat-n" style="color:var(--P)">' + P + '</span><span class="stat-l">Presente</span></div>' +
+    '<div class="stat"><span class="stat-n" style="color:var(--A)">' + A + '</span><span class="stat-l">Ausente</span></div>' +
+    '<div class="stat"><span class="stat-n" style="color:var(--T)">' + T + '</span><span class="stat-l">Tardanza</span></div>' +
+    '<div class="stat"><span class="stat-n" style="color:var(--J)">' + J + '</span><span class="stat-l">Justificado</span></div>' +
+    '<div class="stat"><span class="stat-n" style="color:var(--E)">' + E + '</span><span class="stat-l">Evasión</span></div>' +
+    '<div class="stat"><span class="stat-n" style="color:var(--muted)">' + U + '</span><span class="stat-l">Sin marcar</span></div>' +
+    '</div>' +
+    '<div class="mark-row" style="flex-wrap:wrap">' +
+    '<span class="mark-label">Marcar todos:</span>' +
+    '<button class="mabtn P" onclick="attMarkAll(\'P\')">✓ Todos Presente</button>' +
+    '<button class="mabtn A" onclick="attMarkAll(\'A\')">✗ Todos Ausente</button>' +
+    '<div class="mob-date-row">📅 <input type="date" id="dateInputMob"' +
+    ' style="border:1.5px solid var(--bord);border-radius:7px;padding:4px 8px;font-size:.76rem;background:white;color:var(--text);outline:none"' +
+    ' onchange="syncMobDate(this.value)"></div>' +
+    '</div>' +
+    '<div class="tbl-wrap"><table class="tbl">' +
+    '<thead><tr><th>Estudiante</th><th style="width:150px">Estado</th><th style="width:36px"></th></tr></thead>' +
+    '<tbody>' + rows + '</tbody>' +
+    '</table></div>' +
+    '<div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">' +
+    '<input class="minput" id="newAttStu" placeholder="Nombre del estudiante (Enter)" style="max-width:280px"' +
+    ' onkeydown="if(event.key===\'Enter\')attAddStu()">' +
+    '<button class="btn btn-outline btn-sm" onclick="attAddStu()">+ Agregar</button>' +
+    '</div>' +
+    histHtml;
+
+  // Sync mob date
+  setTimeout(function(){
+    var mob=document.getElementById('dateInputMob');
+    if(mob) mob.value=date;
+  },0);
 }
 
 function buildAttHistory(course,dates,students){
-  const thd=dates.map(d=>{
-    const parts=d.split('-');
-    const m=parts[1]||'', dy=parts[2]||'';
-    const isToday = d===today();
-    return`<th style="cursor:pointer;min-width:50px;${isToday?'background:#1a6b5a':''};"
-      onclick="loadHistDate('${d}')" title="Editar sesión del ${d}">
-      ${dy}/${m}
-      <br><span style="font-size:.62rem;color:${isToday?'#4ade80':'rgba(255,255,255,.6)'};font-weight:700">
-        ${isToday?'hoy':'editar'}</span>
-    </th>`;
+  var thd=dates.map(function(d){
+    var parts=d.split('-');
+    var m=parts[1]||'', dy=parts[2]||'';
+    var isToday = d===today();
+    return '<th style="cursor:pointer;min-width:50px;' + (isToday?'background:#1a6b5a':'') + ';" ' +
+      'onclick="loadHistDate(\'' + d + '\')" title="Editar sesión del ' + d + '">' +
+      dy + '/' + m +
+      '<br><span style="font-size:.62rem;color:' + (isToday?'#4ade80':'rgba(255,255,255,.6)') + ';font-weight:700">' +
+      (isToday?'hoy':'editar') + '</span></th>';
   }).join('');
-  const body=students.map(s=>{
-    const cells=dates.map(d=>{
-      const st=(attCache[course]?.attendance?.[`${course}_${d}`]||{})[s.id];
-      if(!st) return`<td class="h0" style="background:rgba(0,0,0,.02)">·</td>`;
-      const bgMap={P:'#dcfce7',A:'#fee2e2',T:'#fef3c7',J:'#ede9fe',E:'#e0f2fe'};
-      return`<td class="h${st}" style="background:${bgMap[st]||'inherit'};font-weight:700">${st}</td>`;
+  var body=students.map(function(s){
+    var cells=dates.map(function(d){
+      var dayAtt = attCache[course]&&attCache[course].attendance ? attCache[course].attendance[course+'_'+d] : {};
+      var st = dayAtt ? dayAtt[s.id] : undefined;
+      if(!st) return '<td class="h0" style="background:rgba(0,0,0,.02)">·</td>';
+      var bgMap={P:'#dcfce7',A:'#fee2e2',T:'#fef3c7',J:'#ede9fe',E:'#e0f2fe'};
+      return '<td class="h' + st + '" style="background:' + (bgMap[st]||'inherit') + ';font-weight:700">' + st + '</td>';
     }).join('');
-    return`<tr><td>${s.name}</td>${cells}</tr>`;
+    return '<tr><td>' + s.name + '</td>' + cells + '</tr>';
   }).join('');
-  return`<div class="history">
-    <div class="hist-head">
-      <span class="hist-title">📅 Últimas ${dates.length} sesiones — toca la fecha para editar</span>
-    </div>
-    <div id="histBody">
-      <div class="hist-wrap"><table class="htable">
-        <thead><tr><th>Estudiante</th>${thd}</tr></thead>
-        <tbody>${body}</tbody>
-      </table></div>
-    </div>
-  </div>`;
+  return '<div class="history">' +
+    '<div class="hist-head"><span class="hist-title">📅 Últimas ' + dates.length + ' sesiones — toca la fecha para editar</span></div>' +
+    '<div id="histBody"><div class="hist-wrap"><table class="htable">' +
+    '<thead><tr><th>Estudiante</th>' + thd + '</tr></thead>' +
+    '<tbody>' + body + '</tbody>' +
+    '</table></div></div></div>';
 }
 
 async function attMark(studentId,status){
-  const c=activeCourse,date=getDate(),k=attKey(c,date);
-  if(!attCache[c].attendance[k])attCache[c].attendance[k]={};
-  const cur=attCache[c].attendance[k][studentId];
-  if(cur===status)delete attCache[c].attendance[k][studentId];
+  var c=activeCourse, date=getDate(), k=attKey(c,date);
+  if(!attCache[c].attendance[k]) attCache[c].attendance[k]={};
+  var cur=attCache[c].attendance[k][studentId];
+  if(cur===status) delete attCache[c].attendance[k][studentId];
   else attCache[c].attendance[k][studentId]=status;
   renderAttMain();
-  await apiAttPost({action:'markAttendance',course:c,date,studentId,status:cur===status?'':status});
+  await apiAttPost({action:'markAttendance',course:c,date:date,studentId:studentId,status:cur===status?'':status});
 }
 
 async function attMarkAll(status){
-  const c=activeCourse,date=getDate(),k=attKey(c,date);
-  if(!attCache[c].attendance[k])attCache[c].attendance[k]={};
-  attCache[c].students.forEach(s=>attCache[c].attendance[k][s.id]=status);
+  var c=activeCourse, date=getDate(), k=attKey(c,date);
+  if(!attCache[c].attendance[k]) attCache[c].attendance[k]={};
+  attCache[c].students.forEach(function(s){ attCache[c].attendance[k][s.id]=status; });
   renderAttMain();
-  await apiAttPost({action:'markAll',course:c,date,records:attCache[c].students.map(s=>({studentId:s.id,status}))});
-  toast(`Todos: ${status==='P'?'Presente':'Ausente'}`);
+  await apiAttPost({action:'markAll',course:c,date:date,records:attCache[c].students.map(function(s){ return {studentId:s.id,status:status}; })});
+  toast('Todos: ' + (status==='P'?'Presente':'Ausente'));
 }
 
 async function attAddStu(){
-  const inp=document.getElementById('newAttStu');
-  const name=inp.value.trim();if(!name)return;
-  inp.value='';inp.focus();
-  const res=await apiAttPost({action:'addStudent',course:activeCourse,name});
-  if(res.ok){attCache[activeCourse].students.push({id:res.id,name:res.name});renderAttMain();renderNav();toast(`"${res.name}" agregado`);}
+  var inp=document.getElementById('newAttStu');
+  var name=inp.value.trim(); if(!name)return;
+  inp.value=''; inp.focus();
+  var res=await apiAttPost({action:'addStudent',course:activeCourse,name:name});
+  if(res.ok){ attCache[activeCourse].students.push({id:res.id,name:res.name}); renderAttMain(); renderNav(); toast('"' + res.name + '" agregado'); }
 }
 
 async function attRemoveStu(id){
-  const s=attCache[activeCourse].students.find(x=>x.id===id);
-  if(!confirm(`¿Quitar a "${s.name}"?`))return;
-  attCache[activeCourse].students=attCache[activeCourse].students.filter(x=>x.id!==id);
-  renderAttMain();renderNav();
+  var s=attCache[activeCourse].students.find(function(x){ return x.id===id; });
+  if(!confirm('¿Quitar a "' + s.name + '"?')) return;
+  attCache[activeCourse].students=attCache[activeCourse].students.filter(function(x){ return x.id!==id; });
+  renderAttMain(); renderNav();
   await apiAttPost({action:'removeStudent',course:activeCourse,studentId:id});
-  toast(`${s.name} retirado`);
+  toast(s.name + ' retirado');
 }
 
 function openAttBulk(){
-  const sel=document.getElementById('attBulkCourse');
-  sel.innerHTML=COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  var sel=document.getElementById('attBulkCourse');
+  sel.innerHTML=COURSES.map(function(c){ return '<option value="' + c + '">' + c + '</option>'; }).join('');
   sel.value=activeCourse;
   document.getElementById('attBulkNames').value='';
   openModal('attBulkModal');
 }
 async function attImportBulk(){
-  const course=document.getElementById('attBulkCourse').value;
-  const raw=document.getElementById('attBulkNames').value.trim();
-  if(!raw){toast('Pega al menos un nombre');return;}
-  const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);
-  const existing=new Set((attCache[course]?.students||[]).map(s=>s.name.toLowerCase()));
-  const toAdd=lines.filter(l=>!existing.has(l.toLowerCase()));
-  if(!toAdd.length){toast('Todos ya están en la lista');return;}
-  closeModal('attBulkModal');toast(`Importando ${toAdd.length}…`);
-  const res=await apiAttPost({action:'addStudents',course,names:toAdd});
+  var course=document.getElementById('attBulkCourse').value;
+  var raw=document.getElementById('attBulkNames').value.trim();
+  if(!raw){ toast('Pega al menos un nombre'); return; }
+  var lines=raw.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+  var existing=new Set((attCache[course]&&attCache[course].students ? attCache[course].students : []).map(function(s){ return s.name.toLowerCase(); }));
+  var toAdd=lines.filter(function(l){ return !existing.has(l.toLowerCase()); });
+  if(!toAdd.length){ toast('Todos ya están en la lista'); return; }
+  closeModal('attBulkModal'); toast('Importando ' + toAdd.length + '…');
+  var res=await apiAttPost({action:'addStudents',course:course,names:toAdd});
   if(res.ok){
-    if(!attCache[course])attCache[course]={students:[],attendance:{}};
-    res.added.forEach(s=>attCache[course].students.push(s));
-    if(course===activeCourse)renderAttMain();
-    renderNav();toast(`✓ ${res.added.length} importados en ${course}`);
+    if(!attCache[course]) attCache[course]={students:[],attendance:{}};
+    res.added.forEach(function(s){ attCache[course].students.push(s); });
+    if(course===activeCourse) renderAttMain();
+    renderNav(); toast('✓ ' + res.added.length + ' importados en ' + course);
   }
 }
 
 function openAttExport(){
   document.getElementById('expModalTitle').textContent='⬇ Exportar asistencia';
   document.getElementById('expPeriodWrap').style.display='none';
-  const sel=document.getElementById('expCourse');
-  sel.innerHTML=COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
-  sel.value=activeCourse;sel.onchange=buildAttExport;
-  buildAttExport();openModal('exportModal');
+  var sel=document.getElementById('expCourse');
+  sel.innerHTML=COURSES.map(function(c){ return '<option value="' + c + '">' + c + '</option>'; }).join('');
+  sel.value=activeCourse; sel.onchange=buildAttExport;
+  buildAttExport(); openModal('exportModal');
 }
 function buildAttExport(){
-  const c=document.getElementById('expCourse').value;
-  const data=attCache[c]||{students:[],attendance:{}};
-  const prefix=`${c}_`;
-  const dates=Object.keys(data.attendance).filter(k=>k.startsWith(prefix))
-    .map(k=>k.replace(prefix,'')).sort();
-  let txt=`ASISTENCIA · Curso ${c}\nGenerado: ${new Date().toLocaleString('es-CO')}\n\n`;
-  txt+=`Estudiante\t${dates.join('\t')}\n`;
-  data.students.forEach(s=>{
-    const vals=dates.map(d=>(data.attendance[`${c}_${d}`]||{})[s.id]||'-');
-    txt+=`${s.name}\t${vals.join('\t')}\n`;
+  var c=document.getElementById('expCourse').value;
+  var data=attCache[c]||{students:[],attendance:{}};
+  var prefix=c+'_';
+  var dates=Object.keys(data.attendance).filter(function(k){ return k.indexOf(prefix)===0; })
+    .map(function(k){ return k.replace(prefix,''); }).sort();
+  var txt='ASISTENCIA · Curso ' + c + '\nGenerado: ' + new Date().toLocaleString('es-CO') + '\n\n';
+  txt+='Estudiante\t'+dates.join('\t')+'\n';
+  data.students.forEach(function(s){
+    var vals=dates.map(function(d){ return (data.attendance[c+'_'+d]||{})[s.id]||'-'; });
+    txt+=s.name+'\t'+vals.join('\t')+'\n';
   });
   document.getElementById('exportBox').textContent=txt;
 }
@@ -2198,23 +2160,19 @@ function buildAttExport(){
    GRADES MODULE
 ═══════════════════════════════════════════ */
 function computeWeights(specials){
-  // Prioridad 1: pesos base guardados en caché (desde hoja Pesos del Sheets)
-  const base=grdCache[activeCourse]?.[activePeriod]?.weights?.base;
+  var base=grdCache[activeCourse]&&grdCache[activeCourse][activePeriod]&&grdCache[activeCourse][activePeriod].weights&&grdCache[activeCourse][activePeriod].weights.base;
   if(base&&base.actividades!=null){
-    return{actividades:base.actividades,autoeval:base.autoeval,
-           coeval:base.coeval,final:base.final};
+    return{actividades:base.actividades,autoeval:base.autoeval,coeval:base.coeval,final:base.final};
   }
-  // Prioridad 2: pesos almacenados en especiales (pesoAct/pesoFinal)
-  let pesoAct=null,pesoFin=null,pesoAuto=5,pesoCo=5;
-  for(let i=specials.length-1;i>=0;i--){
+  var pesoAct=null,pesoFin=null,pesoAuto=5,pesoCo=5;
+  for(var i=specials.length-1;i>=0;i--){
     if(specials[i].pesoAct!=null&&specials[i].pesoFinal!=null){
       pesoAct=specials[i].pesoAct;pesoFin=specials[i].pesoFinal;break;
     }
   }
-  // Prioridad 3: redistribución automática
   if(pesoAct===null||pesoFin===null){
-    const sp=Math.round(specials.reduce((s,e)=>s+e.weight,0)*10)/10;
-    const fA=Math.min(sp,60),fF=Math.max(0,sp-60);
+    var sp=Math.round(specials.reduce(function(s,e){ return s+e.weight; },0)*10)/10;
+    var fA=Math.min(sp,60),fF=Math.max(0,sp-60);
     pesoAct=Math.round((60-fA)*10)/10;pesoFin=Math.round((30-fF)*10)/10;
   }
   return{actividades:pesoAct,autoeval:pesoAuto,coeval:pesoCo,final:pesoFin};
@@ -2226,39 +2184,39 @@ function gcl(n){
   if(n>=3.0)return'g-md';if(n>=2.0)return'g-lo';return'g-fl';
 }
 function grdTabKey(){
-  const k=`${activeCourse}_${activePeriod}`;
+  var k=activeCourse+'_'+activePeriod;
   if(!grdActiveTab[k])grdActiveTab[k]='actividades';
   return grdActiveTab[k];
 }
-function grdSetTab(t){grdActiveTab[`${activeCourse}_${activePeriod}`]=t;grdRenderMain();}
+function grdSetTab(t){grdActiveTab[activeCourse+'_'+activePeriod]=t;grdRenderMain();}
 
 async function grdLoadView(course,period){
   activeCourse=course;activePeriod=period;
   localStorage.setItem('gqm_course',course);localStorage.setItem('gqm_period',period);
   renderNav();
-  document.getElementById('topbarCenter').innerHTML=`
-    <button class="mod-tab att" onclick="openModule('att')">📋 <span>Asistencia</span></button>
-    <button class="mod-tab grd active" onclick="openModule('grd')">📝 <span>Notas</span></button>
-    <div class="period-tabs">${PERIODS.map(p=>`<button class="ptab ${p===period?'active':''}"
-      onclick="grdLoadView('${course}',${p})">P${p}</button>`).join('')}</div>
-    <button class="icon-btn" onclick="printPDF()" title="Generar PDF">🖨</button>
-    <button class="icon-btn" onclick="exportSistematizadora()" title="Exportar sistematizadora">📤</button>
-    <button class="icon-btn" onclick="openGrdExport()">⬇</button>
-    <button class="icon-btn" onclick="downloadBackup()" title="Backup CSV">💾</button>
-    <button class="icon-btn" onclick="openImportModal()">📥</button>
-    <button class="icon-btn" onclick="openGrdBulk()">📋</button>`;
+  document.getElementById('topbarCenter').innerHTML=
+    '<button class="mod-tab att" onclick="openModule(\'att\')">📋 <span>Asistencia</span></button>' +
+    '<button class="mod-tab grd active" onclick="openModule(\'grd\')">📝 <span>Notas</span></button>' +
+    '<div class="period-tabs">' + PERIODS.map(function(p){
+      return '<button class="ptab ' + (p===period?'active':'') + '" onclick="grdLoadView(\'' + course + '\',' + p + ')">P' + p + '</button>';
+    }).join('') + '</div>' +
+    '<button class="icon-btn" onclick="printPDF()" title="Generar PDF">🖨</button>' +
+    '<button class="icon-btn" onclick="exportSistematizadora()" title="Exportar sistematizadora">📤</button>' +
+    '<button class="icon-btn" onclick="openGrdExport()">⬇</button>' +
+    '<button class="icon-btn" onclick="downloadBackup()" title="Backup CSV">💾</button>' +
+    '<button class="icon-btn" onclick="openImportModal()">📥</button>' +
+    '<button class="icon-btn" onclick="openGrdBulk()">📋</button>';
+
   if(!grdCache[course])grdCache[course]={};
   if(!grdCache[course][period]){
     document.getElementById('mainArea').innerHTML=
-      `<div class="spin-wrap"><div class="spin"></div>Cargando ${course} · P${period}…</div>`;
-    const data=await apiGrd({action:'getAll',course,period});
+      '<div class="spin-wrap"><div class="spin"></div>Cargando ' + course + ' · P' + period + '…</div>';
+    var data=await apiGrd({action:'getAll',course:course,period:period});
     if(data.error==='auth'){logout();return;}
     grdCache[course][period]=data;
-    // Store base weights from server directly in cache
-    if(data.weights?.base){
+    if(data.weights&&data.weights.base){
       grdCache[course][period].weights.base=data.weights.base;
-    } else if(data.weights?.actividades!=null){
-      // Server sent weights directly with actividades/final fields
+    } else if(data.weights&&data.weights.actividades!=null){
       grdCache[course][period].weights.base={
         actividades:data.weights.actividades,
         autoeval:data.weights.autoeval||5,
@@ -2271,372 +2229,252 @@ async function grdLoadView(course,period){
 }
 
 function grdRenderMain(){
-  const data=grdCache[activeCourse]?.[activePeriod];
+  var data=grdCache[activeCourse]&&grdCache[activeCourse][activePeriod];
   if(!data)return;
-  const{students,weights,actNames,grades}=data;
-  const specials=weights.especiales||[];
-  const baseW=computeWeights(specials);
-  const ap=grdConfig[activeCourse]||1;
-  const tab=grdTabKey();
-  const totalW=Object.values(baseW).reduce((a,b)=>a+b,0)+specials.reduce((s,e)=>s+e.weight,0);
+  var students=data.students, weights=data.weights, actNames=data.actNames, grades=data.grades;
+  var specials=weights.especiales||[];
+  var baseW=computeWeights(specials);
+  var ap=grdConfig[activeCourse]||1;
+  var totalW=Object.values(baseW).reduce(function(a,b){ return a+b; },0)+specials.reduce(function(s,e){ return s+e.weight; },0);
 
-  const chips=BASE_KEYS.map(k=>`<div class="wp-chip">
-    <span>${BASE_LABELS[k]}</span><span class="wp-pct">${baseW[k]}%</span>
-  </div>`).join('')+specials.map(sp=>`<div class="wp-chip special">
-    <span>${sp.name}</span><span class="wp-pct">${sp.weight}%</span>
-    <button class="wp-del" onclick="grdRemoveSpecial('${sp.id}')">×</button>
-  </div>`).join('');
-
-  document.getElementById('mainArea').innerHTML=`
-    <div class="page-head">
-      <div>
-        <div class="course-label">Curso ${activeCourse}</div>
-        <div class="course-meta">Periodo ${activePeriod} · ${students.length} estudiante${students.length!==1?'s':''}</div>
-      </div>
-      <div class="head-actions">
-        <button class="btn btn-outline btn-sm" onclick="openModal('specialModal')">+ Especial</button>
-        <button class="btn btn-gold btn-sm" onclick="grdOpenActColModal()">+ Actividad</button>
-      </div>
-    </div>
-
-    <div class="period-ctrl">
-      <span class="period-ctrl-label">📌 PERIODO ACTIVO DEL CURSO</span>
-      <div style="display:flex;gap:4px">${PERIODS.map(p=>`<button class="pa-btn ${ap===p?'active':''}"
-        onclick="grdSetActivePeriod(${p})">P${p}</button>`).join('')}</div>
-      <span style="font-size:.7rem;color:var(--gold)">P${ap} carga por defecto · estudiantes ven todos los periodos con notas</span>
-    </div>
-
-    <div class="weights-panel">
-      <div class="wp-title">Estructura de evaluación
-        <span style="font-size:.7rem;font-family:'DM Mono',monospace;color:${Math.round(totalW*10)/10<99.9?'var(--warn)':'var(--ok)'}">
-          ${Math.round(totalW*10)/10}% / 100%
-        </span>
-      </div>
-      <div class="wp-grid" id="wpGrid_${activeCourse}_${activePeriod}">${chips}</div>
-      <div style="margin-top:9px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-        <span style="font-size:.7rem;color:var(--muted)">Editar pesos base:</span>
-        <button class="btn btn-outline btn-sm" onclick="openWeightsEditor()">✏ Editar pesos</button>
-      </div>
-    </div>
-
-    ${grdBuildStats(students,actNames,grades,baseW,specials)}
-    ${grdBuildUnifiedTable(students,actNames,grades,baseW,specials)}
-
-    <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
-      <input class="minput" id="newGrdStuName" placeholder="Nombre del estudiante" style="max-width:200px"
-        onkeydown="if(event.key==='Tab'){event.preventDefault();document.getElementById('newGrdStuCode').focus();}">
-      <input class="minput" id="newGrdStuCode" placeholder="Código (ej: 100401)" style="max-width:140px"
-        onkeydown="if(event.key==='Enter')grdAddStu()">
-      <button class="btn btn-outline btn-sm" onclick="grdAddStu()">+ Agregar</button>
-    </div>`;
-}
-
-
-function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
-  if(!students.length) return `<div class="empty"><div class="empty-ico">📓</div>Sin estudiantes aún. Usa 📋 para importar.</div>`;
-  students=[...students].sort((a,b)=>a.name.localeCompare(b.name,'es'));
-
-  // Build headers
-  // Name | Act1 | Act2 ... | Prom.Act | Autoeval | Coeval | Final | Especial... | DEFINITIVA
-  let thd=`<th class="th-name">Estudiante</th>`;
-  actNames.forEach((n,i)=>{
-    thd+=`<th class="th-grade" title="${n}">
-      <div style="display:flex;align-items:center;justify-content:center;gap:2px;font-size:.62rem">
-        Act.${i+1}
-        <button class="del-col-btn" onclick="grdDeleteActCol('${n}')" title="Eliminar ${n}">×</button>
-      </div>
-      <div style="font-size:.58rem;color:rgba(255,255,255,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:64px" title="${n}">${n}</div>
-    </th>`;
-  });
-
-  thd+=`<th class="th-grade th-eval" title="Autoevaluación 5%">Auto<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>`;
-  thd+=`<th class="th-grade th-eval" title="Coevaluación 5%">Co<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>`;
-  thd+=`<th class="th-grade" title="Evaluación final ${baseW.final}%">Ev.<br>Final<br><span style="font-size:.6rem;opacity:.7">${baseW.final}%</span></th>`;
-  specials.forEach(sp=>{
-    thd+=`<th class="th-grade th-esp" title="${sp.name} ${sp.weight}%">${sp.name.substring(0,8)}<br><span style="font-size:.6rem;opacity:.7">${sp.weight}%</span></th>`;
-  });
-  thd+=`<th class="th-def">DEFINI<br>TIVA</th>`;
-
-  // Build rows
-  const rows=students.map((s,i)=>{
-    let tds=`<td class="td-name" title="${s.name}">
-      <span class="stu-num">${i+1}</span>
-      <span class="stu-name-txt" onclick="grdOpenEditStu('${s.id}')" title="Editar · ${s.name}">${s.name}</span>
-      ${s.code?`<span class="code-chip"> ${s.code}</span>`:`<span class="no-code" title="Sin código">⚠</span>`}
-    </td>`;
-
-    // Activity inputs
-    actNames.forEach(n=>{
-      const raw=grades['actividad']?.[n]?.[s.id];
-      const val=raw!=null?raw:'';
-      tds+=`<td><input class="ginp ${gcl(val)}" type="number" min="0" max="5" step="0.1"
-        value="${val}" data-comp="actividad" data-item="${n}" data-sid="${s.id}" data-orig="${val}"
-        onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
-        onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
-    });
-
-    // Prom actividades (calculado internamente, no mostrado como columna)
-    const av=actNames.map(n=>grades['actividad']?.[n]?.[s.id]).filter(v=>v!=null);
-    const actAvg=av.length?Math.round(av.reduce((a,b)=>a+b,0)/av.length*10)/10:null;
-
-    // Autoeval
-    const ae=grades['autoeval']?.['_']?.[s.id];
-    const aeVal=ae!=null?ae:'';
-    tds+=`<td class="td-eval"><input class="ginp ${gcl(aeVal)}" type="number" min="0" max="5" step="0.1"
-      value="${aeVal}" data-comp="autoeval" data-item="_" data-sid="${s.id}" data-orig="${aeVal}"
-      onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
-      onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
-
-    // Coeval
-    const ce=grades['coeval']?.['_']?.[s.id];
-    const ceVal=ce!=null?ce:'';
-    tds+=`<td class="td-eval"><input class="ginp ${gcl(ceVal)}" type="number" min="0" max="5" step="0.1"
-      value="${ceVal}" data-comp="coeval" data-item="_" data-sid="${s.id}" data-orig="${ceVal}"
-      onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
-      onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
-
-    // Final
-    const fi=grades['final']?.['_']?.[s.id];
-    const fiVal=fi!=null?fi:'';
-    tds+=`<td class="td-eval"><input class="ginp ${gcl(fiVal)}" type="number" min="0" max="5" step="0.1"
-      value="${fiVal}" data-comp="final" data-item="_" data-sid="${s.id}" data-orig="${fiVal}"
-      onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
-      onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
-
-    // Especiales
-    specials.forEach(sp=>{
-      const sg=grades['especial']?.[sp.id]?.[s.id];
-      const sgVal=sg!=null?sg:'';
-      tds+=`<td class="td-esp"><input class="ginp ${gcl(sgVal)}" type="number" min="0" max="5" step="0.1"
-        value="${sgVal}" data-comp="especial" data-item="${sp.id}" data-sid="${s.id}" data-orig="${sgVal}"
-        onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
-        onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>`;
-    });
-
-    // Definitiva
-    const def=grdCalcFinal(s,actNames,grades,baseW,specials);
-    const defCls=gcl(def);
-    tds+=`<td class="td-def ${defCls}" data-def-sid="${s.id}">${def!==null?def.toFixed(2):'0.00'}</td>`;
-
-    return`<tr>${tds}</tr>`;
+  var chips=BASE_KEYS.map(function(k){
+    return '<div class="wp-chip"><span>' + BASE_LABELS[k] + '</span><span class="wp-pct">' + baseW[k] + '%</span></div>';
+  }).join('') + specials.map(function(sp){
+    return '<div class="wp-chip special"><span>' + sp.name + '</span><span class="wp-pct">' + sp.weight + '%</span>' +
+      '<button class="wp-del" onclick="grdRemoveSpecial(\'' + sp.id + '\')">×</button></div>';
   }).join('');
 
-  // Build mobile CSS Grid editable view
-  const cards = students.map((s,i) => {
-    const av=actNames.map(n=>grades['actividad']?.[n]?.[s.id]).filter(v=>v!=null);
-    const actAvg=av.length?Math.round(av.reduce((a,b)=>a+b,0)/av.length*10)/10:null;
-    const def=grdCalcFinal(s,actNames,grades,baseW,specials);
-    const defCol=def===null?'rgba(255,255,255,.7)':def>=3?'#4ade80':def>=2?'#fbbf24':'#f87171';
+  document.getElementById('mainArea').innerHTML=
+    '<div class="page-head">' +
+    '<div><div class="course-label">Curso ' + activeCourse + '</div>' +
+    '<div class="course-meta">Periodo ' + activePeriod + ' · ' + students.length + ' estudiante' + (students.length!==1?'s':'') + '</div></div>' +
+    '<div class="head-actions">' +
+    '<button class="btn btn-outline btn-sm" onclick="openModal(\'specialModal\')">+ Especial</button>' +
+    '<button class="btn btn-gold btn-sm" onclick="grdOpenActColModal()">+ Actividad</button>' +
+    '</div></div>' +
 
-    const makeInp=(comp,item,val)=>`
-      <div class="mgrid-label">${comp==='actividad'?item.length>20?item.substring(0,20)+'…':item:
+    '<div class="period-ctrl">' +
+    '<span class="period-ctrl-label">📌 PERIODO ACTIVO DEL CURSO</span>' +
+    '<div style="display:flex;gap:4px">' + PERIODS.map(function(p){
+      return '<button class="pa-btn ' + (ap===p?'active':'') + '" onclick="grdSetActivePeriod(' + p + ')">P' + p + '</button>';
+    }).join('') + '</div>' +
+    '<span style="font-size:.7rem;color:var(--gold)">P' + ap + ' carga por defecto · estudiantes ven todos los periodos con notas</span>' +
+    '</div>' +
+
+    '<div class="weights-panel">' +
+    '<div class="wp-title">Estructura de evaluación' +
+    '<span style="font-size:.7rem;font-family:\'DM Mono\',monospace;color:' + (Math.round(totalW*10)/10<99.9?'var(--warn)':'var(--ok)') + '">' +
+    Math.round(totalW*10)/10 + '% / 100%</span></div>' +
+    '<div class="wp-grid" id="wpGrid_' + activeCourse + '_' + activePeriod + '">' + chips + '</div>' +
+    '<div style="margin-top:9px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
+    '<span style="font-size:.7rem;color:var(--muted)">Editar pesos base:</span>' +
+    '<button class="btn btn-outline btn-sm" onclick="openWeightsEditor()">✏ Editar pesos</button>' +
+    '</div></div>' +
+
+    grdBuildStats(students,actNames,grades,baseW,specials) +
+    grdBuildUnifiedTable(students,actNames,grades,baseW,specials) +
+
+    '<div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">' +
+    '<input class="minput" id="newGrdStuName" placeholder="Nombre del estudiante" style="max-width:200px"' +
+    ' onkeydown="if(event.key===\'Tab\'){event.preventDefault();document.getElementById(\'newGrdStuCode\').focus();}">' +
+    '<input class="minput" id="newGrdStuCode" placeholder="Código (ej: 100401)" style="max-width:140px"' +
+    ' onkeydown="if(event.key===\'Enter\')grdAddStu()">' +
+    '<button class="btn btn-outline btn-sm" onclick="grdAddStu()">+ Agregar</button>' +
+    '</div>';
+}
+
+function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
+  if(!students.length) return '<div class="empty"><div class="empty-ico">📓</div>Sin estudiantes aún. Usa 📋 para importar.</div>';
+  students=students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
+
+  var thd='<th class="th-name">Estudiante</th>';
+  actNames.forEach(function(n,i){
+    thd+='<th class="th-grade" title="' + n + '">' +
+      '<div style="display:flex;align-items:center;justify-content:center;gap:2px;font-size:.62rem">Act.' + (i+1) +
+      '<button class="del-col-btn" onclick="grdDeleteActCol(\'' + n + '\')" title="Eliminar ' + n + '">×</button></div>' +
+      '<div style="font-size:.58rem;color:rgba(255,255,255,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:64px" title="' + n + '">' + n + '</div></th>';
+  });
+  thd+='<th class="th-grade th-eval" title="Autoevaluación 5%">Auto<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>';
+  thd+='<th class="th-grade th-eval" title="Coevaluación 5%">Co<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>';
+  thd+='<th class="th-grade" title="Evaluación final ' + baseW.final + '%">Ev.<br>Final<br><span style="font-size:.6rem;opacity:.7">' + baseW.final + '%</span></th>';
+  specials.forEach(function(sp){
+    thd+='<th class="th-grade th-esp" title="' + sp.name + ' ' + sp.weight + '%">' + sp.name.substring(0,8) + '<br><span style="font-size:.6rem;opacity:.7">' + sp.weight + '%</span></th>';
+  });
+  thd+='<th class="th-def">DEFINI<br>TIVA</th>';
+
+  var rows=students.map(function(s,i){
+    var tds='<td class="td-name" title="' + s.name + '">' +
+      '<span class="stu-num">' + (i+1) + '</span>' +
+      '<span class="stu-name-txt" onclick="grdOpenEditStu(\'' + s.id + '\')" title="Editar · ' + s.name + '">' + s.name + '</span>' +
+      (s.code?'<span class="code-chip"> ' + s.code + '</span>':'<span class="no-code" title="Sin código">⚠</span>') +
+      '</td>';
+
+    actNames.forEach(function(n){
+      var raw=grades['actividad']&&grades['actividad'][n]?grades['actividad'][n][s.id]:undefined;
+      var val=raw!=null?raw:'';
+      tds+='<td><input class="ginp ' + gcl(val) + '" type="number" min="0" max="5" step="0.1"' +
+        ' value="' + val + '" data-comp="actividad" data-item="' + n + '" data-sid="' + s.id + '" data-orig="' + val + '"' +
+        ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
+        ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
+    });
+
+    var ae=grades['autoeval']&&grades['autoeval']['_']?grades['autoeval']['_'][s.id]:undefined;
+    var aeVal=ae!=null?ae:'';
+    tds+='<td class="td-eval"><input class="ginp ' + gcl(aeVal) + '" type="number" min="0" max="5" step="0.1"' +
+      ' value="' + aeVal + '" data-comp="autoeval" data-item="_" data-sid="' + s.id + '" data-orig="' + aeVal + '"' +
+      ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
+      ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
+
+    var ce=grades['coeval']&&grades['coeval']['_']?grades['coeval']['_'][s.id]:undefined;
+    var ceVal=ce!=null?ce:'';
+    tds+='<td class="td-eval"><input class="ginp ' + gcl(ceVal) + '" type="number" min="0" max="5" step="0.1"' +
+      ' value="' + ceVal + '" data-comp="coeval" data-item="_" data-sid="' + s.id + '" data-orig="' + ceVal + '"' +
+      ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
+      ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
+
+    var fi=grades['final']&&grades['final']['_']?grades['final']['_'][s.id]:undefined;
+    var fiVal=fi!=null?fi:'';
+    tds+='<td class="td-eval"><input class="ginp ' + gcl(fiVal) + '" type="number" min="0" max="5" step="0.1"' +
+      ' value="' + fiVal + '" data-comp="final" data-item="_" data-sid="' + s.id + '" data-orig="' + fiVal + '"' +
+      ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
+      ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
+
+    specials.forEach(function(sp){
+      var sg=grades['especial']&&grades['especial'][sp.id]?grades['especial'][sp.id][s.id]:undefined;
+      var sgVal=sg!=null?sg:'';
+      tds+='<td class="td-esp"><input class="ginp ' + gcl(sgVal) + '" type="number" min="0" max="5" step="0.1"' +
+        ' value="' + sgVal + '" data-comp="especial" data-item="' + sp.id + '" data-sid="' + s.id + '" data-orig="' + sgVal + '"' +
+        ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
+        ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
+    });
+
+    var def=grdCalcFinal(s,actNames,grades,baseW,specials);
+    var defCls=gcl(def);
+    tds+='<td class="td-def ' + defCls + '" data-def-sid="' + s.id + '">' + (def!==null?def.toFixed(2):'0.00') + '</td>';
+    return '<tr>' + tds + '</tr>';
+  }).join('');
+
+  // Mobile cards
+  var cards = students.map(function(s,i) {
+    var def=grdCalcFinal(s,actNames,grades,baseW,specials);
+    var defCol=def===null?'rgba(255,255,255,.7)':def>=3?'#4ade80':def>=2?'#fbbf24':'#f87171';
+
+    function makeInp(comp,item,val){
+      var lbl = comp==='actividad'?(item.length>20?item.substring(0,20)+'…':item):
         comp==='autoeval'?'Autoeval (5%)':comp==='coeval'?'Coeval (5%)':
-        comp==='final'?'Final ('+baseW.final+'%)':item}</div>
-      <div class="mgrid-input-cell"><input class="ginp ${gcl(val)}" type="number"
-        min="0" max="5" step="0.1" value="${val!==''?val:''}"
-        data-comp="${comp}" data-item="${comp==='actividad'?item:'_'}"
-        ${comp==='especial'?'data-item="'+item+'"':''}
-        data-sid="${s.id}" data-orig="${val}"
-        onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
-        onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></div>`;
+        comp==='final'?'Final ('+baseW.final+'%)':item;
+      var dataItem = comp==='especial' ? item : (comp==='actividad' ? item : '_');
+      return '<div class="mgrid-label">' + lbl + '</div>' +
+        '<div class="mgrid-input-cell"><input class="ginp ' + gcl(val) + '" type="number"' +
+        ' min="0" max="5" step="0.1" value="' + (val!==''?val:'') + '"' +
+        ' data-comp="' + comp + '" data-item="' + dataItem + '"' +
+        ' data-sid="' + s.id + '" data-orig="' + val + '"' +
+        ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
+        ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></div>';
+    }
 
-    const actInputs=actNames.map(n=>{
-      const raw=grades['actividad']?.[n]?.[s.id];
-      const val=raw!=null?raw:'';
+    var actInputs=actNames.map(function(n){
+      var raw=grades['actividad']&&grades['actividad'][n]?grades['actividad'][n][s.id]:undefined;
+      var val=raw!=null?raw:'';
       return makeInp('actividad',n,val);
     }).join('');
 
-    const aeVal=grades['autoeval']?.['_']?.[s.id]??'';
-    const ceVal=grades['coeval']?.['_']?.[s.id]??'';
-    const fiVal=grades['final']?.['_']?.[s.id]??'';
+    var aeVal=(grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][s.id]!=null)?grades['autoeval']['_'][s.id]:'';
+    var ceVal=(grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null)?grades['coeval']['_'][s.id]:'';
+    var fiVal=(grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null)?grades['final']['_'][s.id]:'';
 
-    const spInputs=specials.map(sp=>{
-      const v=grades['especial']?.[sp.id]?.[s.id]??'';
-      return`<div class="mgrid-label">${sp.name.length>20?sp.name.substring(0,20)+'…':sp.name} (${sp.weight}%)</div>
-        <div class="mgrid-input-cell"><input class="ginp ${gcl(v)}" type="number"
-          min="0" max="5" step="0.1" value="${v}"
-          data-comp="especial" data-item="${sp.id}" data-sid="${s.id}" data-orig="${v}"
-          onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"
-          onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></div>`;
+    var spInputs=specials.map(function(sp){
+      var v=(grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null)?grades['especial'][sp.id][s.id]:'';
+      return '<div class="mgrid-label">' + (sp.name.length>20?sp.name.substring(0,20)+'…':sp.name) + ' (' + sp.weight + '%)</div>' +
+        '<div class="mgrid-input-cell"><input class="ginp ' + gcl(v) + '" type="number"' +
+        ' min="0" max="5" step="0.1" value="' + v + '"' +
+        ' data-comp="especial" data-item="' + sp.id + '" data-sid="' + s.id + '" data-orig="' + v + '"' +
+        ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
+        ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></div>';
     }).join('');
 
-    return`<div class="mgrid">
-      <div class="mgrid-head">
-        <span class="mgrid-name">${i+1}. ${s.name}</span>
-        <span class="mgrid-def" id="mgrid-def-${s.id}" style="color:${defCol}">${def!=null?def.toFixed(2):'0.00'}</span>
-      </div>
-      <div class="mgrid-body">
-        <div class="mgrid-rows">
-          <div class="mgrid-section">Actividades (${baseW.actividades}%)</div>
-          ${actInputs}
-          ${spInputs?`<div class="mgrid-section">Especiales</div>${spInputs}`:''}
-          <div class="mgrid-section">Evaluación</div>
-          ${makeInp('autoeval','_',aeVal)}
-          ${makeInp('coeval','_',ceVal)}
-          ${makeInp('final','_',fiVal)}
-        </div>
-      </div>
-    </div>`;
+    return '<div class="mgrid">' +
+      '<div class="mgrid-head">' +
+      '<span class="mgrid-name">' + (i+1) + '. ' + s.name + '</span>' +
+      '<span class="mgrid-def" id="mgrid-def-' + s.id + '" style="color:' + defCol + '">' + (def!=null?def.toFixed(2):'0.00') + '</span>' +
+      '</div>' +
+      '<div class="mgrid-body"><div class="mgrid-rows">' +
+      '<div class="mgrid-section">Actividades (' + baseW.actividades + '%)</div>' +
+      actInputs +
+      (spInputs?'<div class="mgrid-section">Especiales</div>' + spInputs:'') +
+      '<div class="mgrid-section">Evaluación</div>' +
+      makeInp('autoeval','_',aeVal) +
+      makeInp('coeval','_',ceVal) +
+      makeInp('final','_',fiVal) +
+      '</div></div></div>';
   }).join('');
 
-  return`<div class="grade-table-wrap"><div class="tbl-wrap"><table class="tbl">
-    <thead><tr>${thd}</tr></thead>
-    <tbody>${rows}</tbody>
-  </table></div></div>
-  <div class="grade-cards">${cards}</div>`;
+  return '<div class="grade-table-wrap"><div class="tbl-wrap"><table class="tbl">' +
+    '<thead><tr>' + thd + '</tr></thead>' +
+    '<tbody>' + rows + '</tbody>' +
+    '</table></div></div>' +
+    '<div class="grade-cards">' + cards + '</div>';
 }
 
 function grdBuildStats(students,actNames,grades,baseW,specials){
-  students=[...students].sort((a,b)=>a.name.localeCompare(b.name,'es'));
+  students=students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
   if(!students.length)return'';
-  const avgs=students.map(s=>grdCalcFinal(s,actNames,grades,baseW,specials)).filter(x=>x!==null);
+  var avgs=students.map(function(s){ return grdCalcFinal(s,actNames,grades,baseW,specials); }).filter(function(x){ return x!==null; });
   if(!avgs.length)return'';
-  const mean=Math.round(avgs.reduce((a,b)=>a+b,0)/avgs.length*100)/100;
-  const pass=avgs.filter(x=>x>=3).length,fail=avgs.filter(x=>x<3).length;
-  const hi=Math.max(...avgs),lo=Math.min(...avgs);
-  return`<div class="stats-row">
-    <div class="stat"><span class="stat-n ${gcl(mean)}" data-stat="mean">${mean.toFixed(2)}</span><span class="stat-l">Promedio</span></div>
-    <div class="stat"><span class="stat-n" style="color:var(--ok)" data-stat="pass">${pass}</span><span class="stat-l">Aprobando</span></div>
-    <div class="stat"><span class="stat-n" style="color:var(--fail)" data-stat="fail">${fail}</span><span class="stat-l">En riesgo</span></div>
-    <div class="stat"><span class="stat-n ${gcl(hi)}" data-stat="hi">${hi.toFixed(1)}</span><span class="stat-l">Máx</span></div>
-    <div class="stat"><span class="stat-n ${gcl(lo)}" data-stat="lo">${lo.toFixed(1)}</span><span class="stat-l">Mín</span></div>
-  </div>`;
+  var mean=Math.round(avgs.reduce(function(a,b){ return a+b; },0)/avgs.length*100)/100;
+  var pass=avgs.filter(function(x){ return x>=3; }).length;
+  var fail=avgs.filter(function(x){ return x<3; }).length;
+  var hi=Math.max.apply(null,avgs), lo=Math.min.apply(null,avgs);
+  return '<div class="stats-row">' +
+    '<div class="stat"><span class="stat-n ' + gcl(mean) + '" data-stat="mean">' + mean.toFixed(2) + '</span><span class="stat-l">Promedio</span></div>' +
+    '<div class="stat"><span class="stat-n" style="color:var(--ok)" data-stat="pass">' + pass + '</span><span class="stat-l">Aprobando</span></div>' +
+    '<div class="stat"><span class="stat-n" style="color:var(--fail)" data-stat="fail">' + fail + '</span><span class="stat-l">En riesgo</span></div>' +
+    '<div class="stat"><span class="stat-n ' + gcl(hi) + '" data-stat="hi">' + hi.toFixed(1) + '</span><span class="stat-l">Máx</span></div>' +
+    '<div class="stat"><span class="stat-n ' + gcl(lo) + '" data-stat="lo">' + lo.toFixed(1) + '</span><span class="stat-l">Mín</span></div>' +
+    '</div>';
 }
 
 function grdCalcFinal(s,actNames,grades,baseW,specials){
-  // Componentes sin nota cuentan como 0 sobre el 100% total
-  // Esto evita promedios inflados cuando faltan notas por digitar
-  const av=actNames.map(n=>grades['actividad']?.[n]?.[s.id]).filter(v=>v!=null);
-  const actAvg=av.length?av.reduce((a,b)=>a+b,0)/av.length:0;
-  const totalPct=baseW.actividades+5+5+baseW.final+specials.reduce((s,e)=>s+e.weight,0);
+  var av=actNames.map(function(n){ return grades['actividad']&&grades['actividad'][n]?grades['actividad'][n][s.id]:undefined; }).filter(function(v){ return v!=null; });
+  var actAvg=av.length?av.reduce(function(a,b){ return a+b; },0)/av.length:0;
+  var totalPct=baseW.actividades+5+5+baseW.final+specials.reduce(function(s,e){ return s+e.weight; },0);
   if(totalPct===0)return null;
-  let sum=0;
+  var sum=0;
   sum+=actAvg*(baseW.actividades/100);
-  sum+=(grades['autoeval']?.['_']?.[s.id]??0)*(5/100);
-  sum+=(grades['coeval']?.['_']?.[s.id]??0)*(5/100);
-  sum+=(grades['final']?.['_']?.[s.id]??0)*(baseW.final/100);
-  specials.forEach(sp=>{
-    sum+=(grades['especial']?.[sp.id]?.[s.id]??0)*(sp.weight/100);
+  sum+=((grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][s.id]!=null)?grades['autoeval']['_'][s.id]:0)*(5/100);
+  sum+=((grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null)?grades['coeval']['_'][s.id]:0)*(5/100);
+  sum+=((grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null)?grades['final']['_'][s.id]:0)*(baseW.final/100);
+  specials.forEach(function(sp){
+    sum+=((grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null)?grades['especial'][sp.id][s.id]:0)*(sp.weight/100);
   });
-  // Escalar al 100% real del curso
   return Math.round(sum/(totalPct/100)*100)/100;
 }
 
-function grdBuildTabContent(tab,students,actNames,grades,baseW,specials){
-  if(!students.length)return`<div class="empty"><div class="empty-ico">📓</div>Sin estudiantes aún. Usa 📋 para importar.</div>`;
-  if(tab==='actividades')return grdBuildActTab(students,actNames,grades,baseW.actividades);
-  let comp,itemId='_',label,pct;
-  if(tab.startsWith('especial_')){
-    const spId=tab.replace('especial_','');
-    const sp=specials.find(s=>s.id===spId);if(!sp)return'';
-    comp='especial';itemId=spId;label=sp.name;pct=sp.weight;
-  }else{comp=tab;label=BASE_LABELS[tab];pct=baseW[tab];}
-  return grdBuildSingleTab(students,grades,comp,itemId,label,pct);
-}
-
-function grdBuildActTab(students,actNames,grades,pct){
-  students=[...students].sort((a,b)=>a.name.localeCompare(b.name,'es'));
-  const hdrs=actNames.map((n,i)=>`<th class="col-grade" title="${n}">
-    <div style="display:flex;align-items:center;justify-content:center;gap:3px">
-      Act.${i+1}
-      <button class="del-col-btn" onclick="grdDeleteActCol('${n}')" title="Eliminar ${n}">×</button>
-    </div>
-    <div style="font-size:.58rem;color:rgba(255,255,255,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</div>
-  </th>`).join('');
-  const rows=students.map((s,i)=>{
-    const cells=actNames.map(n=>{
-      const raw=grades['actividad']?.[n]?.[s.id];
-      const val=raw!=null?raw:'';
-      return`<td><input class="ginp ${gcl(val)}" type="number" min="0" max="5" step="0.1"
-        value="${val}" data-comp="actividad" data-item="${n}" data-sid="${s.id}" data-orig="${val}"
-        onchange="grdHandleChange(this)"
-        oninput="grdUpdateColor(this)"
-        onfocus="grdOnFocus(this)"
-        onkeydown="grdNavKey(event,this)"></td>`;
-    }).join('');
-    const vals=actNames.map(n=>grades['actividad']?.[n]?.[s.id]).filter(v=>v!=null);
-    const avg=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length*10)/10:null;
-    return`<tr>
-      <td>
-        <span style="font-size:.64rem;color:var(--muted);margin-right:4px;font-family:'DM Mono',monospace">${i+1}</span>
-        <span onclick="grdOpenEditStu('${s.id}')" style="cursor:pointer;border-bottom:1px dashed var(--bord2)" title="Editar">${s.name}</span>
-        ${s.code?`<span class="code-chip"> · ${s.code}</span>`:`<span class="no-code" title="Sin código"> ⚠</span>`}
-      </td>${cells}
-      <td class="prom-cell avg-col ${gcl(avg)}">${avg!=null?avg.toFixed(1):'—'}</td>
-    </tr>`;
-  }).join('');
-  return`<div class="act-header-row">
-    <div style="font-size:.76rem;color:var(--text2)">
-      Promedio de <strong>${actNames.length}</strong> actividade${actNames.length!==1?'s':''} × <strong style="color:var(--gold)">${pct}%</strong> del periodo
-    </div>
-    <button class="btn btn-gold btn-sm" onclick="grdOpenActColModal()">+ Nueva actividad</button>
-  </div>
-  <div class="tbl-wrap"><table class="tbl">
-    <thead><tr><th>Estudiante · Código</th>${hdrs}<th class="avg-col" style="background:var(--gold) !important">Promedio</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table></div>`;
-}
-
-function grdBuildSingleTab(students,grades,comp,itemId,label,pct){
-  students=[...students].sort((a,b)=>a.name.localeCompare(b.name,'es'));
-  const rows=students.map((s,i)=>{
-    const raw=grades[comp]?.[itemId]?.[s.id];
-    const val=raw!=null?raw:'';
-    return`<tr>
-      <td>
-        <span style="font-size:.64rem;color:var(--muted);margin-right:4px;font-family:'DM Mono',monospace">${i+1}</span>
-        <span onclick="grdOpenEditStu('${s.id}')" style="cursor:pointer;border-bottom:1px dashed var(--bord2)" title="Editar">${s.name}</span>
-        ${s.code?`<span class="code-chip"> · ${s.code}</span>`:`<span class="no-code"> ⚠</span>`}
-      </td>
-      <td><input class="ginp ${gcl(val)}" type="number" min="0" max="5" step="0.1"
-        value="${val}" data-comp="${comp}" data-item="${itemId}" data-sid="${s.id}" data-orig="${val}"
-        onchange="grdHandleChange(this)"
-        oninput="grdUpdateColor(this)"
-        onfocus="grdOnFocus(this)"
-        onkeydown="grdNavKey(event,this)"></td>
-      <td class="prom-cell ${gcl(val)}" style="font-size:.75rem">
-        ${val!==''?`→ ${(parseFloat(val)*pct/100).toFixed(2)} pts`:'—'}
-      </td>
-    </tr>`;
-  }).join('');
-  return`<div style="font-size:.78rem;color:var(--text2);margin-bottom:10px">
-    <strong>${label}</strong> · vale <strong style="color:var(--gold)">${pct}%</strong> del periodo
-  </div>
-  <div class="tbl-wrap"><table class="tbl">
-    <thead><tr><th>Estudiante · Código</th><th class="col-grade">Nota (0.0–5.0)</th><th class="col-grade">Aporte</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table></div>`;
-}
-
-/* Grade save */
 function grdUpdateColor(inp){
-  const v=parseFloat(inp.value);
+  var v=parseFloat(inp.value);
   inp.className='ginp '+(isNaN(v)?'':gcl(v));
-  const{comp,item,sid}={comp:inp.dataset.comp,item:inp.dataset.item,sid:inp.dataset.sid};
-  const d=grdCache[activeCourse][activePeriod];
+  var comp=inp.dataset.comp, item=inp.dataset.item, sid=inp.dataset.sid;
+  var d=grdCache[activeCourse][activePeriod];
   if(!d.grades[comp])d.grades[comp]={};
   if(!d.grades[comp][item])d.grades[comp][item]={};
   d.grades[comp][item][sid]=isNaN(v)?null:v;
-  // Recalculate definitiva in real time
   grdUpdateDefCell(sid, d);
 }
 
-
 function grdUpdateStats(){
-  const data=grdCache[activeCourse]?.[activePeriod];
+  var data=grdCache[activeCourse]&&grdCache[activeCourse][activePeriod];
   if(!data)return;
-  const{students,weights,actNames,grades}=data;
-  const specials=weights?.especiales||[];
-  const baseW=computeWeights(specials);
-  const avgs=students.map(s=>grdCalcFinal(s,actNames,grades,baseW,specials)).filter(x=>x!==null);
+  var students=data.students, weights=data.weights, actNames=data.actNames, grades=data.grades;
+  var specials=weights&&weights.especiales?weights.especiales:[];
+  var baseW=computeWeights(specials);
+  var avgs=students.map(function(s){ return grdCalcFinal(s,actNames,grades,baseW,specials); }).filter(function(x){ return x!==null; });
   if(!avgs.length)return;
-  const mean=Math.round(avgs.reduce((a,b)=>a+b,0)/avgs.length*100)/100;
-  const pass=avgs.filter(x=>x>=3).length;
-  const fail=avgs.filter(x=>x<3).length;
-  const hi=Math.max(...avgs), lo=Math.min(...avgs);
-  const statEls=document.querySelectorAll('[data-stat]');
-  statEls.forEach(el=>{
-    const t=el.dataset.stat;
+  var mean=Math.round(avgs.reduce(function(a,b){ return a+b; },0)/avgs.length*100)/100;
+  var pass=avgs.filter(function(x){ return x>=3; }).length;
+  var fail=avgs.filter(function(x){ return x<3; }).length;
+  var hi=Math.max.apply(null,avgs), lo=Math.min.apply(null,avgs);
+  document.querySelectorAll('[data-stat]').forEach(function(el){
+    var t=el.dataset.stat;
     if(t==='mean'){el.textContent=mean.toFixed(2);el.className='stat-n '+gcl(mean);}
     else if(t==='pass'){el.textContent=pass;}
     else if(t==='fail'){el.textContent=fail;}
@@ -2644,56 +2482,48 @@ function grdUpdateStats(){
     else if(t==='lo'){el.textContent=lo.toFixed(1);el.className='stat-n '+gcl(lo);}
   });
 }
+
 function grdUpdateDefCell(sid, data){
-  const{students,weights,actNames,grades}=data;
-  const specials=weights?.especiales||[];
-  const baseW=computeWeights(specials);
-  const s=students.find(x=>x.id===sid);
+  var students=data.students, weights=data.weights, actNames=data.actNames, grades=data.grades;
+  var specials=weights&&weights.especiales?weights.especiales:[];
+  var baseW=computeWeights(specials);
+  var s=students.find(function(x){ return x.id===sid; });
   if(!s)return;
-  const def=grdCalcFinal(s,actNames,grades,baseW,specials);
-  // Update all definitiva cells for this student (desktop table + mobile card)
-  document.querySelectorAll(`[data-def-sid="${sid}"]`).forEach(el=>{
+  var def=grdCalcFinal(s,actNames,grades,baseW,specials);
+  document.querySelectorAll('[data-def-sid="' + sid + '"]').forEach(function(el){
     el.textContent=def!==null?def.toFixed(2):'0.00';
     el.className='td-def '+gcl(def);
   });
-  const card=document.getElementById('mgrid-def-'+sid);
+  var card=document.getElementById('mgrid-def-'+sid);
   if(card){
     card.textContent=def!==null?def.toFixed(2):'0.00';
     card.style.color=def===null?'rgba(255,255,255,.7)':def>=3?'#4ade80':def>=2?'#fbbf24':'#f87171';
   }
-  // Update stats row
   clearTimeout(window._statsTimer);
   window._statsTimer=setTimeout(grdUpdateStats, 300);
 }
 
-function grdOnFocus(inp){
-  // Select all on focus so typing replaces immediately
-  setTimeout(()=>inp.select(),10);
-}
+function grdOnFocus(inp){ setTimeout(function(){ inp.select(); },10); }
 
 function grdNavKey(e,inp){
-  // Tab → next cell, Shift+Tab → previous, Enter → cell below
   if(e.key==='Tab'||e.key==='Enter'){
     e.preventDefault();
-    const all=Array.from(document.querySelectorAll('.ginp'));
-    const idx=all.indexOf(inp);
-    let next;
+    var all=Array.from(document.querySelectorAll('.ginp'));
+    var idx=all.indexOf(inp);
+    var next;
     if(e.key==='Tab'&&e.shiftKey) next=all[idx-1];
     else if(e.key==='Tab') next=all[idx+1];
     else if(e.key==='Enter'){
-      // Enter goes to same column, next row
-      const col=all.indexOf(inp) % getColCount();
-      const rows=Math.floor(all.length/getColCount());
-      const row=Math.floor(idx/getColCount());
-      const nextRow=row+1<rows?row+1:0;
+      var col=all.indexOf(inp) % getColCount();
+      var rows=Math.floor(all.length/getColCount());
+      var row=Math.floor(idx/getColCount());
+      var nextRow=row+1<rows?row+1:0;
       next=all[nextRow*getColCount()+col];
     }
-    if(next){next.focus();}
-    // Trigger save on current before moving
+    if(next){ next.focus(); }
     if(inp.value!==inp.dataset.orig) grdDoSave(inp);
   }
   if(e.key==='Escape'){
-    // Restore original value
     inp.value=inp.dataset.orig||'';
     grdUpdateColor(inp);
     inp.blur();
@@ -2701,94 +2531,81 @@ function grdNavKey(e,inp){
 }
 
 function getColCount(){
-  // In unified table: actNames + autoeval + coeval + final + specials (all are inputs)
-  const data=grdCache[activeCourse]?.[activePeriod];
+  var data=grdCache[activeCourse]&&grdCache[activeCourse][activePeriod];
   if(!data)return 1;
-  const specials=data.weights?.especiales||[];
+  var specials=data.weights&&data.weights.especiales?data.weights.especiales:[];
   return data.actNames.length + 3 + specials.length;
 }
 
 async function grdHandleChange(inp){
-  const orig=inp.dataset.orig||'';
-  const newVal=inp.value.trim();
-  // If there was an existing note and it changed, ask confirmation
+  var orig=inp.dataset.orig||'';
+  var newVal=inp.value.trim();
   if(orig!==''&&newVal!==''&&newVal!==orig){
-    const origN=parseFloat(orig).toFixed(1);
-    const newN=parseFloat(newVal).toFixed(1);
-    if(!confirm(`¿Cambiar nota de ${origN} a ${newN}?`)){
-      inp.value=orig;
-      grdUpdateColor(inp);
-      return;
+    var origN=parseFloat(orig).toFixed(1);
+    var newN=parseFloat(newVal).toFixed(1);
+    if(!confirm('¿Cambiar nota de ' + origN + ' a ' + newN + '?')){
+      inp.value=orig; grdUpdateColor(inp); return;
     }
   }
-  // Update orig reference
   inp.dataset.orig=newVal;
   grdUpdateColor(inp);
   grdDoSave(inp);
 }
 
 function grdDoSave(inp){
-  const{comp,item,sid}={comp:inp.dataset.comp,item:inp.dataset.item,sid:inp.dataset.sid};
-  const v=inp.value.trim()===''?null:Math.round(parseFloat(inp.value)*10)/10;
-  const key=`${activeCourse}_${activePeriod}_${comp}_${item}_${sid}`;
+  var comp=inp.dataset.comp, item=inp.dataset.item, sid=inp.dataset.sid;
+  var v=inp.value.trim()===''?null:Math.round(parseFloat(inp.value)*10)/10;
+  var key=activeCourse+'_'+activePeriod+'_'+comp+'_'+item+'_'+sid;
   pendingSaves[key]={course:activeCourse,period:activePeriod,component:comp,itemId:item,studentId:sid,grade:v};
   clearTimeout(saveTimers[key]);
-  saveTimers[key]=setTimeout(()=>grdFlushSave(key),600);
+  saveTimers[key]=setTimeout(function(){ grdFlushSave(key); },600);
 }
 
-function grdScheduleSave(inp){ grdDoSave(inp); }
-
 async function grdFlushSave(key){
-  const b=pendingSaves[key];if(!b)return;
+  var b=pendingSaves[key]; if(!b)return;
   delete pendingSaves[key];
-  const res=await apiGrdPost({action:'saveGrade',...b});
-  if(res.error)toast('⚠ Error al guardar nota');
+  var res=await apiGrdPost(Object.assign({action:'saveGrade'},b));
+  if(res.error) toast('⚠ Error al guardar nota');
 }
 
 /* Activity columns */
 function grdOpenActColModal(){
-  const d=grdCache[activeCourse][activePeriod];
-  const bw=computeWeights(d.weights.especiales||[]);
+  var d=grdCache[activeCourse][activePeriod];
+  var bw=computeWeights(d.weights.especiales||[]);
   document.getElementById('actColPctLbl').textContent=bw.actividades;
   document.getElementById('actColName').value='';
   openModal('actColModal');
-  setTimeout(()=>document.getElementById('actColName').focus(),80);
+  setTimeout(function(){ document.getElementById('actColName').focus(); },80);
 }
 function saveActCol(){
-  const name=document.getElementById('actColName').value.trim();
-  if(!name){toast('Escribe el nombre de la actividad');return;}
-  const d=grdCache[activeCourse][activePeriod];
-  if(d.actNames.includes(name)){toast('Ya existe esa actividad');return;}
+  var name=document.getElementById('actColName').value.trim();
+  if(!name){ toast('Escribe el nombre de la actividad'); return; }
+  var d=grdCache[activeCourse][activePeriod];
+  if(d.actNames.includes(name)){ toast('Ya existe esa actividad'); return; }
   d.actNames.push(name);
   if(!d.grades.actividad)d.grades.actividad={};
   if(!d.grades.actividad[name])d.grades.actividad[name]={};
-  closeModal('actColModal');grdRenderMain();toast(`"${name}" agregada`);
+  closeModal('actColModal'); grdRenderMain(); toast('"' + name + '" agregada');
   apiGrdPost({action:'saveGrade',course:activeCourse,period:activePeriod,component:'actividad',itemId:name,studentId:'__col__',grade:null});
 }
 async function grdDeleteActCol(name){
-  if(!confirm(`¿Eliminar "${name}" y todas sus notas?`))return;
-  const d=grdCache[activeCourse][activePeriod];
-  d.actNames=d.actNames.filter(n=>n!==name);
+  if(!confirm('¿Eliminar "' + name + '" y todas sus notas?'))return;
+  var d=grdCache[activeCourse][activePeriod];
+  d.actNames=d.actNames.filter(function(n){ return n!==name; });
   if(d.grades.actividad)delete d.grades.actividad[name];
   grdRenderMain();
   await apiGrdPost({action:'removeActivity',course:activeCourse,period:activePeriod,itemId:name});
-  toast(`"${name}" eliminada`);
+  toast('"' + name + '" eliminada');
 }
 
 /* Specials */
 function updateRedistInputs(){
-  const w = parseFloat(document.getElementById('spWeight').value);
-  const panel = document.getElementById('redistPanel');
-  const btn = document.getElementById('spSaveBtn');
-  if (isNaN(w) || w <= 0 || w > 90) {
-    panel.style.display = 'none';
-    btn.disabled = true;
-    return;
-  }
-  // Get current effective weights
-  const specials = grdCache[activeCourse]?.[activePeriod]?.weights?.especiales || [];
-  const cur = computeWeights(specials);
-  // Pre-fill with current values as suggestion
+  var w = parseFloat(document.getElementById('spWeight').value);
+  var panel = document.getElementById('redistPanel');
+  var btn = document.getElementById('spSaveBtn');
+  if (isNaN(w) || w <= 0 || w > 90) { panel.style.display='none'; btn.disabled=true; return; }
+  var specials = grdCache[activeCourse]&&grdCache[activeCourse][activePeriod]&&grdCache[activeCourse][activePeriod].weights&&grdCache[activeCourse][activePeriod].weights.especiales ? grdCache[activeCourse][activePeriod].weights.especiales : [];
+  var cur = computeWeights(specials);
   document.getElementById('pAct').value   = cur.actividades;
   document.getElementById('pAuto').value  = 5;
   document.getElementById('pCo').value    = 5;
@@ -2799,159 +2616,150 @@ function updateRedistInputs(){
 }
 
 function checkRedistTotal(){
-  const act   = parseFloat(document.getElementById('pAct').value)   || 0;
-  const auto  = 5;
-  const co    = 5;
-  const fin   = parseFloat(document.getElementById('pFinal').value)  || 0;
-  const esp   = parseFloat(document.getElementById('pEsp').value)    || 0;
-  const total = Math.round((act + auto + co + fin + esp) * 10) / 10;
-  const el    = document.getElementById('redistTotal');
-  const btn   = document.getElementById('spSaveBtn');
+  var act   = parseFloat(document.getElementById('pAct').value)   || 0;
+  var auto  = 5;
+  var co    = 5;
+  var fin   = parseFloat(document.getElementById('pFinal').value)  || 0;
+  var esp   = parseFloat(document.getElementById('pEsp').value)    || 0;
+  var total = Math.round((act + auto + co + fin + esp) * 10) / 10;
+  var el    = document.getElementById('redistTotal');
+  var btn   = document.getElementById('spSaveBtn');
   if (total === 100) {
-    el.textContent = `Total: ${total}% ✓`;
-    el.style.background = '#f0faf6';
-    el.style.color = 'var(--ok)';
-    el.style.border = '1px solid var(--ok)';
+    el.textContent = 'Total: ' + total + '% ✓';
+    el.style.background = '#f0faf6'; el.style.color = 'var(--ok)'; el.style.border = '1px solid var(--ok)';
     btn.disabled = false;
   } else {
-    el.textContent = `Total: ${total}% — debe ser exactamente 100%`;
-    el.style.background = '#fef2f2';
-    el.style.color = 'var(--fail)';
-    el.style.border = '1px solid var(--fail)';
+    el.textContent = 'Total: ' + total + '% — debe ser exactamente 100%';
+    el.style.background = '#fef2f2'; el.style.color = 'var(--fail)'; el.style.border = '1px solid var(--fail)';
     btn.disabled = true;
   }
 }
 
 async function saveSpecial(){
-  const name   = document.getElementById('spName').value.trim();
-  const weight = parseFloat(document.getElementById('spWeight').value);
-  const newAct = parseFloat(document.getElementById('pAct').value);
-  const newFin = parseFloat(document.getElementById('pFinal').value);
+  var name   = document.getElementById('spName').value.trim();
+  var weight = parseFloat(document.getElementById('spWeight').value);
+  var newAct = parseFloat(document.getElementById('pAct').value);
+  var newFin = parseFloat(document.getElementById('pFinal').value);
   if (!name)  { toast('Escribe el nombre'); return; }
   if (isNaN(weight) || weight <= 0) { toast('Peso inválido'); return; }
-
-  // Validate total
-  const total = Math.round((newAct + 5 + 5 + newFin + weight) * 10) / 10;
+  var total = Math.round((newAct + 5 + 5 + newFin + weight) * 10) / 10;
   if (total !== 100) { toast('Los porcentajes no suman 100%'); return; }
-
-  // The "especial weight" in the backend is derived from how much was taken from base
-  // Base is always actividades=60, final=30 → remaining for specials = (60-newAct)+(30-newFin)
-  // But we store as absolute special weight and recompute bases accordingly
-  // We need to verify the new structure matches what user set
-  // newAct = 60 - fromAct, newFin = 30 - fromFin, fromAct+fromFin = weight
-  const fromAct  = Math.round((60 - newAct) * 10) / 10;
-  const fromFin  = Math.round((30 - newFin) * 10) / 10;
-  const impliedW = Math.round((fromAct + fromFin) * 10) / 10;
-
+  var fromAct  = Math.round((60 - newAct) * 10) / 10;
+  var fromFin  = Math.round((30 - newFin) * 10) / 10;
+  var impliedW = Math.round((fromAct + fromFin) * 10) / 10;
   if (Math.abs(impliedW - weight) > 0.01) {
-    toast(`Con Act=${newAct}% y Final=${newFin}%, el especial implica ${impliedW}%, no ${weight}%. Ajusta los valores.`);
+    toast('Con Act=' + newAct + '% y Final=' + newFin + '%, el especial implica ' + impliedW + '%, no ' + weight + '%. Ajusta los valores.');
     return;
   }
-
-  const res = await apiGrdPost({
-    action:'addSpecial', course:activeCourse, period:activePeriod,
-    name, weight, pesoAct:newAct, pesoFinal:newFin
-  });
-  if (res.error==='overflow') { toast(`Solo quedan ${res.available}% disponibles`); return; }
+  var res = await apiGrdPost({action:'addSpecial', course:activeCourse, period:activePeriod, name:name, weight:weight, pesoAct:newAct, pesoFinal:newFin});
+  if (res.error==='overflow') { toast('Solo quedan ' + res.available + '% disponibles'); return; }
   if (!res.ok) { toast('Error al agregar'); return; }
   closeModal('specialModal');
   grdCache[activeCourse][activePeriod].weights.especiales.push({id:res.id, name:res.name, weight:res.weight});
   grdRenderMain();
-  toast(`"${name}" agregado · Actividades ${newAct}% · Final ${newFin}%`);
+  toast('"' + name + '" agregado · Actividades ' + newAct + '% · Final ' + newFin + '%');
 }
 async function grdRemoveSpecial(spId){
-  const sp=grdCache[activeCourse][activePeriod].weights.especiales.find(e=>e.id===spId);
-  if(!confirm(`¿Eliminar "${sp.name}" y sus notas?`))return;
-  const d=grdCache[activeCourse][activePeriod];
-  d.weights.especiales=d.weights.especiales.filter(e=>e.id!==spId);
+  var sp=grdCache[activeCourse][activePeriod].weights.especiales.find(function(e){ return e.id===spId; });
+  if(!confirm('¿Eliminar "' + sp.name + '" y sus notas?'))return;
+  var d=grdCache[activeCourse][activePeriod];
+  d.weights.especiales=d.weights.especiales.filter(function(e){ return e.id!==spId; });
   if(d.grades.especial)delete d.grades.especial[spId];
-  const tk=`${activeCourse}_${activePeriod}`;
+  var tk=activeCourse+'_'+activePeriod;
   if(grdActiveTab[tk]==='especial_'+spId)grdActiveTab[tk]='actividades';
   grdRenderMain();
   await apiGrdPost({action:'removeSpecial',course:activeCourse,period:activePeriod,specialId:spId});
-  toast(`"${sp.name}" eliminado`);
+  toast('"' + sp.name + '" eliminado');
 }
 
 /* Period active */
 async function grdSetActivePeriod(period){
-  grdConfig[activeCourse]=period;grdRenderMain();renderNav();
-  await apiGrdPost({action:'setActivePeriod',course:activeCourse,period});
-  toast(`Curso ${activeCourse} → estudiantes ven P${period}`);
+  grdConfig[activeCourse]=period; grdRenderMain(); renderNav();
+  await apiGrdPost({action:'setActivePeriod',course:activeCourse,period:period});
+  toast('Curso ' + activeCourse + ' → estudiantes ven P' + period);
 }
 
 /* Students */
 async function grdAddStu(){
-  const ni=document.getElementById('newGrdStuName');
-  const ci=document.getElementById('newGrdStuCode');
-  const name=ni.value.trim();if(!name)return;
-  const code=ci.value.trim();
+  var ni=document.getElementById('newGrdStuName');
+  var ci=document.getElementById('newGrdStuCode');
+  var name=ni.value.trim(); if(!name)return;
+  var code=ci.value.trim();
   ni.value='';ci.value='';ni.focus();
-  const res=await apiGrdPost({action:'addStudent',course:activeCourse,name,code});
-  if(res.error==='duplicate_code'){toast(`Código ya existe: ${res.existing}`);return;}
+  var res=await apiGrdPost({action:'addStudent',course:activeCourse,name:name,code:code});
+  if(res.error==='duplicate_code'){ toast('Código ya existe: ' + res.existing); return; }
   if(res.ok){
-    PERIODS.forEach(p=>{if(grdCache[activeCourse]?.[p])grdCache[activeCourse][p].students.push({id:res.id,name:res.name,code:res.code});});
-    grdRenderMain();renderNav();toast(`"${res.name}" agregado`);
+    PERIODS.forEach(function(p){ if(grdCache[activeCourse]&&grdCache[activeCourse][p])grdCache[activeCourse][p].students.push({id:res.id,name:res.name,code:res.code}); });
+    grdRenderMain(); renderNav(); toast('"' + res.name + '" agregado');
   }
 }
 function grdOpenEditStu(id){
-  const s=grdCache[activeCourse][activePeriod].students.find(x=>x.id===id);
+  var s=grdCache[activeCourse][activePeriod].students.find(function(x){ return x.id===id; });
   document.getElementById('editStuId').value=id;
   document.getElementById('editStuName').value=s.name;
   document.getElementById('editStuCode').value=s.code||'';
   openModal('editStuModal');
-  setTimeout(()=>document.getElementById('editStuName').focus(),80);
+  setTimeout(function(){ document.getElementById('editStuName').focus(); },80);
 }
 async function grdSaveEditStu(){
-  const id=document.getElementById('editStuId').value;
-  const name=document.getElementById('editStuName').value.trim();
-  const code=document.getElementById('editStuCode').value.trim();
-  if(!name){toast('El nombre no puede estar vacío');return;}
+  var id=document.getElementById('editStuId').value;
+  var name=document.getElementById('editStuName').value.trim();
+  var code=document.getElementById('editStuCode').value.trim();
+  if(!name){ toast('El nombre no puede estar vacío'); return; }
   closeModal('editStuModal');
-  const res=await apiGrdPost({action:'updateStudent',course:activeCourse,studentId:id,name,code});
-  if(res.error==='duplicate_code'){toast(`Código ya asignado a: ${res.existing}`);return;}
-  PERIODS.forEach(p=>{const s=grdCache[activeCourse]?.[p]?.students?.find(x=>x.id===id);if(s){s.name=name;s.code=code;}});
-  grdRenderMain();renderNav();toast('Estudiante actualizado');
+  var res=await apiGrdPost({action:'updateStudent',course:activeCourse,studentId:id,name:name,code:code});
+  if(res.error==='duplicate_code'){ toast('Código ya asignado a: ' + res.existing); return; }
+  PERIODS.forEach(function(p){
+    var s=grdCache[activeCourse]&&grdCache[activeCourse][p]&&grdCache[activeCourse][p].students?grdCache[activeCourse][p].students.find(function(x){ return x.id===id; }):null;
+    if(s){ s.name=name; s.code=code; }
+  });
+  grdRenderMain(); renderNav(); toast('Estudiante actualizado');
 }
 async function grdRemoveStuFromModal(){
-  const id=document.getElementById('editStuId').value;
-  const s=grdCache[activeCourse][activePeriod].students.find(x=>x.id===id);
-  if(!confirm(`¿Quitar a "${s.name}"?`))return;
+  var id=document.getElementById('editStuId').value;
+  var s=grdCache[activeCourse][activePeriod].students.find(function(x){ return x.id===id; });
+  if(!confirm('¿Quitar a "' + s.name + '"?'))return;
   closeModal('editStuModal');
-  PERIODS.forEach(p=>{if(grdCache[activeCourse]?.[p])grdCache[activeCourse][p].students=grdCache[activeCourse][p].students.filter(x=>x.id!==id);});
-  grdRenderMain();renderNav();
+  PERIODS.forEach(function(p){
+    if(grdCache[activeCourse]&&grdCache[activeCourse][p])
+      grdCache[activeCourse][p].students=grdCache[activeCourse][p].students.filter(function(x){ return x.id!==id; });
+  });
+  grdRenderMain(); renderNav();
   await apiGrdPost({action:'removeStudent',course:activeCourse,studentId:id});
-  toast(`${s.name} retirado`);
+  toast(s.name + ' retirado');
 }
 
 /* Bulk grades */
 function openGrdBulk(){
-  const sel=document.getElementById('grdBulkCourse');
-  sel.innerHTML=COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  var sel=document.getElementById('grdBulkCourse');
+  sel.innerHTML=COURSES.map(function(c){ return '<option value="' + c + '">' + c + '</option>'; }).join('');
   sel.value=activeCourse;
   document.getElementById('grdBulkNames').value='';
   openModal('grdBulkModal');
 }
 async function grdImportBulk(){
-  const course=document.getElementById('grdBulkCourse').value;
-  const raw=document.getElementById('grdBulkNames').value.trim();
-  if(!raw){toast('Pega al menos un nombre');return;}
-  const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);
-  const existing=new Set();
-  PERIODS.forEach(p=>(grdCache[course]?.[p]?.students||[]).forEach(s=>existing.add(s.name.toLowerCase())));
-  const toAdd=lines.map(l=>{const[name,code]=(l+'|').split('|');return{name:name.trim(),code:(code||'').trim()};})
-    .filter(s=>s.name&&!existing.has(s.name.toLowerCase()));
-  if(!toAdd.length){toast('Todos ya están registrados');return;}
-  closeModal('grdBulkModal');toast(`Importando ${toAdd.length}…`);
-  const res=await apiGrdPost({action:'addStudents',course,students:toAdd});
+  var course=document.getElementById('grdBulkCourse').value;
+  var raw=document.getElementById('grdBulkNames').value.trim();
+  if(!raw){ toast('Pega al menos un nombre'); return; }
+  var lines=raw.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+  var existing=new Set();
+  PERIODS.forEach(function(p){ (grdCache[course]&&grdCache[course][p]?grdCache[course][p].students:[]).forEach(function(s){ existing.add(s.name.toLowerCase()); }); });
+  var toAdd=lines.map(function(l){
+    var parts=(l+'|').split('|');
+    return {name:parts[0].trim(), code:(parts[1]||'').trim()};
+  }).filter(function(s){ return s.name&&!existing.has(s.name.toLowerCase()); });
+  if(!toAdd.length){ toast('Todos ya están registrados'); return; }
+  closeModal('grdBulkModal'); toast('Importando ' + toAdd.length + '…');
+  var res=await apiGrdPost({action:'addStudents',course:course,students:toAdd});
   if(res.ok){
-    PERIODS.forEach(p=>{
+    PERIODS.forEach(function(p){
       if(!grdCache[course])grdCache[course]={};
       if(!grdCache[course][p])grdCache[course][p]={students:[],weights:{especiales:[]},actNames:[],grades:{}};
-      res.added.forEach(s=>grdCache[course][p].students.push(s));
+      res.added.forEach(function(s){ grdCache[course][p].students.push(s); });
     });
     if(course===activeCourse)grdRenderMain();
     renderNav();
-    toast(`✓ ${res.added.length} importados${res.skipped?.length?` · ${res.skipped.length} omitidos`:''}`);
+    toast('✓ ' + res.added.length + ' importados' + (res.skipped&&res.skipped.length?' · ' + res.skipped.length + ' omitidos':''));
   }
 }
 
@@ -2959,36 +2767,39 @@ async function grdImportBulk(){
 function openGrdExport(){
   document.getElementById('expModalTitle').textContent='⬇ Exportar notas';
   document.getElementById('expPeriodWrap').style.display='';
-  const sel=document.getElementById('expCourse');
-  sel.innerHTML=COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
-  sel.value=activeCourse;document.getElementById('expPeriod').value=activePeriod;
-  sel.onchange=buildGrdExport;document.getElementById('expPeriod').onchange=buildGrdExport;
-  buildGrdExport();openModal('exportModal');
+  var sel=document.getElementById('expCourse');
+  sel.innerHTML=COURSES.map(function(c){ return '<option value="' + c + '">' + c + '</option>'; }).join('');
+  sel.value=activeCourse; document.getElementById('expPeriod').value=activePeriod;
+  sel.onchange=buildGrdExport; document.getElementById('expPeriod').onchange=buildGrdExport;
+  buildGrdExport(); openModal('exportModal');
 }
 async function buildGrdExport(){
-  const course=document.getElementById('expCourse').value;
-  const period=+document.getElementById('expPeriod').value;
-  if(!grdCache[course]?.[period]){
-    const data=await apiGrd({action:'getAll',course,period});
+  var course=document.getElementById('expCourse').value;
+  var period=+document.getElementById('expPeriod').value;
+  if(!grdCache[course]||!grdCache[course][period]){
+    var data=await apiGrd({action:'getAll',course:course,period:period});
     if(!grdCache[course])grdCache[course]={};
     grdCache[course][period]=data;
   }
-  const{students,weights,actNames,grades}=grdCache[course][period];
-  const specials=weights.especiales||[];
-  const bw=computeWeights(specials);
-  let txt=`NOTAS · Curso ${course} · Periodo ${period}\nGenerado: ${new Date().toLocaleString('es-CO')}\n\n`;
-  txt+=`Código\tEstudiante\t`+actNames.map((n,i)=>`Act.${i+1}:${n}`).join('\t');
-  txt+=`\tProm.Act(${bw.actividades}%)\tAutoeval(5%)\tCoeval(5%)\tFinal(${bw.final}%)`;
-  specials.forEach(sp=>txt+=`\t${sp.name}(${sp.weight}%)`);
-  txt+=`\tDEFINITIVA\n`;
-  students.forEach(s=>{
-    const av=actNames.map(n=>grades['actividad']?.[n]?.[s.id]??'');
-    const avf=av.filter(v=>v!=='');
-    const actAvg=avf.length?Math.round(avf.reduce((a,b)=>a+b,0)/avf.length*10)/10:'';
-    const ae=grades['autoeval']?.['_']?.[s.id]??'',ce=grades['coeval']?.['_']?.[s.id]??'',fi=grades['final']?.['_']?.[s.id]??'';
-    const spv=specials.map(sp=>grades['especial']?.[sp.id]?.[s.id]??'');
-    const def=grdCalcFinal(s,actNames,grades,bw,specials);
-    txt+=`${s.code||''}\t${s.name}\t${av.join('\t')}\t${actAvg}\t${ae}\t${ce}\t${fi}\t${spv.join('\t')}\t${def!=null?def.toFixed(2):''}\n`;
+  var ref=grdCache[course][period];
+  var students=ref.students, weights=ref.weights, actNames=ref.actNames, grades=ref.grades;
+  var specials=weights.especiales||[];
+  var bw=computeWeights(specials);
+  var txt='NOTAS · Curso ' + course + ' · Periodo ' + period + '\nGenerado: ' + new Date().toLocaleString('es-CO') + '\n\n';
+  txt+='Código\tEstudiante\t'+actNames.map(function(n,i){ return 'Act.'+(i+1)+':'+n; }).join('\t');
+  txt+='\tProm.Act('+bw.actividades+'%)\tAutoeval(5%)\tCoeval(5%)\tFinal('+bw.final+'%)';
+  specials.forEach(function(sp){ txt+='\t'+sp.name+'('+sp.weight+'%)'; });
+  txt+='\tDEFINITIVA\n';
+  students.forEach(function(s){
+    var av=actNames.map(function(n){ return grades['actividad']&&grades['actividad'][n]&&grades['actividad'][n][s.id]!=null?grades['actividad'][n][s.id]:''; });
+    var avf=av.filter(function(v){ return v!==''; });
+    var actAvg=avf.length?Math.round(avf.reduce(function(a,b){ return a+b; },0)/avf.length*10)/10:'';
+    var ae=grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][s.id]!=null?grades['autoeval']['_'][s.id]:'';
+    var ce=grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null?grades['coeval']['_'][s.id]:'';
+    var fi=grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null?grades['final']['_'][s.id]:'';
+    var spv=specials.map(function(sp){ return grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null?grades['especial'][sp.id][s.id]:''; });
+    var def=grdCalcFinal(s,actNames,grades,bw,specials);
+    txt+=(s.code||'')+'\t'+s.name+'\t'+av.join('\t')+'\t'+actAvg+'\t'+ae+'\t'+ce+'\t'+fi+'\t'+spv.join('\t')+'\t'+(def!=null?def.toFixed(2):'')+'\n';
   });
   document.getElementById('exportBox').textContent=txt;
 }
@@ -2997,82 +2808,70 @@ async function buildGrdExport(){
 async function downloadBackup(){
   toast('Generando backup…');
   try{
-    const res=await apiGrd({action:'downloadBackup'});
-    if(!res.csv){toast('⚠ Error al generar backup');return;}
-    const blob=new Blob([res.csv],{type:'text/csv;charset=utf-8;'});
-    const a=document.createElement('a');
+    var res=await apiGrd({action:'downloadBackup'});
+    if(!res.csv){ toast('⚠ Error al generar backup'); return; }
+    var blob=new Blob([res.csv],{type:'text/csv;charset=utf-8;'});
+    var a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
-    a.download=`NotasQM_Backup_${today()}.csv`;
-    a.click();toast('✓ Backup descargado');
-  }catch(e){toast('⚠ Error de conexión');}
+    a.download='NotasQM_Backup_'+today()+'.csv';
+    a.click(); toast('✓ Backup descargado');
+  }catch(e){ toast('⚠ Error de conexión'); }
 }
 
 /* ═══ EXPORT SHARED ═══ */
 function copyExport(){
-  navigator.clipboard.writeText(document.getElementById('exportBox').textContent).then(()=>toast('¡Copiado!'));
+  navigator.clipboard.writeText(document.getElementById('exportBox').textContent).then(function(){ toast('¡Copiado!'); });
 }
 async function downloadCSV(){
-  const isGrd=document.getElementById('expPeriodWrap').style.display!=='none';
-  const course=document.getElementById('expCourse').value;
+  var isGrd=document.getElementById('expPeriodWrap').style.display!=='none';
+  var course=document.getElementById('expCourse').value;
   if(isGrd){
-    const period=+document.getElementById('expPeriod').value;
-    const{students,weights,actNames,grades}=grdCache[course][period];
-    const specials=weights.especiales||[];const bw=computeWeights(specials);
-    let csv=`Código,Estudiante,`+actNames.map((n,i)=>`"Act.${i+1}: ${n}"`).join(',')+',';
-    csv+=`"Prom.Act (${bw.actividades}%)","Autoeval (5%)","Coeval (5%)","Final (${bw.final}%)",`;
-    csv+=specials.map(sp=>`"${sp.name} (${sp.weight}%)"`).join(',')+',DEFINITIVA\n';
-    students.forEach(s=>{
-      const av=actNames.map(n=>grades['actividad']?.[n]?.[s.id]??'');
-      const avf=av.filter(v=>v!=='');
-      const actAvg=avf.length?Math.round(avf.reduce((a,b)=>a+b,0)/avf.length*10)/10:'';
-      const ae=grades['autoeval']?.['_']?.[s.id]??'',ce=grades['coeval']?.['_']?.[s.id]??'',fi=grades['final']?.['_']?.[s.id]??'';
-      const spv=specials.map(sp=>grades['especial']?.[sp.id]?.[s.id]??'');
-      const def=grdCalcFinal(s,actNames,grades,bw,specials);
-      csv+=`${s.code||''},"${s.name}",${av.join(',')},${actAvg},${ae},${ce},${fi},${spv.join(',')},${def!=null?def.toFixed(2):''}\n`;
+    var period=+document.getElementById('expPeriod').value;
+    var ref=grdCache[course][period];
+    var students=ref.students, weights=ref.weights, actNames=ref.actNames, grades=ref.grades;
+    var specials=weights.especiales||[]; var bw=computeWeights(specials);
+    var csv='Código,Estudiante,'+actNames.map(function(n,i){ return '"Act.'+(i+1)+': '+n+'"'; }).join(',')+',';
+    csv+='"Prom.Act ('+bw.actividades+'%)","Autoeval (5%)","Coeval (5%)","Final ('+bw.final+'%)",';
+    csv+=specials.map(function(sp){ return '"'+sp.name+' ('+sp.weight+'%)"'; }).join(',')+',DEFINITIVA\n';
+    students.forEach(function(s){
+      var av=actNames.map(function(n){ return grades['actividad']&&grades['actividad'][n]&&grades['actividad'][n][s.id]!=null?grades['actividad'][n][s.id]:''; });
+      var avf=av.filter(function(v){ return v!==''; });
+      var actAvg=avf.length?Math.round(avf.reduce(function(a,b){ return a+b; },0)/avf.length*10)/10:'';
+      var ae=grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][s.id]!=null?grades['autoeval']['_'][s.id]:'';
+      var ce=grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null?grades['coeval']['_'][s.id]:'';
+      var fi=grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null?grades['final']['_'][s.id]:'';
+      var spv=specials.map(function(sp){ return grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null?grades['especial'][sp.id][s.id]:''; });
+      var def=grdCalcFinal(s,actNames,grades,bw,specials);
+      csv+=(s.code||'')+',"'+s.name+'",'+av.join(',')+','+actAvg+','+ae+','+ce+','+fi+','+spv.join(',')+(def!=null?','+def.toFixed(2):',')+'\n';
     });
-    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download=`notas_${course}_P${document.getElementById('expPeriod').value}.csv`;a.click();
+    var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='notas_'+course+'_P'+document.getElementById('expPeriod').value+'.csv'; a.click();
   }else{
-    const txt=document.getElementById('exportBox').textContent;
-    const blob=new Blob(['\uFEFF'+txt],{type:'text/csv;charset=utf-8;'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download=`asistencia_${course}_${today()}.csv`;a.click();
+    var txt=document.getElementById('exportBox').textContent;
+    var blob=new Blob(['\uFEFF'+txt],{type:'text/csv;charset=utf-8;'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='asistencia_'+course+'_'+today()+'.csv'; a.click();
   }
   toast('CSV descargado');
 }
 
-
-
 /* ═══ PDF / PRINT ═══ */
 function printPDF() {
-  const course  = activeCourse;
-  const period  = activePeriod;
-  const fecha   = new Date().toLocaleDateString('es-CO', {
-    weekday:'long', year:'numeric', month:'long', day:'numeric'
-  });
-
-  // Fill header data
-  document.getElementById('phCurso').textContent   = `Curso: ${course}`;
-  document.getElementById('phPeriodo').textContent = `Periodo: ${period}`;
-  document.getElementById('phFecha').textContent   = `Fecha: ${fecha}`;
+  var fecha = new Date().toLocaleDateString('es-CO', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  document.getElementById('phCurso').textContent   = 'Curso: ' + activeCourse;
+  document.getElementById('phPeriodo').textContent = 'Periodo: ' + activePeriod;
+  document.getElementById('phFecha').textContent   = 'Fecha: ' + fecha;
   document.getElementById('pfFecha').textContent   = fecha;
-
-  // Show header/footer for print
   document.getElementById('printHeader').style.display = 'block';
   document.getElementById('printFooter').style.display = 'block';
-
-  // Move header/footer into mainArea for print layout
-  const main = document.getElementById('mainArea');
-  const header = document.getElementById('printHeader');
-  const footer = document.getElementById('printFooter');
+  var main = document.getElementById('mainArea');
+  var header = document.getElementById('printHeader');
+  var footer = document.getElementById('printFooter');
   main.insertBefore(header, main.firstChild);
   main.appendChild(footer);
-
   window.print();
-
-  // Restore after print
-  setTimeout(() => {
+  setTimeout(function() {
     document.getElementById('printHeader').style.display = 'none';
     document.getElementById('printFooter').style.display = 'none';
     document.body.insertBefore(header, document.body.firstChild);
@@ -3080,119 +2879,90 @@ function printPDF() {
   }, 1000);
 }
 
-
-
 /* ═══ WEIGHTS EDITOR ═══ */
 function openWeightsEditor() {
-  const data = grdCache[activeCourse]?.[activePeriod];
+  var data = grdCache[activeCourse]&&grdCache[activeCourse][activePeriod];
   if (!data) return;
-  const specials = data.weights?.especiales || [];
-  const w = computeWeights(specials);
-
+  var specials = data.weights&&data.weights.especiales ? data.weights.especiales : [];
+  var w = computeWeights(specials);
   document.getElementById('wAct').value   = w.actividades;
   document.getElementById('wAuto').value  = w.autoeval;
   document.getElementById('wCo').value    = w.coeval;
   document.getElementById('wFinal').value = w.final;
-
-  // Show specials as read-only info
-  const espPanel = document.getElementById('weightsEspPanel');
-  const espRows  = document.getElementById('weightsEspRows');
+  var espPanel = document.getElementById('weightsEspPanel');
+  var espRows  = document.getElementById('weightsEspRows');
   if (specials.length) {
     espPanel.style.display = '';
-    espRows.innerHTML = specials.map(sp =>
-      `<div style="display:grid;grid-template-columns:1fr 80px;gap:6px 12px;
-        align-items:center;margin-bottom:6px">
-        <label style="font-size:.82rem;color:var(--text2)">${sp.name}</label>
-        <div style="display:flex;align-items:center;gap:4px">
-          <input class="minput" type="number" id="wEsp_${sp.id}"
-            value="${sp.weight}" min="0" max="100" step="1"
-            style="width:60px;text-align:center" oninput="checkWeightsTotal()">
-          <span style="font-size:.78rem;color:var(--muted)">%</span>
-        </div>
-      </div>`
-    ).join('');
+    espRows.innerHTML = specials.map(function(sp){
+      return '<div style="display:grid;grid-template-columns:1fr 80px;gap:6px 12px;align-items:center;margin-bottom:6px">' +
+        '<label style="font-size:.82rem;color:var(--text2)">' + sp.name + '</label>' +
+        '<div style="display:flex;align-items:center;gap:4px">' +
+        '<input class="minput" type="number" id="wEsp_' + sp.id + '" value="' + sp.weight + '" min="0" max="100" step="1"' +
+        ' style="width:60px;text-align:center" oninput="checkWeightsTotal()">' +
+        '<span style="font-size:.78rem;color:var(--muted)">%</span></div></div>';
+    }).join('');
   } else {
     espPanel.style.display = 'none';
   }
-
   checkWeightsTotal();
   openModal('weightsModal');
 }
 
 function checkWeightsTotal() {
-  const act   = parseFloat(document.getElementById('wAct').value)   || 0;
-  const auto  = parseFloat(document.getElementById('wAuto').value)  || 0;
-  const co    = parseFloat(document.getElementById('wCo').value)    || 0;
-  const fin   = parseFloat(document.getElementById('wFinal').value) || 0;
-
-  const specials = grdCache[activeCourse]?.[activePeriod]?.weights?.especiales || [];
-  let espTotal = 0;
-  specials.forEach(sp => {
-    const v = parseFloat(document.getElementById('wEsp_'+sp.id)?.value) || sp.weight;
-    espTotal += v;
+  var act   = parseFloat(document.getElementById('wAct').value)   || 0;
+  var auto  = parseFloat(document.getElementById('wAuto').value)  || 0;
+  var co    = parseFloat(document.getElementById('wCo').value)    || 0;
+  var fin   = parseFloat(document.getElementById('wFinal').value) || 0;
+  var specials = grdCache[activeCourse]&&grdCache[activeCourse][activePeriod]&&grdCache[activeCourse][activePeriod].weights&&grdCache[activeCourse][activePeriod].weights.especiales ? grdCache[activeCourse][activePeriod].weights.especiales : [];
+  var espTotal = 0;
+  specials.forEach(function(sp){
+    var el = document.getElementById('wEsp_'+sp.id);
+    espTotal += parseFloat(el?el.value:sp.weight) || sp.weight;
   });
-
-  const total = Math.round((act + auto + co + fin + espTotal) * 10) / 10;
-  const bar   = document.getElementById('weightsTotalBar');
-  const btn   = document.getElementById('weightsSaveBtn');
-
+  var total = Math.round((act + auto + co + fin + espTotal) * 10) / 10;
+  var bar   = document.getElementById('weightsTotalBar');
+  var btn   = document.getElementById('weightsSaveBtn');
   if (Math.abs(total - 100) < 0.05) {
-    bar.textContent = `Total: ${total}% ✓`;
-    bar.style.background = '#f0faf6';
-    bar.style.color = 'var(--ok)';
-    bar.style.border = '1px solid var(--ok)';
+    bar.textContent = 'Total: ' + total + '% ✓';
+    bar.style.background = '#f0faf6'; bar.style.color = 'var(--ok)'; bar.style.border = '1px solid var(--ok)';
     btn.disabled = false;
   } else {
-    bar.textContent = `Total: ${total}% — debe ser exactamente 100%`;
-    bar.style.background = '#fef2f2';
-    bar.style.color = 'var(--fail)';
-    bar.style.border = '1px solid var(--fail)';
+    bar.textContent = 'Total: ' + total + '% — debe ser exactamente 100%';
+    bar.style.background = '#fef2f2'; bar.style.color = 'var(--fail)'; bar.style.border = '1px solid var(--fail)';
     btn.disabled = true;
   }
 }
 
 async function saveWeights() {
-  const act   = parseFloat(document.getElementById('wAct').value);
-  const auto  = parseFloat(document.getElementById('wAuto').value);
-  const co    = parseFloat(document.getElementById('wCo').value);
-  const fin   = parseFloat(document.getElementById('wFinal').value);
-
-  const specials = grdCache[activeCourse]?.[activePeriod]?.weights?.especiales || [];
-  const newSpecials = specials.map(sp => ({
-    ...sp,
-    weight: parseFloat(document.getElementById('wEsp_'+sp.id)?.value) || sp.weight
-  }));
-
-  // Save to backend via GET (más compatible con Apps Script)
-  const btn = document.getElementById('weightsSaveBtn');
-  btn.textContent = 'Guardando…'; btn.disabled = true;
-  const res = await apiGrd({
-    action: 'saveWeights',
-    course: activeCourse,
-    period: activePeriod,
-    pesoAct: act, pesoAuto: auto, pesoCoeval: co, pesoFinal: fin,
-    especiales: JSON.stringify(newSpecials)
+  var act   = parseFloat(document.getElementById('wAct').value);
+  var auto  = parseFloat(document.getElementById('wAuto').value);
+  var co    = parseFloat(document.getElementById('wCo').value);
+  var fin   = parseFloat(document.getElementById('wFinal').value);
+  var specials = grdCache[activeCourse]&&grdCache[activeCourse][activePeriod]&&grdCache[activeCourse][activePeriod].weights&&grdCache[activeCourse][activePeriod].weights.especiales ? grdCache[activeCourse][activePeriod].weights.especiales : [];
+  var newSpecials = specials.map(function(sp){
+    var el = document.getElementById('wEsp_'+sp.id);
+    return Object.assign({},sp,{weight: parseFloat(el?el.value:sp.weight) || sp.weight});
   });
-
+  var btn = document.getElementById('weightsSaveBtn');
+  btn.textContent = 'Guardando…'; btn.disabled = true;
+  var res = await apiGrd({
+    action:'saveWeights', course:activeCourse, period:activePeriod,
+    pesoAct:act, pesoAuto:auto, pesoCoeval:co, pesoFinal:fin,
+    especiales:JSON.stringify(newSpecials)
+  });
   btn.textContent = 'Guardar pesos';
   if (!res.ok) { toast('⚠ Error: ' + (res.error||'desconocido')); btn.disabled=false; return; }
-
-  // Update local cache immediately
-  const data = grdCache[activeCourse][activePeriod];
-  data.weights = {
-    especiales: newSpecials.map(sp => ({...sp, pesoAct: act, pesoFinal: fin}))
-  };
-  // Store base weights directly in a new field
-  data.weights.base = { actividades: act, autoeval: auto, coeval: co, final: fin };
-
+  var data = grdCache[activeCourse][activePeriod];
+  data.weights = { especiales: newSpecials.map(function(sp){ return Object.assign({},sp,{pesoAct:act,pesoFinal:fin}); }) };
+  data.weights.base = { actividades:act, autoeval:auto, coeval:co, final:fin };
   closeModal('weightsModal');
   grdRenderMain();
-  toast(`Pesos guardados: Act ${act}% · Auto ${auto}% · Co ${co}% · Final ${fin}%`);
+  toast('Pesos guardados: Act ' + act + '% · Auto ' + auto + '% · Co ' + co + '% · Final ' + fin + '%');
 }
 
 /* ═══ MOBILE MENU ═══ */
 function buildMobMenuItems() {
-  const items = [];
+  var items = [];
   if (activeModule === 'att') {
     items.push({icon:'📋', label:'Lista masiva', fn:'openAttBulk()'});
     items.push({icon:'📊', label:'Consolidado de asistencia', fn:'openConsolidado()'});
@@ -3217,19 +2987,17 @@ function buildMobMenuItems() {
 }
 
 function toggleMobMenu() {
-  const menu = document.getElementById('mobMenu');
-  const overlay = document.getElementById('mobOverlay');
+  var menu = document.getElementById('mobMenu');
+  var overlay = document.getElementById('mobOverlay');
   if (menu.classList.contains('open')) {
     closeMobMenu();
   } else {
-    // Build items dynamically based on current module
-    const items = buildMobMenuItems();
-    menu.innerHTML = items.map(item => {
+    var items = buildMobMenuItems();
+    menu.innerHTML = items.map(function(item){
       if (item.sep) return '<div class="mob-menu-sep"></div>';
-      return `<button class="mob-menu-item" onclick="closeMobMenu();${item.fn}">
-        <span style="font-size:1rem;width:20px">${item.icon}</span>
-        <span>${item.label}</span>
-      </button>`;
+      return '<button class="mob-menu-item" onclick="closeMobMenu();' + item.fn + '">' +
+        '<span style="font-size:1rem;width:20px">' + item.icon + '</span>' +
+        '<span>' + item.label + '</span></button>';
     }).join('');
     menu.classList.add('open');
     overlay.classList.add('open');
@@ -3242,11 +3010,11 @@ function closeMobMenu() {
 }
 
 /* ═══ IMPORT JSON ═══ */
-let importData = null;
+var importData = null;
 
 function openImportModal() {
-  const sel = document.getElementById('importCourse');
-  sel.innerHTML = COURSES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  var sel = document.getElementById('importCourse');
+  sel.innerHTML = COURSES.map(function(c){ return '<option value="' + c + '">' + c + '</option>'; }).join('');
   sel.value = activeCourse;
   document.getElementById('importPeriod').value = activePeriod;
   document.getElementById('importFile').value = '';
@@ -3257,40 +3025,36 @@ function openImportModal() {
 }
 
 function previewImport() {
-  const file = document.getElementById('importFile').files[0];
+  var file = document.getElementById('importFile').files[0];
   if (!file) return;
-  const reader = new FileReader();
+  var reader = new FileReader();
   reader.onload = function(e) {
     try {
       importData = JSON.parse(e.target.result);
       if (!Array.isArray(importData)) throw new Error('El archivo no es un array JSON válido');
-
-      const course = document.getElementById('importCourse').value;
-      const students = grdCache[course]?.[+document.getElementById('importPeriod').value]?.students || [];
-      const codeMap = {};
-      students.forEach(s => { if(s.code) codeMap[s.code] = s; });
-
-      let found = 0, notFound = 0, log = '';
-      importData.forEach(item => {
-        const s = codeMap[item.codigo];
+      var course = document.getElementById('importCourse').value;
+      var period = +document.getElementById('importPeriod').value;
+      var students = grdCache[course]&&grdCache[course][period] ? grdCache[course][period].students : [];
+      var codeMap = {};
+      students.forEach(function(s){ if(s.code) codeMap[s.code] = s; });
+      var found = 0, notFound = 0, log = '';
+      importData.forEach(function(item){
+        var s = codeMap[item.codigo];
         if (s) {
           found++;
-          const acts = Object.keys(item.actividades || {}).length;
-          const comps = ['autoeval','coeval','final'].filter(k=>item[k]!=null).length;
-          const esp = item.especial ? 1 : 0;
-          log += `✓ ${item.codigo} ${s.name.substring(0,25)} — ${acts} act, ${comps} comp${esp?' +especial':''}
-`;
+          var acts = Object.keys(item.actividades||{}).length;
+          var comps = ['autoeval','coeval','final'].filter(function(k){ return item[k]!=null; }).length;
+          var esp = item.especial ? 1 : 0;
+          log += '✓ ' + item.codigo + ' ' + s.name.substring(0,25) + ' — ' + acts + ' act, ' + comps + ' comp' + (esp?' +especial':'') + '\n';
         } else {
           notFound++;
-          log += `✗ ${item.codigo} — no encontrado en ${course}
-`;
+          log += '✗ ' + item.codigo + ' — no encontrado en ' + course + '\n';
         }
       });
-
       document.getElementById('importStats').innerHTML =
-        `<strong>${found}</strong> estudiantes encontrados · ` +
-        `<span style="color:var(--fail)">${notFound} no encontrados</span> · ` +
-        `${importData.length} total en el archivo`;
+        '<strong>' + found + '</strong> estudiantes encontrados · ' +
+        '<span style="color:var(--fail)">' + notFound + ' no encontrados</span> · ' +
+        importData.length + ' total en el archivo';
       document.getElementById('importLog').textContent = log;
       document.getElementById('importPreview').style.display = '';
       document.getElementById('importBtn').disabled = found === 0;
@@ -3303,132 +3067,88 @@ function previewImport() {
 
 async function executeImport() {
   if (!importData) return;
-  const course = document.getElementById('importCourse').value;
-  const period = +document.getElementById('importPeriod').value;
-
-  // Load course data if not cached
-  if (!grdCache[course]?.[period]) {
+  var course = document.getElementById('importCourse').value;
+  var period = +document.getElementById('importPeriod').value;
+  if (!grdCache[course]||!grdCache[course][period]) {
     toast('Cargando datos del curso…');
-    const data = await apiGrd({action:'getAll', course, period});
+    var data = await apiGrd({action:'getAll', course:course, period:period});
     if (!grdCache[course]) grdCache[course] = {};
     grdCache[course][period] = data;
   }
-
-  const students = grdCache[course][period].students;
-  const codeMap = {};
-  students.forEach(s => { if(s.code) codeMap[s.code] = s; });
-
-  const btn = document.getElementById('importBtn');
+  var students = grdCache[course][period].students;
+  var codeMap = {};
+  students.forEach(function(s){ if(s.code) codeMap[s.code] = s; });
+  var btn = document.getElementById('importBtn');
   btn.textContent = 'Importando…'; btn.disabled = true;
-
-  let ok = 0, errors = 0;
-
-  for (const item of importData) {
-    const s = codeMap[item.codigo];
+  var ok = 0, errors = 0;
+  for (var i=0; i<importData.length; i++) {
+    var item = importData[i];
+    var s = codeMap[item.codigo];
     if (!s) continue;
-
     try {
-      // Save activities
-      for (const [actName, nota] of Object.entries(item.actividades || {})) {
-        await apiGrdPost({
-          action:'saveGrade', course, period,
-          component:'actividad', itemId:actName,
-          studentId:s.id, grade:nota
-        });
-        // Update local cache
-        if (!grdCache[course][period].grades.actividad)
-          grdCache[course][period].grades.actividad = {};
-        if (!grdCache[course][period].grades.actividad[actName])
-          grdCache[course][period].grades.actividad[actName] = {};
+      for (var actName in (item.actividades||{})) {
+        var nota = item.actividades[actName];
+        await apiGrdPost({action:'saveGrade', course:course, period:period, component:'actividad', itemId:actName, studentId:s.id, grade:nota});
+        if (!grdCache[course][period].grades.actividad) grdCache[course][period].grades.actividad = {};
+        if (!grdCache[course][period].grades.actividad[actName]) grdCache[course][period].grades.actividad[actName] = {};
         grdCache[course][period].grades.actividad[actName][s.id] = nota;
       }
-
-      // Save autoeval
       if (item.autoeval != null) {
-        await apiGrdPost({action:'saveGrade', course, period,
-          component:'autoeval', itemId:'_', studentId:s.id, grade:item.autoeval});
-        if (!grdCache[course][period].grades.autoeval)
-          grdCache[course][period].grades.autoeval = {};
-        if (!grdCache[course][period].grades.autoeval['_'])
-          grdCache[course][period].grades.autoeval['_'] = {};
+        await apiGrdPost({action:'saveGrade', course:course, period:period, component:'autoeval', itemId:'_', studentId:s.id, grade:item.autoeval});
+        if (!grdCache[course][period].grades.autoeval) grdCache[course][period].grades.autoeval = {};
+        if (!grdCache[course][period].grades.autoeval['_']) grdCache[course][period].grades.autoeval['_'] = {};
         grdCache[course][period].grades.autoeval['_'][s.id] = item.autoeval;
       }
-
-      // Save coeval
       if (item.coeval != null) {
-        await apiGrdPost({action:'saveGrade', course, period,
-          component:'coeval', itemId:'_', studentId:s.id, grade:item.coeval});
-        if (!grdCache[course][period].grades.coeval)
-          grdCache[course][period].grades.coeval = {};
-        if (!grdCache[course][period].grades.coeval['_'])
-          grdCache[course][period].grades.coeval['_'] = {};
+        await apiGrdPost({action:'saveGrade', course:course, period:period, component:'coeval', itemId:'_', studentId:s.id, grade:item.coeval});
+        if (!grdCache[course][period].grades.coeval) grdCache[course][period].grades.coeval = {};
+        if (!grdCache[course][period].grades.coeval['_']) grdCache[course][period].grades.coeval['_'] = {};
         grdCache[course][period].grades.coeval['_'][s.id] = item.coeval;
       }
-
-      // Save final
       if (item.final != null) {
-        await apiGrdPost({action:'saveGrade', course, period,
-          component:'final', itemId:'_', studentId:s.id, grade:item.final});
-        if (!grdCache[course][period].grades.final)
-          grdCache[course][period].grades.final = {};
-        if (!grdCache[course][period].grades.final['_'])
-          grdCache[course][period].grades.final['_'] = {};
+        await apiGrdPost({action:'saveGrade', course:course, period:period, component:'final', itemId:'_', studentId:s.id, grade:item.final});
+        if (!grdCache[course][period].grades.final) grdCache[course][period].grades.final = {};
+        if (!grdCache[course][period].grades.final['_']) grdCache[course][period].grades.final['_'] = {};
         grdCache[course][period].grades.final['_'][s.id] = item.final;
       }
-
-      // Save especial
       if (item.especial) {
-        // Find the special component ID by name
-        const specials = grdCache[course][period].weights?.especiales || [];
-        const sp = specials.find(e =>
-          e.name.trim().toLowerCase() === item.especial.nombre.trim().toLowerCase()
-        );
+        var specials = grdCache[course][period].weights&&grdCache[course][period].weights.especiales ? grdCache[course][period].weights.especiales : [];
+        var sp = specials.find(function(e){ return e.name.trim().toLowerCase() === item.especial.nombre.trim().toLowerCase(); });
         if (sp) {
-          await apiGrdPost({action:'saveGrade', course, period,
-            component:'especial', itemId:sp.id,
-            studentId:s.id, grade:item.especial.nota});
-          if (!grdCache[course][period].grades.especial)
-            grdCache[course][period].grades.especial = {};
-          if (!grdCache[course][period].grades.especial[sp.id])
-            grdCache[course][period].grades.especial[sp.id] = {};
+          await apiGrdPost({action:'saveGrade', course:course, period:period, component:'especial', itemId:sp.id, studentId:s.id, grade:item.especial.nota});
+          if (!grdCache[course][period].grades.especial) grdCache[course][period].grades.especial = {};
+          if (!grdCache[course][period].grades.especial[sp.id]) grdCache[course][period].grades.especial[sp.id] = {};
           grdCache[course][period].grades.especial[sp.id][s.id] = item.especial.nota;
         }
       }
-
       ok++;
-    } catch(err) {
-      errors++;
-    }
+    } catch(err) { errors++; }
   }
-
   closeModal('importModal');
   importData = null;
-
-  // Reload view
   if (course === activeCourse && period === activePeriod) grdRenderMain();
   renderNav();
-
-  toast(`✓ ${ok} estudiantes importados${errors ? ' · ⚠ '+errors+' errores' : ''}`);
+  toast('✓ ' + ok + ' estudiantes importados' + (errors?' · ⚠ '+errors+' errores':''));
 }
 
 /* ═══ MODALS ═══ */
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.overlay').forEach(el=>{
-  el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+document.querySelectorAll('.overlay').forEach(function(el){
+  el.addEventListener('click',function(e){ if(e.target===this)this.classList.remove('open'); });
 });
 
 /* ═══ TOAST ═══ */
-let _tt;
+var _tt;
 function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2600);
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(_tt); _tt=setTimeout(function(){ t.classList.remove('show'); },2600);
 }
 
 init();
 </script>
 
 </body>
-<script>if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));</script>
+<script>if("serviceWorker"in navigator)window.addEventListener("load",function(){ navigator.serviceWorker.register("./sw.js"); });</script>
 </html>
