@@ -468,7 +468,131 @@ body {
   .inf-hoja { box-shadow: none; border: none; padding: 16px; }
   body { background: white; }
 }
-.dash-card-desc { font-size: .74rem; color: var(--muted); line-height: 1.5; }
+/* ═══ VISTA MATRICIAL DE ASISTENCIA ═══ */
+.att-view-toggle {
+  display: flex; gap: 4px; margin-bottom: 14px;
+}
+.att-view-btn {
+  padding: 5px 14px; border-radius: 6px; font-size: .76rem; font-weight: 600;
+  cursor: pointer; border: 1.5px solid var(--bord); background: white;
+  color: var(--muted); transition: all .15s; font-family: 'DM Sans', sans-serif;
+}
+.att-view-btn.active { background: var(--att); border-color: var(--att); color: white; }
+.att-view-btn:hover:not(.active) { border-color: var(--att); color: var(--att); }
+
+.mat-wrap { overflow-x: auto; border: 1.5px solid var(--bord2); border-radius: var(--r); box-shadow: var(--shadow-sm); }
+.mat-tbl { border-collapse: collapse; font-size: .78rem; background: white; white-space: nowrap; }
+.mat-tbl th {
+  background: var(--navy); color: rgba(255,255,255,.9);
+  padding: 7px 6px; text-align: center;
+  border: 1px solid rgba(255,255,255,.15);
+  font-size: .65rem; font-weight: 700; letter-spacing: .3px;
+  position: sticky; top: 0; z-index: 2;
+}
+.mat-tbl th.mat-th-name {
+  text-align: left; min-width: 180px; width: 180px;
+  position: sticky; left: 0; z-index: 3;
+  border-right: 2px solid var(--gold);
+}
+.mat-tbl th.mat-th-total { background: #14305e; min-width: 44px; }
+.mat-tbl td {
+  padding: 5px 4px; border: 1px solid var(--bord);
+  text-align: center; vertical-align: middle;
+}
+.mat-tbl td.mat-td-name {
+  text-align: left; padding: 5px 10px;
+  background: white; position: sticky; left: 0; z-index: 1;
+  border-right: 2px solid var(--gold-md);
+  font-size: .78rem; max-width: 180px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mat-tbl tr:nth-child(even) td { background: #f8fafd; }
+.mat-tbl tr:nth-child(even) td.mat-td-name { background: #f8fafd; }
+.mat-tbl tr:hover td { background: #f0f9ff !important; }
+.mat-tbl tr:hover td.mat-td-name { background: #f0f9ff !important; }
+
+.mat-cell {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 24px; border-radius: 5px;
+  font-size: .7rem; font-weight: 800; cursor: pointer;
+  border: 1.5px solid transparent; transition: all .12s;
+  font-family: 'DM Mono', monospace;
+  user-select: none;
+}
+.mat-cell:hover { transform: scale(1.15); box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+.mat-cell.mc-P { background: #dcfce7; border-color: var(--P); color: var(--P); }
+.mat-cell.mc-A { background: #fee2e2; border-color: var(--A); color: var(--A); }
+.mat-cell.mc-T { background: #fef3c7; border-color: var(--T); color: var(--T); }
+.mat-cell.mc-J { background: #ede9fe; border-color: var(--J); color: var(--J); }
+.mat-cell.mc-E { background: #e0f2fe; border-color: var(--E); color: var(--E); }
+.mat-cell.mc-  { background: #f1f5f9; border-color: var(--bord); color: var(--muted); }
+
+.mat-total { font-family: 'DM Mono', monospace; font-size: .72rem; font-weight: 700; }
+.mat-total.mt-risk { color: var(--fail); }
+.mat-total.mt-ok   { color: var(--ok); }
+
+/* ═══ VISTA MATRICIAL MÓVIL — tarjetas por fecha ═══ */
+.mat-mobile { display: none; }
+@media (max-width: 700px) {
+  .mat-wrap { display: none; }
+  .mat-mobile { display: block; }
+}
+.mat-date-card {
+  background: white; border: 1.5px solid var(--bord);
+  border-radius: var(--r); margin-bottom: 10px;
+  overflow: hidden; box-shadow: var(--shadow-sm);
+}
+.mat-date-card-head {
+  background: var(--navy); color: white;
+  padding: 8px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.mat-date-card-label { font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 700; }
+.mat-date-card-stats { font-size: .72rem; opacity: .8; display: flex; gap: 8px; }
+.mat-date-card-body { padding: 6px 0; }
+.mat-mob-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 14px; border-bottom: 1px solid var(--bord);
+  font-size: .8rem;
+}
+.mat-mob-row:last-child { border-bottom: none; }
+.mat-mob-name { flex: 1; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.mat-mob-cell {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 26px; border-radius: 6px;
+  font-size: .72rem; font-weight: 800; cursor: pointer;
+  border: 1.5px solid transparent;
+  font-family: 'DM Mono', monospace;
+}
+.mat-mob-cell.mc-P { background: #dcfce7; border-color: var(--P); color: var(--P); }
+.mat-mob-cell.mc-A { background: #fee2e2; border-color: var(--A); color: var(--A); }
+.mat-mob-cell.mc-T { background: #fef3c7; border-color: var(--T); color: var(--T); }
+.mat-mob-cell.mc-J { background: #ede9fe; border-color: var(--J); color: var(--J); }
+.mat-mob-cell.mc-E { background: #e0f2fe; border-color: var(--E); color: var(--E); }
+.mat-mob-cell.mc-  { background: #f1f5f9; border-color: var(--bord); color: var(--muted); }
+.mat-popup {
+  position: fixed; z-index: 500;
+  background: white; border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(26,46,90,.2);
+  border: 1.5px solid var(--bord2);
+  padding: 10px 12px; min-width: 180px;
+}
+.mat-popup-name { font-size: .72rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.mat-popup-date { font-size: .68rem; color: var(--muted); margin-bottom: 8px; }
+.mat-popup-btns { display: flex; gap: 5px; }
+.mat-popup-btn {
+  flex: 1; padding: 6px 4px; border-radius: 6px;
+  font-size: .72rem; font-weight: 800; cursor: pointer;
+  border: 1.5px solid; transition: all .12s;
+  font-family: 'DM Mono', monospace; text-align: center;
+}
+.mat-popup-btn:hover { opacity: .8; transform: scale(1.05); }
+.mat-popup-btn.mpP { border-color: var(--P); color: var(--P); background: #f0fdf4; }
+.mat-popup-btn.mpA { border-color: var(--A); color: var(--A); background: #fef2f2; }
+.mat-popup-btn.mpT { border-color: var(--T); color: var(--T); background: #fffbeb; }
+.mat-popup-btn.mpJ { border-color: var(--J); color: var(--J); background: #f5f3ff; }
+.mat-popup-btn.mpE { border-color: var(--E); color: var(--E); background: #f0f9ff; }
+.mat-popup-btn.mp- { border-color: var(--bord); color: var(--muted); background: #f8fafc; }
 .dash-arrow {
   position: absolute; bottom: 14px; right: 14px;
   font-size: .8rem; color: var(--bord2);
@@ -1526,7 +1650,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 /* ═══════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════ */
-var URL_ATT = 'https://script.google.com/macros/s/AKfycbxu1e-tmHXjAPVLAGertZV-Fi9GK5zvQByy_geNxuf7Vb_90fJcWTzfgEpfdwL3NQit/exec';
+var URL_ATT = 'https://script.google.com/macros/s/AKfycbzPGoJ9ALof6zyWs18U9nwlpR8ouDD_Ohj9Lj2kwlKVIkXTURf8oKRP_fcsHG0T5-VY/exec';
 var URL_GRD = 'https://script.google.com/macros/s/AKfycbyMvkV4zJS3AjXuaVIBTa-gjtRpMDs2WyIGJ0XyJWBtv8MB7Ozsx-7dIR8CbGKTUa_x/exec';
 
 var COURSES = ['1004','1005','1006','1101','1102','1103','1104'];
@@ -1560,6 +1684,7 @@ var activeCourse = localStorage.getItem('gqm_course') || COURSES[0];
 var activePeriod = +localStorage.getItem('gqm_period') || 1;
 var attCache={}, grdCache={}, grdConfig={};
 var attHistOpen=true, grdActiveTab={};
+var attViewMode = 'daily'; // 'daily' | 'matrix'
 var pendingSaves={}, saveTimers={};
 
 /* ═══ SCREENS ═══ */
@@ -2099,6 +2224,7 @@ async function attCambiarFecha(date) {
 }
 
 function renderAttMain() {
+  if (attViewMode === 'matrix') { renderAttMatrix(); return; }
   var c = activeCourse;
   var inp = document.getElementById('dateInput');
   var date = (inp && inp.value) ? inp.value : today();
@@ -2166,6 +2292,10 @@ function renderAttMain() {
     '<div class="page-head">' +
     '<div><div class="course-label">Curso ' + c + '</div>' +
     '<div class="course-meta">' + sts.length + ' estudiante' + (sts.length!==1?'s':'') + ' · ' + date + '</div></div>' +
+    '<div class="att-view-toggle">' +
+    '<button class="att-view-btn active" onclick="setAttView(\'daily\')">📋 Lista diaria</button>' +
+    '<button class="att-view-btn" onclick="setAttView(\'matrix\')">📊 Tabla histórica</button>' +
+    '</div>' +
     '</div>' +
     '<div class="stats-row">' +
     '<div class="stat"><span class="stat-n" style="color:var(--P)">' + P + '</span><span class="stat-l">Presente</span></div>' +
@@ -3852,6 +3982,214 @@ function infTipoLabel(tipo) {
   if (tipo==='taller') return 'Taller';
   if (tipo==='evaluacion') return 'Evaluación';
   return 'Actividad';
+}
+
+/* ════════════════════════════════════════════════════════
+   VISTA MATRICIAL DE ASISTENCIA
+════════════════════════════════════════════════════════ */
+
+function setAttView(mode) {
+  attViewMode = mode;
+  if (mode === 'matrix') {
+    // Cargar historial completo si no está disponible
+    var c = activeCourse;
+    if (attCache[c] && !attCache[c].historialCargado) {
+      renderAttMatrixLoading();
+      apiAtt({action:'getAllAttendance', course:c}).then(function(attFresh) {
+        if (attFresh && !attFresh.error) {
+          Object.keys(attFresh).forEach(function(rawDate) {
+            var clean = normAttDate(rawDate);
+            if (clean) attCache[c].attendance[c + '_' + clean] = attFresh[rawDate];
+          });
+          attCache[c].historialCargado = true;
+        }
+        renderAttMatrix();
+      }).catch(function(){ renderAttMatrix(); });
+    } else {
+      renderAttMatrix();
+    }
+  } else {
+    renderAttMain();
+  }
+}
+
+function renderAttMatrixLoading() {
+  var c = activeCourse;
+  var data = attCache[c]||{students:[]};
+  var sts = data.students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
+  document.getElementById('mainArea').innerHTML =
+    '<div class="page-head">' +
+    '<div><div class="course-label">Curso ' + c + '</div>' +
+    '<div class="course-meta">' + sts.length + ' estudiantes</div></div>' +
+    '<div class="att-view-toggle">' +
+    '<button class="att-view-btn" onclick="setAttView(\'daily\')">📋 Lista diaria</button>' +
+    '<button class="att-view-btn active" onclick="setAttView(\'matrix\')">📊 Tabla histórica</button>' +
+    '</div></div>' +
+    '<div class="spin-wrap"><div class="spin"></div>Cargando historial completo…</div>';
+}
+
+function renderAttMatrix() {
+  var c = activeCourse;
+  var data = attCache[c]||{students:[],attendance:{}};
+  var sts = data.students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
+
+  // Obtener todas las fechas con registros para este curso
+  var prefix = c + '_';
+  var dates = Object.keys(data.attendance)
+    .filter(function(k){ return k.indexOf(prefix)===0; })
+    .map(function(k){ return k.replace(prefix,''); })
+    .filter(function(d){ return /^\d{4}-\d{2}-\d{2}$/.test(d); })
+    .sort();
+
+  var viewToggle =
+    '<div class="page-head">' +
+    '<div><div class="course-label">Curso ' + c + '</div>' +
+    '<div class="course-meta">' + sts.length + ' estudiantes · ' + dates.length + ' sesiones</div></div>' +
+    '<div class="att-view-toggle">' +
+    '<button class="att-view-btn" onclick="setAttView(\'daily\')">📋 Lista diaria</button>' +
+    '<button class="att-view-btn active" onclick="setAttView(\'matrix\')">📊 Tabla histórica</button>' +
+    '</div></div>';
+
+  if (!dates.length) {
+    document.getElementById('mainArea').innerHTML = viewToggle +
+      '<div class="empty"><div class="empty-ico">📭</div>Sin registros de asistencia. Llama lista primero.</div>';
+    return;
+  }
+
+  // Encabezados de fecha
+  var thd = '<th class="mat-th-name">Estudiante</th>' +
+    dates.map(function(d) {
+      var parts = d.split('-');
+      var label = parts[2] + '/' + parts[1];
+      var isToday = d === today();
+      return '<th style="' + (isToday?'background:#1a6b5a;':'') + '" title="' + d + '">' + label + '</th>';
+    }).join('') +
+    '<th class="mat-th-total">Fallas</th>';
+
+  // Filas
+  var rows = sts.map(function(s, idx) {
+    var fallas = 0;
+    var cells = dates.map(function(d) {
+      var dayAtt = data.attendance[c + '_' + d] || {};
+      var st = dayAtt[s.id] || '';
+      if (st === 'A') fallas++;
+      var cls = 'mc-' + (st || '');
+      var lbl = st || '·';
+      return '<td><span class="mat-cell ' + cls + '" ' +
+        'onclick="matCellClick(event,\'' + s.id + '\',\'' + s.name.replace(/'/g,'\\\'') + '\',\'' + d + '\')" ' +
+        'title="' + s.name + ' · ' + d + '">' + lbl + '</span></td>';
+    }).join('');
+    var riskCls = fallas >= 5 ? 'mt-risk' : fallas > 0 ? 'mt-ok' : '';
+    return '<tr>' +
+      '<td class="mat-td-name" title="' + s.name + '">' +
+      '<span style="font-size:.62rem;color:var(--muted);margin-right:5px">' + (idx+1) + '</span>' +
+      s.name + '</td>' +
+      cells +
+      '<td><span class="mat-total ' + riskCls + '">' + (fallas||'—') + '</span></td>' +
+      '</tr>';
+  }).join('');
+
+  document.getElementById('mainArea').innerHTML = viewToggle +
+    '<div class="mat-wrap"><table class="mat-tbl">' +
+    '<thead><tr>' + thd + '</tr></thead>' +
+    '<tbody>' + rows + '</tbody>' +
+    '</table></div>' +
+    buildMatMobile(c, dates, sts, data);
+}
+
+function buildMatMobile(c, dates, sts, data) {
+  if (!dates.length) return '';
+  // Mostrar las fechas en orden inverso (más reciente primero)
+  var cards = dates.slice().reverse().map(function(d) {
+    var parts = d.split('-');
+    var label = parts[2] + '/' + parts[1] + '/' + parts[0];
+    var dayAtt = data.attendance[c + '_' + d] || {};
+    var P=0,A=0,T=0,J=0,E=0;
+    sts.forEach(function(s) {
+      var st = dayAtt[s.id];
+      if (st==='P') P++; else if (st==='A') A++;
+      else if (st==='T') T++; else if (st==='J') J++;
+      else if (st==='E') E++;
+    });
+    var isToday = d === today();
+    var filas = sts.map(function(s) {
+      var st = dayAtt[s.id] || '';
+      var cls = 'mc-' + (st||'');
+      var lbl = st || '·';
+      return '<div class="mat-mob-row">' +
+        '<span class="mat-mob-name">' + s.name + '</span>' +
+        '<span class="mat-mob-cell ' + cls + '" ' +
+        'onclick="matCellClick(event,\'' + s.id + '\',\'' + s.name.replace(/'/g,'\\\'') + '\',\'' + d + '\')">' +
+        lbl + '</span>' +
+        '</div>';
+    }).join('');
+    return '<div class="mat-date-card">' +
+      '<div class="mat-date-card-head" style="' + (isToday?'background:#1a6b5a':'') + '">' +
+      '<span class="mat-date-card-label">📅 ' + label + (isToday?' · hoy':'') + '</span>' +
+      '<span class="mat-date-card-stats">' +
+      (P?'<span style="color:#4ade80">P:'+P+'</span>':'') +
+      (A?'<span style="color:#f87171">A:'+A+'</span>':'') +
+      (T?'<span style="color:#fbbf24">T:'+T+'</span>':'') +
+      (J?'<span style="color:#a78bfa">J:'+J+'</span>':'') +
+      (E?'<span style="color:#67e8f9">E:'+E+'</span>':'') +
+      '</span>' +
+      '</div>' +
+      '<div class="mat-date-card-body">' + filas + '</div>' +
+      '</div>';
+  }).join('');
+  return '<div class="mat-mobile">' + cards + '</div>';
+}
+
+// Popup de edición de celda en vista matricial
+var _matPopup = null;
+function matCellClick(event, stuId, stuName, date) {
+  event.stopPropagation();
+  matClosePopup();
+  var c = activeCourse;
+  var dayAtt = attCache[c]&&attCache[c].attendance ? (attCache[c].attendance[c+'_'+date]||{}) : {};
+  var cur = dayAtt[stuId] || '';
+
+  var popup = document.createElement('div');
+  popup.className = 'mat-popup';
+  popup.id = 'matPopup';
+  popup.innerHTML =
+    '<div class="mat-popup-name">' + stuName + '</div>' +
+    '<div class="mat-popup-date">📅 ' + date + ' · Estado actual: <strong>' + (cur||'Sin marcar') + '</strong></div>' +
+    '<div class="mat-popup-btns">' +
+    ['P','A','T','J','E'].map(function(st) {
+      return '<button class="mat-popup-btn mp' + st + '" onclick="matSetStatus(\'' + stuId + '\',\'' + date + '\',\'' + st + '\')">' + st + '</button>';
+    }).join('') +
+    '<button class="mat-popup-btn mp-" onclick="matSetStatus(\'' + stuId + '\',\'' + date + '\',\'\')">✕</button>' +
+    '</div>';
+
+  // Posicionar cerca del clic
+  var x = Math.min(event.clientX, window.innerWidth - 200);
+  var y = Math.min(event.clientY + 8, window.innerHeight - 120);
+  popup.style.left = x + 'px';
+  popup.style.top  = y + 'px';
+  document.body.appendChild(popup);
+  _matPopup = popup;
+
+  // Cerrar al hacer clic fuera
+  setTimeout(function() {
+    document.addEventListener('click', matClosePopup, {once:true});
+  }, 10);
+}
+
+function matClosePopup() {
+  if (_matPopup) { _matPopup.remove(); _matPopup = null; }
+}
+
+async function matSetStatus(stuId, date, status) {
+  matClosePopup();
+  var c = activeCourse;
+  var key = c + '_' + date;
+  if (!attCache[c].attendance[key]) attCache[c].attendance[key] = {};
+  if (status) attCache[c].attendance[key][stuId] = status;
+  else delete attCache[c].attendance[key][stuId];
+  renderAttMatrix();
+  await apiAttPost({action:'markAttendance', course:c, date:date, studentId:stuId, status:status});
+  toast((status ? status : 'Sin marcar') + ' guardado');
 }
 
 init();
