@@ -1526,7 +1526,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 /* ═══════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════ */
-var URL_ATT = 'https://script.google.com/macros/s/AKfycbx1-g-GDOZBfPd0Vtr1HwV3W2nhHSscrMduvl-nwuUQpC4XGnAbDt-ulTPT-pUHzHL1/exec';
+var URL_ATT = 'https://script.google.com/macros/s/AKfycbxu1e-tmHXjAPVLAGertZV-Fi9GK5zvQByy_geNxuf7Vb_90fJcWTzfgEpfdwL3NQit/exec';
 var URL_GRD = 'https://script.google.com/macros/s/AKfycbyMvkV4zJS3AjXuaVIBTa-gjtRpMDs2WyIGJ0XyJWBtv8MB7Ozsx-7dIR8CbGKTUa_x/exec';
 
 var COURSES = ['1004','1005','1006','1101','1102','1103','1104'];
@@ -1696,8 +1696,10 @@ function selectCourse(c) {
 
 /* ═══ API ═══ */
 async function apiAtt(params) {
+  var isHeavy = params.action === 'getAllAttendance';
+  var limitMs  = isHeavy ? 30000 : 8000; // 30s para historial completo, 8s para el resto
   var controller = new AbortController();
-  var timer = setTimeout(function(){ controller.abort(); }, 8000); // 8s timeout
+  var timer = setTimeout(function(){ controller.abort(); }, limitMs);
   try {
     var r = await fetch(URL_ATT+'?'+new URLSearchParams(Object.assign({},params,{pwd:SESSION_PWD})),{method:'GET',redirect:'follow',signal:controller.signal});
     clearTimeout(timer);
@@ -1805,6 +1807,15 @@ async function generarConsolidado() {
   ]);
   var stuFresh = results[0];
   var attFresh = results[1];
+
+  // Verificar que las respuestas son válidas
+  if (!Array.isArray(stuFresh) || !attFresh || attFresh.error) {
+    document.getElementById('consResult').innerHTML =
+      '<div class="empty"><div class="empty-ico">⚠️</div>Error al obtener datos' +
+      (attFresh&&attFresh.error ? ': ' + attFresh.error : '') +
+      '. Intenta de nuevo.</div>';
+    return;
+  }
 
   // Cargar historial completo y marcarlo en caché
   attCache[course] = {students: stuFresh, attendance: {}, historialCargado: true};
