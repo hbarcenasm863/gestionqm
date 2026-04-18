@@ -2023,27 +2023,30 @@ async function loadAttCourse(course) {
     '<button class="icon-btn" onclick="openAttExport()">⬇</button>' +
     '<button class="icon-btn" onclick="openAttBulk()">📋</button>';
 
-  var existingDate = document.getElementById('dateInput') ? document.getElementById('dateInput').value : '';
-  if (!existingDate) document.getElementById('dateInput').value = today();
-  else document.getElementById('dateInput').value = existingDate;
+  var dateHoy = today();
+  document.getElementById('dateInput').value = dateHoy;
 
   if (!attCache[course]) {
     document.getElementById('mainArea').innerHTML =
       '<div class="spin-wrap"><div class="spin"></div>Cargando asistencia ' + course + '…</div>';
 
-    // CARGA RÁPIDA: solo estudiantes + asistencia del día actual
-    var dateHoy = today();
-    var attResults = await Promise.all([
-      apiAtt({action:'getStudents', course:course}),
-      apiAtt({action:'getAttendanceDate', course:course, date:dateHoy})
-    ]);
-    var students   = attResults[0];
-    var dayAtt     = attResults[1] || {};
+    // UNA SOLA LLAMADA que devuelve students + asistencia del día juntos
+    var data = await apiAtt({action:'getAttInit', course:course, date:dateHoy});
 
-    attCache[course] = {students: students, attendance: {}, historialCargado: false};
-    // Guardar solo la asistencia del día en caché
-    var key = course + '_' + dateHoy;
-    attCache[course].attendance[key] = dayAtt;
+    if (data && data.students) {
+      attCache[course] = {students: data.students, attendance: {}, historialCargado: false};
+      var key = course + '_' + dateHoy;
+      attCache[course].attendance[key] = data.dayAtt || {};
+    } else {
+      // Fallback: si el Apps Script aún no tiene getAttInit, usar las 2 llamadas
+      var attResults = await Promise.all([
+        apiAtt({action:'getStudents', course:course}),
+        apiAtt({action:'getAttendanceDate', course:course, date:dateHoy})
+      ]);
+      attCache[course] = {students: attResults[0]||[], attendance: {}, historialCargado: false};
+      var key = course + '_' + dateHoy;
+      attCache[course].attendance[key] = attResults[1] || {};
+    }
   }
   renderAttMain();
 }
