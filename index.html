@@ -297,6 +297,7 @@ body {
 .cbtn:hover { background: var(--card); color: var(--navy); }
 .cbtn.active-att { background: var(--att-lt); color: var(--att); border-left-color: var(--att); font-weight: 600; }
 .cbtn.active-grd { background: var(--grd-lt); color: var(--grd); border-left-color: var(--gold); font-weight: 600; }
+.cbtn.active-inf { background: #f3e8ff; color: #7c3aed; border-left-color: #7c3aed; font-weight: 600; }
 .cdot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 .cct {
   margin-left: auto;
@@ -309,6 +310,7 @@ body {
 }
 .cbtn.active-att .cct { background: rgba(26,107,90,.12); color: var(--att); }
 .cbtn.active-grd .cct { background: rgba(200,150,12,.12); color: var(--gold); }
+.cbtn.active-inf .cct { background: rgba(124,58,237,.12); color: #7c3aed; }
 .ap-badge {
   font-size: .58rem;
   font-family: 'DM Mono', monospace;
@@ -378,6 +380,7 @@ body {
 }
 .dash-card.att::after { background: var(--att); }
 .dash-card.grd::after { background: var(--gold); }
+.dash-card.inf::after { background: #7c3aed; }
 .dash-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow);
@@ -391,6 +394,79 @@ body {
 }
 .dash-card.att .dash-card-title { color: var(--att); }
 .dash-card.grd .dash-card-title { color: var(--navy); }
+.dash-card.inf .dash-card-title { color: #7c3aed; }
+
+/* ═══ MÓDULO INFORMES ═══ */
+.inf-sel-wrap { max-width: 600px; margin: 0 auto; }
+.inf-sel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.inf-sel-full { margin-bottom: 12px; }
+.inf-lbl { font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; display: block; margin-bottom: 5px; }
+.inf-select, .inf-input {
+  width: 100%; padding: 9px 12px; border: 1.5px solid var(--bord);
+  border-radius: 8px; font-size: .85rem; color: var(--text-main);
+  background: white; outline: none; transition: border-color .2s; font-family: inherit;
+}
+.inf-select:focus, .inf-input:focus { border-color: #7c3aed; }
+.btn-inf { background: #7c3aed; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: .9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; margin-top: 4px; }
+.btn-inf:hover { background: #6d28d9; }
+.btn-inf:disabled { opacity: .5; cursor: not-allowed; }
+
+/* HOJA INFORME */
+.inf-hoja { background: white; border-radius: 12px; border: 1.5px solid var(--bord); padding: 28px 30px; margin-top: 16px; }
+.inf-cab { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; border-bottom: 3px solid #1a2e5a; padding-bottom: 12px; margin-bottom: 14px; }
+.inf-cab img { height: 48px; }
+.inf-cab-c h3 { font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 800; color: #1a2e5a; }
+.inf-cab-c p  { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+.inf-badge { border-radius: 8px; padding: 7px 12px; text-align: center; min-width: 72px; }
+.inf-badge-n { font-size: 1.6rem; font-weight: 900; line-height: 1; color: white; }
+.inf-badge-l { font-size: .65rem; color: rgba(255,255,255,.85); text-transform: uppercase; letter-spacing: .4px; }
+.inf-ficha { display: grid; grid-template-columns: repeat(4,1fr); border: 1.5px solid var(--bord); border-radius: 8px; overflow: hidden; margin-bottom: 14px; }
+.inf-fi { padding: 7px 10px; border-right: 1px solid var(--bord); }
+.inf-fi:last-child { border-right: none; }
+.inf-fi-l { font-size: .68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+.inf-fi-v { font-size: .82rem; font-weight: 700; color: var(--text-main); margin-top: 2px; }
+.inf-nivel { display: inline-block; border-radius: 20px; padding: 3px 12px; font-size: .78rem; font-weight: 800; margin-bottom: 14px; }
+.inf-sec { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: #1a2e5a; border-bottom: 2px solid #1a2e5a; padding-bottom: 3px; margin: 18px 0 10px; }
+.inf-tbl { width: 100%; border-collapse: collapse; margin-bottom: 6px; font-size: .8rem; }
+.inf-tbl th { background: #1a2e5a; color: white; padding: 6px 8px; text-align: left; font-size: .68rem; text-transform: uppercase; }
+.inf-tbl td { padding: 6px 8px; border-bottom: 1px solid var(--bord); }
+.inf-tbl tr:nth-child(even) td { background: #f8fafc; }
+.inf-chip { display: inline-block; border-radius: 4px; padding: 1px 7px; font-weight: 800; font-size: .78rem; min-width: 34px; text-align: center; }
+.ic-sup { background: #dcfce7; color: #166534; } .ic-alt { background: #dbeafe; color: #1e40af; }
+.ic-bas { background: #fef9c3; color: #713f12; } .ic-baj { background: #fee2e2; color: #991b1b; }
+.ic-nd  { background: #f1f5f9; color: #94a3b8; }
+.inf-comp-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 12px; }
+.inf-comp-card { border: 1.5px solid var(--bord); border-radius: 8px; padding: 8px 10px; text-align: center; }
+.inf-cc-l { font-size: .62rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+.inf-cc-n { font-size: 1.3rem; font-weight: 900; line-height: 1.2; }
+.inf-cc-p { font-size: .65rem; color: var(--muted); }
+.inf-cc-a { font-size: .7rem; font-weight: 700; margin-top: 3px; padding: 1px 6px; border-radius: 10px; }
+.inf-asist { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.inf-asist-item { flex: 1; min-width: 80px; border: 1.5px solid var(--bord); border-radius: 8px; padding: 8px 10px; text-align: center; }
+.inf-asist-n { font-size: 1.4rem; font-weight: 900; line-height: 1; }
+.inf-asist-l { font-size: .62rem; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+.inf-tend { display: flex; align-items: flex-end; gap: 5px; height: 54px; margin-bottom: 4px; }
+.inf-tend-col { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+.inf-tend-bar { width: 100%; border-radius: 3px 3px 0 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 2px; font-size: .62rem; font-weight: 800; color: white; min-height: 4px; }
+.inf-tend-nm { font-size: .6rem; color: var(--muted); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 56px; }
+.inf-analisis { background: #f8fafc; border-left: 4px solid #1a2e5a; border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: .78rem; line-height: 1.7; color: var(--text-main); margin-bottom: 12px; }
+.inf-obs-box { border: 1.5px solid var(--bord); border-radius: 8px; padding: 10px 14px; min-height: 60px; font-size: .78rem; color: var(--muted); font-style: italic; margin-bottom: 16px; line-height: 1.7; }
+.inf-firma { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--bord); }
+.inf-firma-item { text-align: center; }
+.inf-firma-linea { border-top: 1.5px solid var(--text-main); margin: 0 16px 4px; }
+.inf-firma-nm { font-size: .72rem; font-weight: 700; margin-bottom: 28px; }
+.inf-firma-l  { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
+.inf-pie { text-align: center; font-size: .62rem; color: var(--muted); margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--bord); }
+.inf-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.btn-inf-back { background: white; color: #7c3aed; border: 2px solid #7c3aed; border-radius: 7px; padding: 7px 14px; font-size: .82rem; font-weight: 700; cursor: pointer; }
+.btn-inf-print { background: #1a2e5a; color: white; border: none; border-radius: 7px; padding: 7px 16px; font-size: .82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+.inf-def-row { text-align: right; margin-bottom: 12px; font-size: .82rem; font-weight: 700; color: #1a2e5a; }
+@media print {
+  .topbar, .sidebar, .inf-toolbar { display: none !important; }
+  .main-area { margin: 0 !important; padding: 8px !important; }
+  .inf-hoja { box-shadow: none; border: none; padding: 16px; }
+  body { background: white; }
+}
 .dash-card-desc { font-size: .74rem; color: var(--muted); line-height: 1.5; }
 .dash-arrow {
   position: absolute; bottom: 14px; right: 14px;
@@ -1566,6 +1642,11 @@ function showDash() {
     '<div class="dash-card-title">Notas</div>' +
     '<div class="dash-card-desc">Registro, promedios ponderados y backup automático</div>' +
     '<div class="dash-arrow">→</div></div>' +
+    '<div class="dash-card inf" onclick="openModule(\'inf\')" style="grid-column:1/-1">' +
+    '<div class="dash-card-icon">📄</div>' +
+    '<div class="dash-card-title">Informes</div>' +
+    '<div class="dash-card-desc">Informe académico individual con análisis de progreso — para citación a padres</div>' +
+    '<div class="dash-arrow">→</div></div>' +
     '</div><div class="dash-meta">' + dt + '</div>' +
     '</div></div>';
 }
@@ -1576,20 +1657,22 @@ function openModule(mod) {
   renderNav();
   if (mod === 'att') loadAttCourse(activeCourse);
   if (mod === 'grd') grdLoadView(activeCourse, activePeriod);
+  if (mod === 'inf') infLoadView();
 }
 
 function refreshModule() {
   if (activeModule==='att') { attCache={}; loadAttCourse(activeCourse); }
   if (activeModule==='grd') { grdCache={}; grdLoadView(activeCourse,activePeriod); }
+  if (activeModule==='inf') { infLoadView(); }
 }
 
 /* ═══ SIDEBAR ═══ */
 function renderNav() {
   document.getElementById('sidebarHead').textContent =
-    activeModule==='att' ? 'Asistencia' : 'Notas';
+    activeModule==='att' ? 'Asistencia' : activeModule==='inf' ? 'Informes' : 'Notas';
   document.getElementById('courseNav').innerHTML = COURSES.map(function(c) {
     var isActive = c === activeCourse;
-    var cls = isActive ? (activeModule==='att'?'active-att':'active-grd') : '';
+    var cls = isActive ? (activeModule==='att'?'active-att': activeModule==='inf'?'active-inf':'active-grd') : '';
     var count = activeModule==='att'
       ? (attCache[c]&&attCache[c].students ? attCache[c].students.length : '·')
       : (grdCache[c]&&grdCache[c][activePeriod]&&grdCache[c][activePeriod].students ? grdCache[c][activePeriod].students.length : '·');
@@ -1607,6 +1690,7 @@ function selectCourse(c) {
   activeCourse = c; localStorage.setItem('gqm_course',c);
   if (activeModule==='att') loadAttCourse(c);
   if (activeModule==='grd') grdLoadView(c,activePeriod);
+  if (activeModule==='inf') infLoadView();
 }
 
 /* ═══ API ═══ */
@@ -3144,6 +3228,554 @@ function toast(msg){
   var t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
   clearTimeout(_tt); _tt=setTimeout(function(){ t.classList.remove('show'); },2600);
+}
+
+/* ════════════════════════════════════════════════════════
+   MÓDULO INFORMES
+════════════════════════════════════════════════════════ */
+
+var infEstudiantes = []; // caché de estudiantes del curso activo
+
+function infLoadView() {
+  var topbar = document.getElementById('topbarCenter');
+  topbar.innerHTML =
+    '<button class="mod-tab att" onclick="openModule(\'att\')">📋 <span>Asistencia</span></button>' +
+    '<button class="mod-tab grd" onclick="openModule(\'grd\')">📝 <span>Notas</span></button>' +
+    '<button class="mod-tab" style="background:#7c3aed;color:white;border-color:#7c3aed" onclick="openModule(\'inf\')">📄 <span>Informes</span></button>';
+
+  document.getElementById('mainArea').innerHTML =
+    '<div class="spin-wrap"><div class="spin"></div>Cargando estudiantes de ' + activeCourse + '…</div>';
+
+  // Cargamos estudiantes desde caché de notas si ya existe, si no desde API
+  var cached = grdCache[activeCourse] && grdCache[activeCourse][activePeriod];
+  if (cached && cached.students && cached.students.length) {
+    infEstudiantes = cached.students;
+    infRenderSelector();
+  } else {
+    apiGrd({action:'getAll', course:activeCourse, period:activePeriod}).then(function(data) {
+      if (data && data.students) {
+        if (!grdCache[activeCourse]) grdCache[activeCourse] = {};
+        grdCache[activeCourse][activePeriod] = data;
+        infEstudiantes = data.students;
+      } else {
+        infEstudiantes = [];
+      }
+      infRenderSelector();
+    });
+  }
+}
+
+function infRenderSelector() {
+  var opts = infEstudiantes
+    .slice()
+    .sort(function(a,b){ return a.name.localeCompare(b.name,'es'); })
+    .map(function(s){ return '<option value="' + s.id + '">' + s.name + '</option>'; })
+    .join('');
+
+  var perOpts = [1,2,3].map(function(p){
+    return '<option value="' + p + '"' + (p===activePeriod?' selected':'') + '>Periodo ' + p + '</option>';
+  }).join('');
+
+  document.getElementById('mainArea').innerHTML =
+    '<div class="inf-sel-wrap">' +
+    '<div class="page-head" style="margin-bottom:20px">' +
+    '<div><div class="course-label">Curso ' + activeCourse + '</div>' +
+    '<div class="course-meta">Generar informe académico individual</div></div>' +
+    '</div>' +
+    '<div class="inf-sel-grid">' +
+    '<div><label class="inf-lbl">Estudiante</label>' +
+    '<select class="inf-select" id="inf-stu">' +
+    '<option value="">— Selecciona —</option>' + opts +
+    '</select></div>' +
+    '<div><label class="inf-lbl">Periodo</label>' +
+    '<select class="inf-select" id="inf-per">' + perOpts + '</select></div>' +
+    '</div>' +
+    '<div class="inf-sel-full"><label class="inf-lbl">Observaciones del docente (opcional)</label>' +
+    '<input class="inf-input" id="inf-obs" type="text" placeholder="Ej: Presenta dificultades en cálculos estequiométricos…"></div>' +
+    '<button class="btn-inf" onclick="infGenerar()">📄 Generar informe</button>' +
+    '</div>';
+}
+
+async function infGenerar() {
+  var stuId  = document.getElementById('inf-stu').value;
+  var period = parseInt(document.getElementById('inf-per').value);
+  var obs    = document.getElementById('inf-obs').value.trim();
+
+  if (!stuId) { toast('Selecciona un estudiante'); return; }
+
+  document.getElementById('mainArea').innerHTML =
+    '<div class="spin-wrap"><div class="spin"></div>Generando informe…</div>';
+
+  // Asegurar datos del periodo solicitado en caché
+  if (!grdCache[activeCourse] || !grdCache[activeCourse][period]) {
+    var data = await apiGrd({action:'getAll', course:activeCourse, period:period});
+    if (!grdCache[activeCourse]) grdCache[activeCourse] = {};
+    grdCache[activeCourse][period] = data;
+  }
+
+  var d       = grdCache[activeCourse][period];
+  var student = (d.students||[]).find(function(s){ return s.id===stuId; });
+  if (!student) { toast('Estudiante no encontrado'); infRenderSelector(); return; }
+
+  var specials = (d.weights&&d.weights.especiales)||[];
+  var baseW    = computeWeights(specials);
+  var actNames = d.actNames||[];
+  var grades   = d.grades||{};
+
+  // Actividades individuales
+  var acts = actNames.map(function(n) {
+    var nota = grades['actividad']&&grades['actividad'][n]?grades['actividad'][n][stuId]:null;
+    return {nombre:n, nota:(nota!=null?nota:null)};
+  });
+  var actVals = acts.filter(function(a){ return a.nota!==null; }).map(function(a){ return a.nota; });
+  var promAct = actVals.length ? actVals.reduce(function(s,v){ return s+v; },0)/actVals.length : null;
+
+  var autoeval = (grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][stuId]!=null) ? grades['autoeval']['_'][stuId] : null;
+  var coeval   = (grades['coeval']  &&grades['coeval']  ['_']&&grades['coeval']  ['_'][stuId]!=null) ? grades['coeval']  ['_'][stuId] : null;
+  var finalN   = (grades['final']   &&grades['final']   ['_']&&grades['final']   ['_'][stuId]!=null) ? grades['final']   ['_'][stuId] : null;
+
+  var speciVals = specials.map(function(sp) {
+    var v = grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][stuId]!=null ? grades['especial'][sp.id][stuId] : null;
+    return {nombre:sp.name, nota:v, peso:sp.weight};
+  });
+
+  var definitiva = grdCalcFinal(student, actNames, grades, baseW, specials);
+
+  // Asistencia desde caché att
+  var asistencia = infGetAsistencia(student.name, activeCourse);
+
+  infRenderInforme({
+    student: student, course: activeCourse, period: period,
+    acts: acts, promAct: promAct,
+    autoeval: autoeval, coeval: coeval, finalN: finalN,
+    specials: speciVals, baseW: baseW, definitiva: definitiva,
+    asistencia: asistencia, obs: obs
+  });
+}
+
+function infGetAsistencia(nombre, course) {
+  // Usa la caché de asistencia si está disponible
+  var cache = attCache[course];
+  if (!cache || !cache.attendance) return null;
+  var student = (cache.students||[]).find(function(s){
+    return s.name.trim().toLowerCase() === nombre.trim().toLowerCase();
+  });
+  if (!student) return null;
+  var total=0, asistidas=0, fallas=0, tardanzas=0, justificadas=0;
+  Object.keys(cache.attendance).forEach(function(k) {
+    var rec = cache.attendance[k];
+    if (rec && typeof rec === 'object') {
+      var st = rec[student.id];
+      if (st !== undefined && st !== '') {
+        total++;
+        if (st==='P') asistidas++;
+        else if (st==='A') fallas++;
+        else if (st==='T') tardanzas++;
+        else if (st==='J') justificadas++;
+        else if (st==='E') asistidas++;
+      }
+    }
+  });
+  return {total:total, asistidas:asistidas, fallas:fallas, tardanzas:tardanzas, justificadas:justificadas};
+}
+
+function infRenderInforme(d) {
+  var fecha = new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
+  var nivel = infNivel(d.definitiva);
+
+  // Barra de tendencia
+  var actsValidas = d.acts.filter(function(a){ return a.nota!==null; });
+  var realizadasTend = actsValidas.filter(function(a){ return a.nota > 0; });
+  var tendHTML = '';
+  if (actsValidas.length >= 2) {
+    tendHTML = '<div class="inf-tend">';
+    actsValidas.forEach(function(a) {
+      var esNR = a.nota === 0;
+      var h    = esNR ? 8 : Math.max(8, Math.round((a.nota/5)*50));
+      var bg   = esNR ? '#94a3b8' : infChipBg(a.nota);
+      var lbl  = esNR ? 'N/E' : (h>14?a.nota.toFixed(1):'');
+      tendHTML += '<div class="inf-tend-col">' +
+        '<div class="inf-tend-bar" style="height:' + h + 'px;background:' + bg + ';opacity:' + (esNR?'0.45':'1') + '">' + lbl + '</div>' +
+        '<div class="inf-tend-nm" style="color:' + (esNR?'#ef4444':'') + '">' + infEsc(a.nombre.split(' ').slice(0,2).join(' ')) + '</div>' +
+        '</div>';
+    });
+    tendHTML += '</div>';
+    // Tendencia solo con realizadas
+    if (realizadasTend.length >= 2) {
+      var diff = realizadasTend[realizadasTend.length-1].nota - realizadasTend[0].nota;
+      tendHTML += '<div style="font-size:.72rem;color:var(--muted);margin-top:4px">' +
+        (diff>0.3?'📈 Tendencia ascendente (+'+diff.toFixed(1)+')':diff<-0.3?'📉 Tendencia descendente ('+diff.toFixed(1)+')':'➡️ Desempeño estable') +
+        (actsValidas.length > realizadasTend.length ? ' &nbsp;·&nbsp; <span style="color:#ef4444">⚠ Barras grises = actividad no entregada (N/E)</span>' : '') +
+        '</div>';
+    } else {
+      tendHTML += '<div style="font-size:.72rem;color:#ef4444;margin-top:4px">⚠ Las barras grises (N/E) indican actividades no entregadas.</div>';
+    }
+  } else {
+    tendHTML = '<div style="font-size:.78rem;color:var(--muted)">Se necesitan al menos 2 actividades registradas para mostrar tendencia.</div>';
+  }
+
+  // Tabla de actividades
+  var actRows = d.acts.map(function(a,i) {
+    var esNR = a.nota === 0;
+    var chip = a.nota!==null
+      ? (esNR
+          ? '<span class="inf-chip ic-nd" style="background:#fee2e2;color:#991b1b;font-size:.7rem">N/E</span>'
+          : '<span class="inf-chip ' + infChipCls(a.nota) + '">' + a.nota.toFixed(1) + '</span>')
+      : '<span class="inf-chip ic-nd">—</span>';
+    var desc = esNR ? '<span style="color:#991b1b;font-weight:700">No entregado (0.0)</span>' : infDesc(a.nota);
+    return '<tr' + (esNR?' style="background:#fff5f5"':'') + '><td>' + (i+1) + '</td><td>' + infEsc(a.nombre) + '</td><td>' + chip + '</td><td style="font-size:.72rem">' + desc + '</td></tr>';
+  }).join('');
+  var promChip = d.promAct!==null
+    ? '<span class="inf-chip ' + infChipCls(d.promAct) + '">' + d.promAct.toFixed(2) + '</span>'
+    : '<span class="inf-chip ic-nd">—</span>';
+
+  // Componentes
+  function compCard(lbl, nota, peso) {
+    var aporte = nota!==null ? (nota*peso/100).toFixed(2) : '—';
+    var cc = nota!==null ? infChipCls(nota) : 'ic-nd';
+    return '<div class="inf-comp-card">' +
+      '<div class="inf-cc-l">' + lbl + '</div>' +
+      '<div class="inf-cc-n ' + cc + '">' + (nota!==null?nota.toFixed(1):'—') + '</div>' +
+      '<div class="inf-cc-p">' + peso + '% del periodo</div>' +
+      '<div class="inf-cc-a ' + cc + '">Aporta: ' + aporte + '</div>' +
+      '</div>';
+  }
+  var compGrid = compCard('Actividades', d.promAct, d.baseW.actividades) +
+    compCard('Autoevaluación', d.autoeval, 5) +
+    compCard('Coevaluación', d.coeval, 5) +
+    compCard('Ev. Final', d.finalN, d.baseW.final);
+  d.specials.forEach(function(sp) {
+    compGrid += compCard(infEsc(sp.nombre), sp.nota, sp.peso);
+  });
+
+  // Asistencia
+  var asistHTML = '';
+  if (d.asistencia && d.asistencia.total > 0) {
+    var pct = Math.round((d.asistencia.asistidas/d.asistencia.total)*100);
+    var riesgo = pct < 80;
+    asistHTML =
+      '<div class="inf-sec">4. Asistencia</div>' +
+      '<div class="inf-asist">' +
+      infAsistItem(d.asistencia.total, 'Clases', '#1a2e5a') +
+      infAsistItem(d.asistencia.asistidas, 'Asistencias', '#166534') +
+      infAsistItem(d.asistencia.fallas, 'Fallas', d.asistencia.fallas>3?'#991b1b':'#64748b') +
+      infAsistItem(d.asistencia.tardanzas, 'Tardanzas', '#854d0e') +
+      infAsistItem(pct+'%', 'Total', riesgo?'#991b1b':'#166534') +
+      '</div>' +
+      (riesgo?'<div style="font-size:.72rem;color:#991b1b;font-weight:700;margin-bottom:10px">⚠ Asistencia por debajo del 80% — riesgo de pérdida por inasistencia.</div>':'');
+  } else {
+    asistHTML =
+      '<div class="inf-sec">4. Asistencia</div>' +
+      '<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Abre el módulo de Asistencia para este curso y vuelve a generar el informe.</div>';
+  }
+
+  // Análisis automático
+  var analisis = infAnalisis(d, actsValidas, nivel);
+
+  // Definitiva badge color
+  var badgeBg = nivel.color;
+
+  document.getElementById('mainArea').innerHTML =
+    '<div class="inf-toolbar">' +
+    '<button class="btn-inf-back" onclick="infLoadView()">← Volver</button>' +
+    '<button class="btn-inf-print" onclick="window.print()">🖨️ Imprimir / PDF</button>' +
+    '<span style="font-size:.72rem;color:var(--muted)">Imprimir → Guardar como PDF para adjuntar a citación</span>' +
+    '</div>' +
+
+    '<div class="inf-hoja">' +
+
+    // Cabecera
+    '<div class="inf-cab">' +
+    '<img src="rufino.png" alt="Rufino" onerror="this.style.display=\'none\'">' +
+    '<div class="inf-cab-c">' +
+    '<h3>Colegio Rufino José Cuervo IED</h3>' +
+    '<p>Ciencias Naturales — Química &nbsp;|&nbsp; Informe Académico Individual</p>' +
+    '<p style="font-size:.65rem;color:#94a3b8;margin-top:1px">Generado el ' + fecha + ' — Uso exclusivo docente</p>' +
+    '</div>' +
+    '<div class="inf-badge" style="background:' + badgeBg + '">' +
+    '<div class="inf-badge-n">' + (d.definitiva!==null?d.definitiva.toFixed(1):'—') + '</div>' +
+    '<div class="inf-badge-l">Definitiva</div>' +
+    '</div></div>' +
+
+    // Ficha
+    '<div class="inf-ficha">' +
+    infFi('Estudiante', d.student.name) +
+    infFi('Curso', 'Grado ' + d.course) +
+    infFi('Periodo', 'Periodo ' + d.period) +
+    infFi('Docente', 'Harvey Barcenas M.') +
+    '</div>' +
+
+    '<span class="inf-nivel" style="background:' + nivel.bg + ';color:' + nivel.color + '">Desempeño ' + nivel.label + '</span>' +
+
+    // 1. Actividades
+    '<div class="inf-sec">1. Actividades de clase (' + d.baseW.actividades + '%)</div>' +
+    '<table class="inf-tbl"><thead><tr><th>#</th><th>Actividad</th><th>Nota</th><th>Descripción</th></tr></thead>' +
+    '<tbody>' + actRows + '</tbody>' +
+    '<tfoot><tr style="background:#1a2e5a;color:white">' +
+    '<td colspan="2" style="padding:6px 8px;font-weight:800;font-size:.72rem">PROMEDIO ACTIVIDADES (' + d.baseW.actividades + '%)</td>' +
+    '<td style="padding:6px 8px">' + promChip + '</td>' +
+    '<td style="padding:6px 8px;font-size:.72rem">' + infDesc(d.promAct) + '</td>' +
+    '</tr></tfoot></table>' +
+
+    // 2. Tendencia
+    '<div class="inf-sec">2. Evolución por actividad</div>' +
+    tendHTML +
+
+    // 3. Componentes
+    '<div class="inf-sec">3. Componentes de evaluación</div>' +
+    '<div class="inf-comp-grid">' + compGrid + '</div>' +
+    '<div class="inf-def-row">NOTA DEFINITIVA: <span class="inf-chip ' + infChipCls(d.definitiva) + '" style="font-size:.9rem;padding:3px 12px">' + (d.definitiva!==null?d.definitiva.toFixed(2):'—') + '</span></div>' +
+
+    // 4. Asistencia
+    asistHTML +
+
+    // 5. Análisis
+    '<div class="inf-sec">5. Análisis del proceso académico</div>' +
+    '<div class="inf-analisis">' + analisis + '</div>' +
+
+    // 6. Observaciones
+    '<div class="inf-sec">6. Observaciones del docente</div>' +
+    '<div class="inf-obs-box">' + (d.obs ? infEsc(d.obs) : 'Sin observaciones registradas.') + '</div>' +
+
+    // Firmas
+    '<div class="inf-firma">' +
+    '<div class="inf-firma-item"><div class="inf-firma-nm">' + infEsc(d.student.name) + '</div>' +
+    '<div class="inf-firma-linea"></div><div class="inf-firma-l">Firma del estudiante / acudiente</div></div>' +
+    '<div class="inf-firma-item"><div class="inf-firma-nm">Harvey Barcenas Morales</div>' +
+    '<div class="inf-firma-linea"></div><div class="inf-firma-l">Firma del docente</div></div>' +
+    '</div>' +
+
+    '<div class="inf-pie">Generado con HBMol · Colegio Rufino José Cuervo IED · Ciencias Naturales — Química · Documento de uso interno.</div>' +
+    '</div>';
+}
+
+/* ── Helpers del módulo informes ── */
+
+function infFi(l, v) {
+  return '<div class="inf-fi"><div class="inf-fi-l">' + l + '</div><div class="inf-fi-v">' + infEsc(String(v)) + '</div></div>';
+}
+function infAsistItem(val, lbl, color) {
+  return '<div class="inf-asist-item"><div class="inf-asist-n" style="color:' + color + '">' + val + '</div><div class="inf-asist-l">' + lbl + '</div></div>';
+}
+function infEsc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function infNivel(n) {
+  if (n===null||n===undefined) return {label:'Sin datos', color:'#64748b', bg:'#f1f5f9'};
+  if (n>=4.6) return {label:'Superior', color:'#166534', bg:'#dcfce7'};
+  if (n>=4.0) return {label:'Alto',     color:'#1e40af', bg:'#dbeafe'};
+  if (n>=3.0) return {label:'Básico',   color:'#713f12', bg:'#fef9c3'};
+  return             {label:'Bajo',     color:'#991b1b', bg:'#fee2e2'};
+}
+function infChipCls(n) {
+  if (n===null||n===undefined) return 'ic-nd';
+  if (n>=4.6) return 'ic-sup'; if (n>=4.0) return 'ic-alt';
+  if (n>=3.0) return 'ic-bas'; return 'ic-baj';
+}
+function infChipBg(n) {
+  if (n>=4.6) return '#166534'; if (n>=4.0) return '#1e40af';
+  if (n>=3.0) return '#713f12'; return '#991b1b';
+}
+function infDesc(n) {
+  if (n===null||n===undefined) return '—';
+  if (n>=4.6) return 'Desempeño Superior';
+  if (n>=4.0) return 'Desempeño Alto';
+  if (n>=3.0) return 'Desempeño Básico';
+  return 'Desempeño Bajo';
+}
+
+/* Detecta el tipo de actividad según palabras clave en el nombre */
+function infTipoActividad(nombre) {
+  var n = nombre.toUpperCase();
+  if (n.indexOf('INFORME DE LABORATORIO') !== -1 || n.indexOf('LABORATORIO') !== -1) return 'lab';
+  if (n.indexOf('TALLER') !== -1) return 'taller';
+  if (n.indexOf('EVALUACION') !== -1 || n.indexOf('EVALUACIÓN') !== -1) return 'evaluacion';
+  return 'otra';
+}
+
+function infAnalisis(d, actsValidas, nivel) {
+  var lineas = [];
+  var nombre = d.student.name.split(',')[0];
+
+  /* ── SEPARAR: no realizadas (nota 0) vs realizadas con nota ── */
+  var noRealizadas = actsValidas.filter(function(a){ return a.nota === 0; });
+  var realizadas   = actsValidas.filter(function(a){ return a.nota > 0; });
+
+  /* ── 1. ACTIVIDADES NO REALIZADAS (nota 0) ── */
+  if (noRealizadas.length > 0) {
+    var nombresNR = noRealizadas.map(function(a){
+      return '"' + infEsc(a.nombre) + '" (' + infTipoLabel(infTipoActividad(a.nombre)) + ')';
+    }).join(', ');
+
+    if (noRealizadas.length === 1)
+      lineas.push('⚠ <strong>Actividad no entregada:</strong> El estudiante tiene registrada nota <strong>0.0</strong> en ' + nombresNR + ', lo que indica que <strong>no realizó ni entregó esta actividad</strong>. Esta situación afecta directamente el promedio del componente de actividades. Se solicita al acudiente verificar las razones de esta omisión y establecer compromisos para que no se repita.');
+    else
+      lineas.push('⚠ <strong>Actividades no entregadas (' + noRealizadas.length + '):</strong> El estudiante tiene nota <strong>0.0</strong> en las siguientes actividades, lo que indica que <strong>no las realizó ni entregó</strong>: ' + nombresNR + '. Cada actividad no entregada impacta significativamente el promedio del periodo. Se solicita al acudiente una conversación con el estudiante para identificar los motivos y establecer compromisos de cumplimiento.');
+
+    /* Cruce: ¿tiene 0 en evaluación? es especialmente grave */
+    var evalsNR = noRealizadas.filter(function(a){ return infTipoActividad(a.nombre)==='evaluacion'; });
+    if (evalsNR.length > 0)
+      lineas.push('⚠ <strong>Evaluación(es) no presentada(s):</strong> ' +
+        evalsNR.map(function(a){ return '"' + infEsc(a.nombre) + '"'; }).join(', ') +
+        '. No presentar una evaluación sin justificación válida es una falta grave al proceso académico. El docente debe ser informado con anticipación cuando exista una causa justificada para ausencia en fechas de evaluación.');
+
+    /* Cruce: ¿tiene 0 en laboratorio? implica no asistió a la práctica */
+    var labsNR = noRealizadas.filter(function(a){ return infTipoActividad(a.nombre)==='lab'; });
+    if (labsNR.length > 0)
+      lineas.push('⚠ <strong>Informe(s) de laboratorio no entregado(s):</strong> ' +
+        labsNR.map(function(a){ return '"' + infEsc(a.nombre) + '"'; }).join(', ') +
+        '. Los informes de laboratorio son una evidencia fundamental del trabajo experimental. Su no entrega puede indicar ausencia a la práctica o falta de organización para presentar el informe a tiempo.');
+  }
+
+  /* ── 2. TENDENCIA GENERAL (solo actividades realizadas) ── */
+  if (realizadas.length >= 2) {
+    var primera = realizadas[0].nota;
+    var ultima  = realizadas[realizadas.length-1].nota;
+    var diff    = ultima - primera;
+    if (diff > 0.5)
+      lineas.push('<strong>' + infEsc(nombre) + '</strong> muestra una <strong>tendencia claramente ascendente</strong> en las actividades realizadas, con una mejora de <strong>' + diff.toFixed(1) + ' puntos</strong> entre la primera y última actividad registrada. Esto refleja un proceso de aprendizaje progresivo y constante.');
+    else if (diff > 0.2)
+      lineas.push('<strong>' + infEsc(nombre) + '</strong> presenta una <strong>leve mejora</strong> en su desempeño durante el periodo (avance de <strong>' + diff.toFixed(1) + ' puntos</strong>). El proceso va en la dirección correcta, aunque puede consolidarse aún más.');
+    else if (diff < -0.5)
+      lineas.push('Se evidencia una <strong>tendencia descendente significativa</strong> en el desempeño de <strong>' + infEsc(nombre) + '</strong> (caída de <strong>' + Math.abs(diff).toFixed(1) + ' puntos</strong>). Esta situación requiere atención prioritaria y un plan de acompañamiento concreto.');
+    else if (diff < -0.2)
+      lineas.push('Se observa una <strong>leve tendencia decreciente</strong> en el rendimiento (variación de <strong>' + diff.toFixed(1) + ' puntos</strong>). Se recomienda revisar los factores que pueden estar influyendo en este resultado.');
+    else
+      lineas.push('<strong>' + infEsc(nombre) + '</strong> mantiene un <strong>desempeño estable</strong> en las actividades realizadas. Los resultados son consistentes.');
+  } else if (realizadas.length === 1) {
+    lineas.push('Solo se cuenta con <strong>una actividad realizada</strong> (' + realizadas[0].nota.toFixed(1) + ') para analizar el proceso del periodo. No es posible establecer una tendencia con un único dato.');
+  } else if (realizadas.length === 0 && noRealizadas.length > 0) {
+    lineas.push('No se registran actividades realizadas en el periodo. <strong>Todas las actividades tienen nota 0.0</strong>, lo que indica que el estudiante no ha entregado ninguna evidencia de aprendizaje hasta la fecha.');
+  }
+
+  /* ── CLASIFICAR POR TIPO solo las REALIZADAS ── */
+  var labs    = realizadas.filter(function(a){ return infTipoActividad(a.nombre)==='lab'; });
+  var talleres= realizadas.filter(function(a){ return infTipoActividad(a.nombre)==='taller'; });
+  var evals   = realizadas.filter(function(a){ return infTipoActividad(a.nombre)==='evaluacion'; });
+  var otras   = realizadas.filter(function(a){ return infTipoActividad(a.nombre)==='otra'; });
+
+  function prom(arr) {
+    if (!arr.length) return null;
+    return arr.reduce(function(s,a){ return s+a.nota; },0)/arr.length;
+  }
+  var promLabs  = prom(labs);
+  var promTall  = prom(talleres);
+  var promEvals = prom(evals);
+  var promOtras = prom(otras);
+
+  /* ── 3. LABORATORIOS REALIZADOS ── */
+  if (labs.length > 0) {
+    var minLab = labs.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, labs[0]);
+    var maxLab = labs.reduce(function(mx,a){ return a.nota>mx.nota?a:mx; }, labs[0]);
+    if (promLabs >= 4.0)
+      lineas.push('En los <strong>informes de laboratorio entregados</strong> (promedio: ' + promLabs.toFixed(1) + '), el estudiante demuestra <strong>buenas competencias procedimentales</strong>: registra observaciones con precisión, maneja adecuadamente los datos experimentales y elabora conclusiones coherentes.');
+    else if (promLabs >= 3.0)
+      lineas.push('En los <strong>informes de laboratorio entregados</strong> (promedio: ' + promLabs.toFixed(1) + '), el estudiante alcanza un desempeño básico. Se recomienda fortalecer la <strong>redacción de conclusiones</strong> y la conexión entre resultados experimentales y conceptos teóricos. El mejor informe fue <strong>"' + infEsc(maxLab.nombre) + '"</strong> (' + maxLab.nota.toFixed(1) + ').');
+    else
+      lineas.push('Los <strong>informes de laboratorio entregados</strong> muestran dificultades en el trabajo experimental (promedio: ' + promLabs.toFixed(1) + '). El de menor desempeño fue <strong>"' + infEsc(minLab.nombre) + '"</strong> (' + minLab.nota.toFixed(1) + '). Es necesario reforzar la <strong>organización de datos y la argumentación científica</strong>.');
+  }
+
+  /* ── 4. TALLERES REALIZADOS ── */
+  if (talleres.length > 0) {
+    var minTall = talleres.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, talleres[0]);
+    var maxTall = talleres.reduce(function(mx,a){ return a.nota>mx.nota?a:mx; }, talleres[0]);
+    if (promTall >= 4.0)
+      lineas.push('En los <strong>talleres entregados</strong> (promedio: ' + promTall.toFixed(1) + '), el estudiante demuestra <strong>capacidad para aplicar conceptos</strong>, resuelve ejercicios con autonomía y presenta sus trabajos de forma organizada.');
+    else if (promTall >= 3.0) {
+      var msgT = 'En los <strong>talleres entregados</strong> (promedio: ' + promTall.toFixed(1) + '), el estudiante alcanza los desempeños mínimos.';
+      if (talleres.length > 1 && maxTall.nota - minTall.nota > 1.0)
+        msgT += ' Se observa <strong>inconsistencia entre talleres</strong>: el mejor fue <strong>"' + infEsc(maxTall.nombre) + '"</strong> (' + maxTall.nota.toFixed(1) + ') y el de menor desempeño fue <strong>"' + infEsc(minTall.nombre) + '"</strong> (' + minTall.nota.toFixed(1) + '), lo que sugiere dificultades en temas específicos.';
+      else
+        msgT += ' Se recomienda mayor dedicación en la resolución de ejercicios y consulta oportuna de dudas al docente.';
+      lineas.push(msgT);
+    } else
+      lineas.push('Los <strong>talleres entregados</strong> muestran dificultades en la aplicación práctica de los conceptos (promedio: ' + promTall.toFixed(1) + '). El de menor desempeño fue <strong>"' + infEsc(minTall.nombre) + '"</strong> (' + minTall.nota.toFixed(1) + '). Se recomienda refuerzo dirigido y acompañamiento en casa.');
+  }
+
+  /* ── 5. EVALUACIONES REALIZADAS ── */
+  if (evals.length > 0) {
+    var minEval = evals.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, evals[0]);
+    if (promEvals >= 4.0)
+      lineas.push('En las <strong>evaluaciones presentadas</strong> (promedio: ' + promEvals.toFixed(1) + '), el estudiante demuestra <strong>dominio sólido de los contenidos</strong> bajo condiciones de evaluación individual y sin apoyo externo.');
+    else if (promEvals >= 3.0)
+      lineas.push('En las <strong>evaluaciones presentadas</strong> (promedio: ' + promEvals.toFixed(1) + '), el estudiante alcanza nivel básico. Comprende los conceptos generales pero presenta dificultades para <strong>aplicarlos con precisión en evaluación formal</strong>. Se recomienda reforzar el estudio sistemático previo a las pruebas.');
+    else {
+      var msgE = 'Las <strong>evaluaciones presentadas</strong> indican dificultades importantes en el dominio de contenidos (promedio: ' + promEvals.toFixed(1) + ').';
+      if (d.autoeval!==null && d.autoeval > promEvals + 0.8)
+        msgE += ' Además, existe una <strong>diferencia importante entre la autovaloración del estudiante (' + d.autoeval.toFixed(1) + ') y su desempeño real en evaluaciones (' + promEvals.toFixed(1) + ')</strong>, lo que sugiere que no identifica con claridad sus propias dificultades conceptuales.';
+      msgE += ' Es fundamental establecer un <strong>plan de estudio estructurado</strong> y solicitar apoyo al docente antes de la próxima evaluación.';
+      lineas.push(msgE);
+    }
+  }
+
+  /* ── 6. OTRAS ACTIVIDADES ── */
+  if (otras.length > 0 && promOtras !== null && promOtras < 3.0) {
+    var minOtra = otras.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, otras[0]);
+    lineas.push('Otras actividades del periodo como <strong>"' + infEsc(minOtra.nombre) + '"</strong> también presentan resultados bajos (' + minOtra.nota.toFixed(1) + '). Esto refuerza la necesidad de un seguimiento integral del proceso académico.');
+  }
+
+  /* ── 7. COMPARACIÓN ENTRE TIPOS ── */
+  var tiposConDatos = [
+    promLabs!==null?{tipo:'Informes de laboratorio',prom:promLabs}:null,
+    promTall!==null?{tipo:'Talleres',prom:promTall}:null,
+    promEvals!==null?{tipo:'Evaluaciones',prom:promEvals}:null
+  ].filter(function(x){ return x!==null; });
+
+  if (tiposConDatos.length >= 2) {
+    tiposConDatos.sort(function(a,b){ return b.prom-a.prom; });
+    var mejor = tiposConDatos[0];
+    var peor  = tiposConDatos[tiposConDatos.length-1];
+    if (mejor.prom - peor.prom > 0.8)
+      lineas.push('Se destaca una <strong>diferencia notable entre tipos de actividad</strong>: mejor desempeño en <strong>' + mejor.tipo + '</strong> (' + mejor.prom.toFixed(1) + ') que en <strong>' + peor.tipo + '</strong> (' + peor.prom.toFixed(1) + '). Esto indica mayor dominio en competencias ' + (mejor.tipo==='Evaluaciones'?'cognitivas formales':mejor.tipo==='Informes de laboratorio'?'procedimentales':'de aplicación práctica') + '.');
+  }
+
+  /* ── 8. AUTOEVALUACIÓN vs EVALUACIÓN FINAL ── */
+  if (d.autoeval!==null && d.finalN!==null) {
+    var dif2 = d.autoeval - d.finalN;
+    if (dif2 > 1.2)
+      lineas.push('La <strong>autoevaluación (' + d.autoeval.toFixed(1) + ') supera considerablemente la evaluación final (' + d.finalN.toFixed(1) + ')</strong>. El estudiante sobreestima su aprendizaje, lo que puede llevar a una preparación insuficiente para las pruebas. Desde casa se puede apoyar con preguntas de repaso antes de las evaluaciones.');
+    else if (dif2 > 0.5)
+      lineas.push('Existe una <strong>leve sobreestimación</strong> en la autoevaluación (' + d.autoeval.toFixed(1) + ') respecto a la evaluación final (' + d.finalN.toFixed(1) + '). Se recomienda que el estudiante sea más crítico al valorar su propio aprendizaje.');
+    else if (d.finalN > d.autoeval + 0.8)
+      lineas.push('El estudiante demostró en la <strong>evaluación final (' + d.finalN.toFixed(1) + ') un desempeño superior a su propia autovaloración (' + d.autoeval.toFixed(1) + ')</strong>. Con mayor confianza en sus capacidades podría alcanzar resultados aún más altos.');
+    else if (Math.abs(dif2) <= 0.5)
+      lineas.push('La <strong>autoevaluación (' + d.autoeval.toFixed(1) + ') es coherente con la evaluación final (' + d.finalN.toFixed(1) + ')</strong>, lo que refleja buena capacidad de reflexión sobre el propio proceso de aprendizaje.');
+  }
+
+  /* ── 9. ASISTENCIA ── */
+  if (d.asistencia && d.asistencia.total > 0) {
+    var pct = Math.round((d.asistencia.asistidas/d.asistencia.total)*100);
+    if (pct < 70)
+      lineas.push('⚠ <strong>Alerta crítica de asistencia:</strong> El estudiante asistió solo al ' + pct + '% de las clases (' + d.asistencia.fallas + ' fallas sobre ' + d.asistencia.total + ' sesiones). La inasistencia reiterada es un factor determinante en el bajo rendimiento y puede generar pérdida del área según el manual de convivencia institucional.');
+    else if (pct < 80)
+      lineas.push('⚠ <strong>Alerta de asistencia:</strong> Con un ' + pct + '% de asistencia (' + d.asistencia.fallas + ' fallas), el estudiante está por debajo del umbral del 80%. Esto afecta directamente la continuidad en el proceso de aprendizaje.');
+    else if (pct === 100)
+      lineas.push('El estudiante tiene <strong>asistencia perfecta</strong> (' + d.asistencia.total + '/' + d.asistencia.total + ' clases), lo que refleja compromiso y responsabilidad con su proceso académico.');
+    else if (pct >= 90)
+      lineas.push('El estudiante presenta <strong>excelente asistencia</strong> (' + pct + '%), lo que favorece la continuidad en el aprendizaje.');
+  }
+
+  /* ── 10. CONCLUSIÓN SEGÚN NIVEL ── */
+  var tieneNR = noRealizadas.length > 0;
+  if (nivel.label==='Bajo')
+    lineas.push('⚠ <strong>Conclusión:</strong> El estudiante <strong>no ha alcanzado los desempeños mínimos</strong> del periodo en Química.' + (tieneNR?' Parte del resultado se explica por actividades no entregadas, situación que puede corregirse con compromiso inmediato.':'') + ' Se requiere <strong>citación urgente al acudiente</strong> para establecer un plan de nivelación con fechas concretas y seguimiento semanal desde el hogar. Sin intervención oportuna, el estudiante corre riesgo de perder el área.');
+  else if (nivel.label==='Básico')
+    lineas.push('<strong>Conclusión:</strong> El estudiante <strong>alcanza los desempeños mínimos</strong> del periodo, pero con margen estrecho.' + (tieneNR?' Entregar las actividades pendientes mejoraría notablemente su promedio.':'') + ' Se recomienda refuerzo en los temas con menor dominio, mayor dedicación al estudio en casa y participación activa en clase.');
+  else if (nivel.label==='Alto')
+    lineas.push('<strong>Conclusión:</strong> El estudiante demuestra <strong>dominio satisfactorio de los contenidos</strong> del periodo. Para avanzar hacia el nivel Superior, puede profundizar en los temas con mayor dificultad' + (tieneNR?' y asegurarse de no dejar actividades sin entregar':'') + '.');
+  else if (nivel.label==='Superior')
+    lineas.push('<strong>Conclusión:</strong> El estudiante alcanza un <strong>desempeño Superior</strong> en el área, demostrando dominio conceptual, procedimental y actitudinal. Se invita a continuar con este nivel de compromiso.');
+
+  if (!lineas.length) return 'Sin datos suficientes para generar análisis automático.';
+  return lineas.join('<br><br>');
+}
+
+function infTipoLabel(tipo) {
+  if (tipo==='lab') return 'Laboratorio';
+  if (tipo==='taller') return 'Taller';
+  if (tipo==='evaluacion') return 'Evaluación';
+  return 'Actividad';
 }
 
 init();
