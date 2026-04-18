@@ -1526,7 +1526,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 /* ═══════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════ */
-var URL_ATT = 'https://script.google.com/macros/s/AKfycbw8iw4JUDM8jdXQHjmktuTjVo0P5_rwilXTzDJSp_JoyOWSt-icuOPW2DyPZznLd3hP/exec';
+var URL_ATT = 'https://script.google.com/macros/s/AKfycbx1-g-GDOZBfPd0Vtr1HwV3W2nhHSscrMduvl-nwuUQpC4XGnAbDt-ulTPT-pUHzHL1/exec';
 var URL_GRD = 'https://script.google.com/macros/s/AKfycbyMvkV4zJS3AjXuaVIBTa-gjtRpMDs2WyIGJ0XyJWBtv8MB7Ozsx-7dIR8CbGKTUa_x/exec';
 
 var COURSES = ['1004','1005','1006','1101','1102','1103','1104'];
@@ -2030,22 +2030,39 @@ async function loadAttCourse(course) {
     document.getElementById('mainArea').innerHTML =
       '<div class="spin-wrap"><div class="spin"></div>Cargando asistencia ' + course + '…</div>';
 
-    // UNA SOLA LLAMADA que devuelve students + asistencia del día juntos
-    var data = await apiAtt({action:'getAttInit', course:course, date:dateHoy});
+    var loaded = false;
 
-    if (data && data.students) {
-      attCache[course] = {students: data.students, attendance: {}, historialCargado: false};
-      var key = course + '_' + dateHoy;
-      attCache[course].attendance[key] = data.dayAtt || {};
-    } else {
-      // Fallback: si el Apps Script aún no tiene getAttInit, usar las 2 llamadas
-      var attResults = await Promise.all([
-        apiAtt({action:'getStudents', course:course}),
-        apiAtt({action:'getAttendanceDate', course:course, date:dateHoy})
-      ]);
-      attCache[course] = {students: attResults[0]||[], attendance: {}, historialCargado: false};
-      var key = course + '_' + dateHoy;
-      attCache[course].attendance[key] = attResults[1] || {};
+    // Intento 1: getAttInit (una sola llamada, más rápido)
+    try {
+      var data = await apiAtt({action:'getAttInit', course:course, date:dateHoy});
+      if (data && data.students && Array.isArray(data.students)) {
+        attCache[course] = {students: data.students, attendance: {}, historialCargado: false};
+        attCache[course].attendance[course + '_' + dateHoy] = data.dayAtt || {};
+        loaded = true;
+      }
+    } catch(e) { /* continuar al fallback */ }
+
+    // Fallback: getStudents + getAttendance (método original que siempre funciona)
+    if (!loaded) {
+      try {
+        var attResults = await Promise.all([
+          apiAtt({action:'getStudents', course:course}),
+          apiAtt({action:'getAttendance', course:course, date:dateHoy})
+        ]);
+        var students = attResults[0];
+        var dayAtt   = attResults[1] || {};
+        if (Array.isArray(students)) {
+          attCache[course] = {students: students, attendance: {}, historialCargado: false};
+          attCache[course].attendance[course + '_' + dateHoy] = dayAtt;
+          loaded = true;
+        }
+      } catch(e) { /* error de red */ }
+    }
+
+    if (!loaded) {
+      document.getElementById('mainArea').innerHTML =
+        '<div class="empty"><div class="empty-ico">⚠️</div>Error al cargar. Verifica tu conexión y recarga.</div>';
+      return;
     }
   }
   renderAttMain();
@@ -2062,8 +2079,16 @@ async function renderAttMain() {
   if (attCache[c] && !attCache[c].historialCargado) {
     var key = c + '_' + date;
     if (!attCache[c].attendance[key]) {
-      var dayAtt = await apiAtt({action:'getAttendanceDate', course:c, date:date});
-      attCache[c].attendance[key] = dayAtt || {};
+      try {
+        // Intentar primero getAttendanceDate (más nuevo), luego getAttendance (siempre funciona)
+        var dayAtt = await apiAtt({action:'getAttendanceDate', course:c, date:date});
+        if (!dayAtt || dayAtt.error) {
+          dayAtt = await apiAtt({action:'getAttendance', course:c, date:date});
+        }
+        attCache[c].attendance[key] = dayAtt || {};
+      } catch(e) {
+        attCache[c].attendance[key] = {};
+      }
     }
   }
 
@@ -3250,6 +3275,7 @@ function toast(msg){
 var infEstudiantes = []; // caché de estudiantes del curso activo
 
 function infLoadView() {
+  renderNav(); // actualiza sidebar para mostrar "Informes" y resaltar curso activo
   var topbar = document.getElementById('topbarCenter');
   topbar.innerHTML =
     '<button class="mod-tab att" onclick="openModule(\'att\')">📋 <span>Asistencia</span></button>' +
