@@ -1356,7 +1356,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
       <label class="mlabel">Formato: <code style="color:var(--gold);font-size:.78rem">NOMBRE|CÓDIGO</code></label>
       <textarea class="minput" id="grdBulkNames"
         placeholder="PÉREZ GARCÍA, Juan|100401&#10;RODRÍGUEZ LÓPEZ, María|100402&#10;GÓMEZ (sin código aún)"></textarea>
-      <div class="bulk-hint">💡 Separa nombre y código con <strong>|</strong>. El código es el que el estudiante usa para consultar sus notas. Puedes agregarlo después.</div>
+      <div class="bulk-hint">💡 Separa nombre y código con <strong>|</strong>. El código es el que el/la estudiante usa para consultar sus notas. Puedes agregarlo después.</div>
     </div>
     <div class="mbtns">
       <button class="btn btn-outline" onclick="closeModal('grdBulkModal')">Cancelar</button>
@@ -3550,9 +3550,21 @@ async function infGenerar() {
 }
 
 function infGetAsistencia(nombre, course) {
-  // Usa la caché de asistencia si está disponible
+  // Si no hay historial cargado, intentar sincronizar en background para próxima vez
   var cache = attCache[course];
   if (!cache || !cache.attendance) return null;
+  if (!cache.historialCargado) {
+    // Disparar sincronización silenciosa para que esté disponible la próxima vez
+    apiAtt({action:'getAllAttendance', course:course}).then(function(attFresh) {
+      if (attFresh && !attFresh.error) {
+        Object.keys(attFresh).forEach(function(rawDate) {
+          var clean = normAttDate(rawDate);
+          if (clean) attCache[course].attendance[course + '_' + clean] = attFresh[rawDate];
+        });
+        attCache[course].historialCargado = true;
+      }
+    }).catch(function(){});
+  }
   var student = (cache.students||[]).find(function(s){
     return s.name.trim().toLowerCase() === nombre.trim().toLowerCase();
   });
@@ -3805,9 +3817,9 @@ function infAnalisis(d, actsValidas, nivel) {
     }).join(', ');
 
     if (noRealizadas.length === 1)
-      lineas.push('⚠ <strong>Actividad no entregada:</strong> El estudiante tiene registrada nota <strong>0.0</strong> en ' + nombresNR + ', lo que indica que <strong>no realizó ni entregó esta actividad</strong>. Esta situación afecta directamente el promedio del componente de actividades. Se solicita al acudiente verificar las razones de esta omisión y establecer compromisos para que no se repita.');
+      lineas.push('⚠ <strong>Actividad no entregada:</strong> El/La estudiante tiene registrada nota <strong>0.0</strong> en ' + nombresNR + ', lo que indica que <strong>no realizó ni entregó esta actividad</strong>. Esta situación afecta directamente el promedio del componente de actividades. Se solicita al acudiente verificar las razones de esta omisión y establecer compromisos para que no se repita.');
     else
-      lineas.push('⚠ <strong>Actividades no entregadas (' + noRealizadas.length + '):</strong> El estudiante tiene nota <strong>0.0</strong> en las siguientes actividades, lo que indica que <strong>no las realizó ni entregó</strong>: ' + nombresNR + '. Cada actividad no entregada impacta significativamente el promedio del periodo. Se solicita al acudiente una conversación con el estudiante para identificar los motivos y establecer compromisos de cumplimiento.');
+      lineas.push('⚠ <strong>Actividades no entregadas (' + noRealizadas.length + '):</strong> El/La estudiante tiene nota <strong>0.0</strong> en las siguientes actividades, lo que indica que <strong>no las realizó ni entregó</strong>: ' + nombresNR + '. Cada actividad no entregada impacta significativamente el promedio del periodo. Se solicita al acudiente una conversación con el/la estudiante para identificar los motivos y establecer compromisos de cumplimiento.');
 
     /* Cruce: ¿tiene 0 en evaluación? es especialmente grave */
     var evalsNR = noRealizadas.filter(function(a){ return infTipoActividad(a.nombre)==='evaluacion'; });
@@ -3830,19 +3842,19 @@ function infAnalisis(d, actsValidas, nivel) {
     var ultima  = realizadas[realizadas.length-1].nota;
     var diff    = ultima - primera;
     if (diff > 0.5)
-      lineas.push('<strong>' + infEsc(nombre) + '</strong> muestra una <strong>tendencia claramente ascendente</strong> en las actividades realizadas, con una mejora de <strong>' + diff.toFixed(1) + ' puntos</strong> entre la primera y última actividad registrada. Esto refleja un proceso de aprendizaje progresivo y constante.');
+      lineas.push('El/La estudiante muestra una <strong>tendencia claramente ascendente</strong> en las actividades realizadas, con una mejora de <strong>' + diff.toFixed(1) + ' puntos</strong> entre la primera y última actividad registrada. Esto refleja un proceso de aprendizaje progresivo y constante.');
     else if (diff > 0.2)
-      lineas.push('<strong>' + infEsc(nombre) + '</strong> presenta una <strong>leve mejora</strong> en su desempeño durante el periodo (avance de <strong>' + diff.toFixed(1) + ' puntos</strong>). El proceso va en la dirección correcta, aunque puede consolidarse aún más.');
+      lineas.push('El/La estudiante presenta una <strong>leve mejora</strong> en su desempeño durante el periodo (avance de <strong>' + diff.toFixed(1) + ' puntos</strong>). El proceso va en la dirección correcta, aunque puede consolidarse aún más.');
     else if (diff < -0.5)
-      lineas.push('Se evidencia una <strong>tendencia descendente significativa</strong> en el desempeño de <strong>' + infEsc(nombre) + '</strong> (caída de <strong>' + Math.abs(diff).toFixed(1) + ' puntos</strong>). Esta situación requiere atención prioritaria y un plan de acompañamiento concreto.');
+      lineas.push('Se evidencia una <strong>tendencia descendente significativa</strong> en el desempeño de El/La estudiante (caída de <strong>' + Math.abs(diff).toFixed(1) + ' puntos</strong>). Esta situación requiere atención prioritaria y un plan de acompañamiento concreto.');
     else if (diff < -0.2)
       lineas.push('Se observa una <strong>leve tendencia decreciente</strong> en el rendimiento (variación de <strong>' + diff.toFixed(1) + ' puntos</strong>). Se recomienda revisar los factores que pueden estar influyendo en este resultado.');
     else
-      lineas.push('<strong>' + infEsc(nombre) + '</strong> mantiene un <strong>desempeño estable</strong> en las actividades realizadas. Los resultados son consistentes.');
+      lineas.push('El/La estudiante mantiene un <strong>desempeño estable</strong> en las actividades realizadas. Los resultados son consistentes.');
   } else if (realizadas.length === 1) {
     lineas.push('Solo se cuenta con <strong>una actividad realizada</strong> (' + realizadas[0].nota.toFixed(1) + ') para analizar el proceso del periodo. No es posible establecer una tendencia con un único dato.');
   } else if (realizadas.length === 0 && noRealizadas.length > 0) {
-    lineas.push('No se registran actividades realizadas en el periodo. <strong>Todas las actividades tienen nota 0.0</strong>, lo que indica que el estudiante no ha entregado ninguna evidencia de aprendizaje hasta la fecha.');
+    lineas.push('No se registran actividades realizadas en el periodo. <strong>Todas las actividades tienen nota 0.0</strong>, lo que indica que el/la estudiante no ha entregado ninguna evidencia de aprendizaje hasta la fecha.');
   }
 
   /* ── CLASIFICAR POR TIPO solo las REALIZADAS ── */
@@ -3865,9 +3877,9 @@ function infAnalisis(d, actsValidas, nivel) {
     var minLab = labs.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, labs[0]);
     var maxLab = labs.reduce(function(mx,a){ return a.nota>mx.nota?a:mx; }, labs[0]);
     if (promLabs >= 4.0)
-      lineas.push('En los <strong>informes de laboratorio entregados</strong> (promedio: ' + promLabs.toFixed(1) + '), el estudiante demuestra <strong>buenas competencias procedimentales</strong>: registra observaciones con precisión, maneja adecuadamente los datos experimentales y elabora conclusiones coherentes.');
+      lineas.push('En los <strong>informes de laboratorio entregados</strong> (promedio: ' + promLabs.toFixed(1) + '), el/la estudiante demuestra <strong>buenas competencias procedimentales</strong>: registra observaciones con precisión, maneja adecuadamente los datos experimentales y elabora conclusiones coherentes.');
     else if (promLabs >= 3.0)
-      lineas.push('En los <strong>informes de laboratorio entregados</strong> (promedio: ' + promLabs.toFixed(1) + '), el estudiante alcanza un desempeño básico. Se recomienda fortalecer la <strong>redacción de conclusiones</strong> y la conexión entre resultados experimentales y conceptos teóricos. El mejor informe fue <strong>"' + infEsc(maxLab.nombre) + '"</strong> (' + maxLab.nota.toFixed(1) + ').');
+      lineas.push('En los <strong>informes de laboratorio entregados</strong> (promedio: ' + promLabs.toFixed(1) + '), el/la estudiante alcanza un desempeño básico. Se recomienda fortalecer la <strong>redacción de conclusiones</strong> y la conexión entre resultados experimentales y conceptos teóricos. El mejor informe fue <strong>"' + infEsc(maxLab.nombre) + '"</strong> (' + maxLab.nota.toFixed(1) + ').');
     else
       lineas.push('Los <strong>informes de laboratorio entregados</strong> muestran dificultades en el trabajo experimental (promedio: ' + promLabs.toFixed(1) + '). El de menor desempeño fue <strong>"' + infEsc(minLab.nombre) + '"</strong> (' + minLab.nota.toFixed(1) + '). Es necesario reforzar la <strong>organización de datos y la argumentación científica</strong>.');
   }
@@ -3877,9 +3889,9 @@ function infAnalisis(d, actsValidas, nivel) {
     var minTall = talleres.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, talleres[0]);
     var maxTall = talleres.reduce(function(mx,a){ return a.nota>mx.nota?a:mx; }, talleres[0]);
     if (promTall >= 4.0)
-      lineas.push('En los <strong>talleres entregados</strong> (promedio: ' + promTall.toFixed(1) + '), el estudiante demuestra <strong>capacidad para aplicar conceptos</strong>, resuelve ejercicios con autonomía y presenta sus trabajos de forma organizada.');
+      lineas.push('En los <strong>talleres entregados</strong> (promedio: ' + promTall.toFixed(1) + '), el/la estudiante demuestra <strong>capacidad para aplicar conceptos</strong>, resuelve ejercicios con autonomía y presenta sus trabajos de forma organizada.');
     else if (promTall >= 3.0) {
-      var msgT = 'En los <strong>talleres entregados</strong> (promedio: ' + promTall.toFixed(1) + '), el estudiante alcanza los desempeños mínimos.';
+      var msgT = 'En los <strong>talleres entregados</strong> (promedio: ' + promTall.toFixed(1) + '), el/la estudiante alcanza los desempeños mínimos.';
       if (talleres.length > 1 && maxTall.nota - minTall.nota > 1.0)
         msgT += ' Se observa <strong>inconsistencia entre talleres</strong>: el mejor fue <strong>"' + infEsc(maxTall.nombre) + '"</strong> (' + maxTall.nota.toFixed(1) + ') y el de menor desempeño fue <strong>"' + infEsc(minTall.nombre) + '"</strong> (' + minTall.nota.toFixed(1) + '), lo que sugiere dificultades en temas específicos.';
       else
@@ -3893,9 +3905,9 @@ function infAnalisis(d, actsValidas, nivel) {
   if (evals.length > 0) {
     var minEval = evals.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, evals[0]);
     if (promEvals >= 4.0)
-      lineas.push('En las <strong>evaluaciones presentadas</strong> (promedio: ' + promEvals.toFixed(1) + '), el estudiante demuestra <strong>dominio sólido de los contenidos</strong> bajo condiciones de evaluación individual y sin apoyo externo.');
+      lineas.push('En las <strong>evaluaciones presentadas</strong> (promedio: ' + promEvals.toFixed(1) + '), el/la estudiante demuestra <strong>dominio sólido de los contenidos</strong> bajo condiciones de evaluación individual y sin apoyo externo.');
     else if (promEvals >= 3.0)
-      lineas.push('En las <strong>evaluaciones presentadas</strong> (promedio: ' + promEvals.toFixed(1) + '), el estudiante alcanza nivel básico. Comprende los conceptos generales pero presenta dificultades para <strong>aplicarlos con precisión en evaluación formal</strong>. Se recomienda reforzar el estudio sistemático previo a las pruebas.');
+      lineas.push('En las <strong>evaluaciones presentadas</strong> (promedio: ' + promEvals.toFixed(1) + '), el/la estudiante alcanza nivel básico. Comprende los conceptos generales pero presenta dificultades para <strong>aplicarlos con precisión en evaluación formal</strong>. Se recomienda reforzar el estudio sistemático previo a las pruebas.');
     else {
       var msgE = 'Las <strong>evaluaciones presentadas</strong> indican dificultades importantes en el dominio de contenidos (promedio: ' + promEvals.toFixed(1) + ').';
       if (d.autoeval!==null && d.autoeval > promEvals + 0.8)
@@ -3930,11 +3942,11 @@ function infAnalisis(d, actsValidas, nivel) {
   if (d.autoeval!==null && d.finalN!==null) {
     var dif2 = d.autoeval - d.finalN;
     if (dif2 > 1.2)
-      lineas.push('La <strong>autoevaluación (' + d.autoeval.toFixed(1) + ') supera considerablemente la evaluación final (' + d.finalN.toFixed(1) + ')</strong>. El estudiante sobreestima su aprendizaje, lo que puede llevar a una preparación insuficiente para las pruebas. Desde casa se puede apoyar con preguntas de repaso antes de las evaluaciones.');
+      lineas.push('La <strong>autoevaluación (' + d.autoeval.toFixed(1) + ') supera considerablemente la evaluación final (' + d.finalN.toFixed(1) + ')</strong>. El/La estudiante sobreestima su aprendizaje, lo que puede llevar a una preparación insuficiente para las pruebas. Desde casa se puede apoyar con preguntas de repaso antes de las evaluaciones.');
     else if (dif2 > 0.5)
-      lineas.push('Existe una <strong>leve sobreestimación</strong> en la autoevaluación (' + d.autoeval.toFixed(1) + ') respecto a la evaluación final (' + d.finalN.toFixed(1) + '). Se recomienda que el estudiante sea más crítico al valorar su propio aprendizaje.');
+      lineas.push('Existe una <strong>leve sobreestimación</strong> en la autoevaluación (' + d.autoeval.toFixed(1) + ') respecto a la evaluación final (' + d.finalN.toFixed(1) + '). Se recomienda que el/la estudiante sea más crítico al valorar su propio aprendizaje.');
     else if (d.finalN > d.autoeval + 0.8)
-      lineas.push('El estudiante demostró en la <strong>evaluación final (' + d.finalN.toFixed(1) + ') un desempeño superior a su propia autovaloración (' + d.autoeval.toFixed(1) + ')</strong>. Con mayor confianza en sus capacidades podría alcanzar resultados aún más altos.');
+      lineas.push('El/La estudiante demostró en la <strong>evaluación final (' + d.finalN.toFixed(1) + ') un desempeño superior a su propia autovaloración (' + d.autoeval.toFixed(1) + ')</strong>. Con mayor confianza en sus capacidades podría alcanzar resultados aún más altos.');
     else if (Math.abs(dif2) <= 0.5)
       lineas.push('La <strong>autoevaluación (' + d.autoeval.toFixed(1) + ') es coherente con la evaluación final (' + d.finalN.toFixed(1) + ')</strong>, lo que refleja buena capacidad de reflexión sobre el propio proceso de aprendizaje.');
   }
@@ -3943,25 +3955,25 @@ function infAnalisis(d, actsValidas, nivel) {
   if (d.asistencia && d.asistencia.total > 0) {
     var pct = Math.round((d.asistencia.asistidas/d.asistencia.total)*100);
     if (pct < 70)
-      lineas.push('⚠ <strong>Alerta crítica de asistencia:</strong> El estudiante asistió solo al ' + pct + '% de las clases (' + d.asistencia.fallas + ' fallas sobre ' + d.asistencia.total + ' sesiones). La inasistencia reiterada es un factor determinante en el bajo rendimiento y puede generar pérdida del área según el manual de convivencia institucional.');
+      lineas.push('⚠ <strong>Alerta crítica de asistencia:</strong> El/La estudiante asistió solo al ' + pct + '% de las clases (' + d.asistencia.fallas + ' fallas sobre ' + d.asistencia.total + ' sesiones). La inasistencia reiterada es un factor determinante en el bajo rendimiento y puede generar pérdida del área según el manual de convivencia institucional.');
     else if (pct < 80)
-      lineas.push('⚠ <strong>Alerta de asistencia:</strong> Con un ' + pct + '% de asistencia (' + d.asistencia.fallas + ' fallas), el estudiante está por debajo del umbral del 80%. Esto afecta directamente la continuidad en el proceso de aprendizaje.');
+      lineas.push('⚠ <strong>Alerta de asistencia:</strong> Con un ' + pct + '% de asistencia (' + d.asistencia.fallas + ' fallas), el/la estudiante está por debajo del umbral del 80%. Esto afecta directamente la continuidad en el proceso de aprendizaje.');
     else if (pct === 100)
-      lineas.push('El estudiante tiene <strong>asistencia perfecta</strong> (' + d.asistencia.total + '/' + d.asistencia.total + ' clases), lo que refleja compromiso y responsabilidad con su proceso académico.');
+      lineas.push('El/La estudiante tiene <strong>asistencia perfecta</strong> (' + d.asistencia.total + '/' + d.asistencia.total + ' clases), lo que refleja compromiso y responsabilidad con su proceso académico.');
     else if (pct >= 90)
-      lineas.push('El estudiante presenta <strong>excelente asistencia</strong> (' + pct + '%), lo que favorece la continuidad en el aprendizaje.');
+      lineas.push('El/La estudiante presenta <strong>excelente asistencia</strong> (' + pct + '%), lo que favorece la continuidad en el aprendizaje.');
   }
 
   /* ── 10. CONCLUSIÓN SEGÚN NIVEL ── */
   var tieneNR = noRealizadas.length > 0;
   if (nivel.label==='Bajo')
-    lineas.push('⚠ <strong>Conclusión:</strong> El estudiante <strong>no ha alcanzado los desempeños mínimos</strong> del periodo en Química.' + (tieneNR?' Parte del resultado se explica por actividades no entregadas, situación que puede corregirse con compromiso inmediato.':'') + ' Se requiere <strong>citación urgente al acudiente</strong> para establecer un plan de nivelación con fechas concretas y seguimiento semanal desde el hogar. Sin intervención oportuna, el estudiante corre riesgo de perder el área.');
+    lineas.push('⚠ <strong>Conclusión:</strong> El/La estudiante <strong>no ha alcanzado los desempeños mínimos</strong> del periodo en Química.' + (tieneNR?' Parte del resultado se explica por actividades no entregadas, situación que puede corregirse con compromiso inmediato.':'') + ' Se requiere <strong>citación urgente al acudiente</strong> para establecer un plan de nivelación con fechas concretas y seguimiento semanal desde el hogar. Sin intervención oportuna, el/la estudiante corre riesgo de perder el área.');
   else if (nivel.label==='Básico')
-    lineas.push('<strong>Conclusión:</strong> El estudiante <strong>alcanza los desempeños mínimos</strong> del periodo, pero con margen estrecho.' + (tieneNR?' Entregar las actividades pendientes mejoraría notablemente su promedio.':'') + ' Se recomienda refuerzo en los temas con menor dominio, mayor dedicación al estudio en casa y participación activa en clase.');
+    lineas.push('<strong>Conclusión:</strong> El/La estudiante <strong>alcanza los desempeños mínimos</strong> del periodo, pero con margen estrecho.' + (tieneNR?' Entregar las actividades pendientes mejoraría notablemente su promedio.':'') + ' Se recomienda refuerzo en los temas con menor dominio, mayor dedicación al estudio en casa y participación activa en clase.');
   else if (nivel.label==='Alto')
-    lineas.push('<strong>Conclusión:</strong> El estudiante demuestra <strong>dominio satisfactorio de los contenidos</strong> del periodo. Para avanzar hacia el nivel Superior, puede profundizar en los temas con mayor dificultad' + (tieneNR?' y asegurarse de no dejar actividades sin entregar':'') + '.');
+    lineas.push('<strong>Conclusión:</strong> El/La estudiante demuestra <strong>dominio satisfactorio de los contenidos</strong> del periodo. Para avanzar hacia el nivel Superior, puede profundizar en los temas con mayor dificultad' + (tieneNR?' y asegurarse de no dejar actividades sin entregar':'') + '.');
   else if (nivel.label==='Superior')
-    lineas.push('<strong>Conclusión:</strong> El estudiante alcanza un <strong>desempeño Superior</strong> en el área, demostrando dominio conceptual, procedimental y actitudinal. Se invita a continuar con este nivel de compromiso.');
+    lineas.push('<strong>Conclusión:</strong> El/La estudiante alcanza un <strong>desempeño Superior</strong> en el área, demostrando dominio conceptual, procedimental y actitudinal. Se invita a continuar con este nivel de compromiso.');
 
   if (!lineas.length) return 'Sin datos suficientes para generar análisis automático.';
   return lineas.join('<br><br>');
@@ -4203,24 +4215,34 @@ async function attSincronizar() {
       return;
     }
 
-    // Reconstruir caché con historial completo
-    var attendance = attCache[c] ? attCache[c].attendance : {};
-    attCache[c] = {students: stuFresh, attendance: attendance, historialCargado: true, _fechasCargadas: {}};
+    // Construir attendance desde servidor
+    var attendance = {};
     Object.keys(attFresh).forEach(function(rawDate) {
       var clean = normAttDate(rawDate);
-      if (clean) attCache[c].attendance[c + '_' + clean] = attFresh[rawDate];
+      if (clean) attendance[c + '_' + clean] = attFresh[rawDate];
     });
+    // Mezclar con lo que ya estaba en caché local (sesión del día actual)
+    if (attCache[c] && attCache[c].attendance) {
+      Object.keys(attCache[c].attendance).forEach(function(k) {
+        if (!attendance[k]) attendance[k] = attCache[c].attendance[k];
+      });
+    }
 
-    if (btn) { btn.textContent = '✅'; btn.disabled = false; }
+    attCache[c] = {students: stuFresh, attendance: attendance, historialCargado: true, _fechasCargadas: {}};
+
     var total = Object.keys(attFresh).length;
-    toast('✅ Sincronizado — ' + total + ' sesión' + (total!==1?'es':'') + ' cargadas');
+    var claves = Object.keys(attendance).filter(function(k){ return k.indexOf(c+'_')===0; }).length;
+    if (btn) { btn.textContent = '✅'; btn.disabled = false; }
+    toast('✅ ' + total + ' sesión' + (total!==1?'es':'') + ' · ' + claves + ' claves en caché');
 
-    // Actualizar vista
-    if (attViewMode === 'matrix') renderAttMatrix();
-    else renderAttMain();
+    // Renderizar solo si seguimos en el mismo módulo y curso
+    if (activeModule === 'att' && activeCourse === c) {
+      if (attViewMode === 'matrix') renderAttMatrix();
+      else renderAttMain();
+    }
 
   } catch(e) {
-    toast('⚠ Error de conexión al sincronizar');
+    toast('⚠ Error: ' + e.message);
     if (btn) { btn.textContent = '🔄'; btn.disabled = false; }
   }
 }
