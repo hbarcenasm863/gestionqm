@@ -1696,8 +1696,17 @@ function selectCourse(c) {
 
 /* ═══ API ═══ */
 async function apiAtt(params) {
-  var r = await fetch(URL_ATT+'?'+new URLSearchParams(Object.assign({},params,{pwd:SESSION_PWD})),{method:'GET',redirect:'follow'});
-  return r.json();
+  var controller = new AbortController();
+  var timer = setTimeout(function(){ controller.abort(); }, 8000); // 8s timeout
+  try {
+    var r = await fetch(URL_ATT+'?'+new URLSearchParams(Object.assign({},params,{pwd:SESSION_PWD})),{method:'GET',redirect:'follow',signal:controller.signal});
+    clearTimeout(timer);
+    return r.json();
+  } catch(e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') return {error:'timeout'};
+    return {error:'network'};
+  }
 }
 async function apiAttPost(body) {
   var r = await fetch(URL_ATT,{method:'POST',body:JSON.stringify(Object.assign({},body,{pwd:SESSION_PWD})),redirect:'follow'});
@@ -2038,6 +2047,8 @@ async function loadAttCourse(course) {
       if (data && data.students && Array.isArray(data.students)) {
         attCache[course] = {students: data.students, attendance: {}, historialCargado: false};
         attCache[course].attendance[course + '_' + dateHoy] = data.dayAtt || {};
+        attCache[course]._fechasCargadas = {}; // registro de fechas ya cargadas
+        attCache[course]._fechasCargadas[dateHoy] = true; // esta fecha ya está
         loaded = true;
       }
     } catch(e) { /* continuar al fallback */ }
@@ -2054,6 +2065,8 @@ async function loadAttCourse(course) {
         if (Array.isArray(students)) {
           attCache[course] = {students: students, attendance: {}, historialCargado: false};
           attCache[course].attendance[course + '_' + dateHoy] = dayAtt;
+          attCache[course]._fechasCargadas = {};
+          attCache[course]._fechasCargadas[dateHoy] = true;
           loaded = true;
         }
       } catch(e) { /* error de red */ }
@@ -2075,20 +2088,27 @@ async function renderAttMain() {
     if(mob) mob.value=date;
   },0);
 
-  // Carga lazy: si no tenemos historial completo, pedir solo la fecha seleccionada
+  // Carga lazy: pedir asistencia del día si no está en caché — NO bloqueante
   if (attCache[c] && !attCache[c].historialCargado) {
     var key = c + '_' + date;
-    if (!attCache[c].attendance[key]) {
+    var yaEnCache = attCache[c].attendance[key] !== undefined;
+    var yaFechaCargada = attCache[c]._fechasCargadas && attCache[c]._fechasCargadas[date];
+    if (!yaEnCache && !yaFechaCargada) {
       try {
-        // Intentar primero getAttendanceDate (más nuevo), luego getAttendance (siempre funciona)
         var dayAtt = await apiAtt({action:'getAttendanceDate', course:c, date:date});
         if (!dayAtt || dayAtt.error) {
           dayAtt = await apiAtt({action:'getAttendance', course:c, date:date});
         }
-        attCache[c].attendance[key] = dayAtt || {};
+        if (dayAtt && !dayAtt.error) {
+          attCache[c].attendance[key] = dayAtt;
+        } else {
+          attCache[c].attendance[key] = {};
+        }
       } catch(e) {
         attCache[c].attendance[key] = {};
       }
+      if (!attCache[c]._fechasCargadas) attCache[c]._fechasCargadas = {};
+      attCache[c]._fechasCargadas[date] = true;
     }
   }
 
