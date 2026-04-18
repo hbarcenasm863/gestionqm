@@ -2183,6 +2183,7 @@ async function loadAttCourse(course) {
     '<button class="mod-tab grd" onclick="openModule(\'grd\')">📝 <span>Notas</span></button>' +
     '<button class="mod-tab inf" onclick="openModule(\'inf\')">📄 <span>Informes</span></button>' +
     '<div class="date-pill">📅<input type="date" id="dateInput" onchange="attCambiarFecha(this.value)"></div>' +
+    '<button class="icon-btn" id="btnSync" onclick="attSincronizar()" title="Sincronizar historial completo">🔄</button>' +
     '<button class="icon-btn" onclick="openConsolidado()" title="Consolidado">📊</button>' +
     '<button class="icon-btn" onclick="openAttExport()">⬇</button>' +
     '<button class="icon-btn" onclick="openAttBulk()">📋</button>';
@@ -2261,31 +2262,18 @@ function renderAttMain() {
     .map(function(k){ return k.replace(prefix,''); })
     .sort().reverse().slice(0,4);
 
-  // Cargar en segundo plano las últimas 3 fechas anteriores que no estén en caché
-  if (attCache[c] && !attCache[c].historialCargado) {
-    var fechasACargar = [];
-    for (var i = 1; i <= 7; i++) {
-      var d = new Date(); d.setDate(d.getDate() - i);
-      var ds = d.toISOString().split('T')[0];
-      var k2 = c + '_' + ds;
-      if (!attCache[c].attendance[k2] && !(attCache[c]._fechasCargadas && attCache[c]._fechasCargadas[ds])) {
-        fechasACargar.push(ds);
-      }
-      if (fechasACargar.length >= 3) break;
-    }
-    fechasACargar.forEach(function(ds) {
-      if (!attCache[c]._fechasCargadas) attCache[c]._fechasCargadas = {};
-      attCache[c]._fechasCargadas[ds] = true; // marcar antes para no duplicar
-      apiAtt({action:'getAttendanceDate', course:c, date:ds}).then(function(res) {
-        if (res && !res.error && Object.keys(res).length > 0) {
-          attCache[c].attendance[c + '_' + ds] = res;
-          // Re-renderizar el historial si hay datos
-          var h = document.getElementById('histBody');
-          if (h) renderAttMain();
-        }
-      }).catch(function(){});
-    });
-  }
+  var sincBanner = !attCache[c].historialCargado
+    ? '<div style="background:#fef9c3;border:1px solid var(--gold-md);border-radius:8px;padding:8px 14px;' +
+      'margin-bottom:12px;font-size:.76rem;color:#713f12;display:flex;align-items:center;justify-content:space-between;gap:10px">' +
+      '<span>📋 Mostrando solo el día actual. El historial completo no está cargado.</span>' +
+      '<button onclick="attSincronizar()" style="background:var(--gold);color:white;border:none;border-radius:6px;' +
+      'padding:5px 12px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">🔄 Sincronizar</button>' +
+      '</div>'
+    : '<div style="background:#f0faf6;border:1px solid var(--ok);border-radius:8px;padding:6px 14px;' +
+      'margin-bottom:12px;font-size:.72rem;color:var(--ok);display:flex;align-items:center;gap:8px">' +
+      '✅ Historial completo cargado — usa 🔄 para actualizar' +
+      '</div>';
+
   var histHtml=dates.length===0?'':buildAttHistory(c,dates,sts);
 
   document.getElementById('mainArea').innerHTML=
@@ -2322,6 +2310,7 @@ function renderAttMain() {
     ' onkeydown="if(event.key===\'Enter\')attAddStu()">' +
     '<button class="btn btn-outline btn-sm" onclick="attAddStu()">+ Agregar</button>' +
     '</div>' +
+    sincBanner +
     histHtml;
 
   // Sync mob date
@@ -3254,6 +3243,7 @@ function buildMobMenuItems() {
   var items = [];
   if (activeModule === 'att') {
     items.push({icon:'📋', label:'Lista masiva', fn:'openAttBulk()'});
+    items.push({icon:'🔄', label:'Sincronizar historial', fn:'attSincronizar()'});
     items.push({icon:'📊', label:'Consolidado de asistencia', fn:'openConsolidado()'});
     items.push({icon:'⬇', label:'Exportar asistencia', fn:'openAttExport()'});
     items.push({sep:true});
@@ -4190,6 +4180,49 @@ async function matSetStatus(stuId, date, status) {
   renderAttMatrix();
   await apiAttPost({action:'markAttendance', course:c, date:date, studentId:stuId, status:status});
   toast((status ? status : 'Sin marcar') + ' guardado');
+}
+
+/* ═══ SINCRONIZAR HISTORIAL DE ASISTENCIA ═══ */
+async function attSincronizar() {
+  var c = activeCourse;
+  var btn = document.getElementById('btnSync');
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+  toast('Sincronizando historial de ' + c + '…');
+
+  try {
+    var results = await Promise.all([
+      apiAtt({action:'getStudents', course:c}),
+      apiAtt({action:'getAllAttendance', course:c})
+    ]);
+    var stuFresh = results[0];
+    var attFresh = results[1];
+
+    if (!Array.isArray(stuFresh) || !attFresh || attFresh.error) {
+      toast('⚠ Error al sincronizar: ' + (attFresh&&attFresh.error ? attFresh.error : 'verifica tu conexión'));
+      if (btn) { btn.textContent = '🔄'; btn.disabled = false; }
+      return;
+    }
+
+    // Reconstruir caché con historial completo
+    var attendance = attCache[c] ? attCache[c].attendance : {};
+    attCache[c] = {students: stuFresh, attendance: attendance, historialCargado: true, _fechasCargadas: {}};
+    Object.keys(attFresh).forEach(function(rawDate) {
+      var clean = normAttDate(rawDate);
+      if (clean) attCache[c].attendance[c + '_' + clean] = attFresh[rawDate];
+    });
+
+    if (btn) { btn.textContent = '✅'; btn.disabled = false; }
+    var total = Object.keys(attFresh).length;
+    toast('✅ Sincronizado — ' + total + ' sesión' + (total!==1?'es':'') + ' cargadas');
+
+    // Actualizar vista
+    if (attViewMode === 'matrix') renderAttMatrix();
+    else renderAttMain();
+
+  } catch(e) {
+    toast('⚠ Error de conexión al sincronizar');
+    if (btn) { btn.textContent = '🔄'; btn.disabled = false; }
+  }
 }
 
 init();
