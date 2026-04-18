@@ -1759,12 +1759,31 @@ function syncMobDate(date) {
   renderAttMain();
 }
 
-function loadHistDate(date) {
+async function loadHistDate(date) {
   var cleanDate = date.toString().split('T')[0].substring(0,10);
   var inp = document.getElementById('dateInput');
   var mob = document.getElementById('dateInputMob');
   if (inp) inp.value = cleanDate;
   if (mob) mob.value = cleanDate;
+
+  // Si la fecha no está en caché, cargarla antes de renderizar
+  var c = activeCourse;
+  var key = c + '_' + cleanDate;
+  if (attCache[c] && !attCache[c].historialCargado && !attCache[c].attendance[key]) {
+    toast('Cargando sesión del ' + cleanDate + '…');
+    try {
+      var dayAtt = await apiAtt({action:'getAttendanceDate', course:c, date:cleanDate});
+      if (!dayAtt || dayAtt.error) {
+        dayAtt = await apiAtt({action:'getAttendance', course:c, date:cleanDate});
+      }
+      attCache[c].attendance[key] = (dayAtt && !dayAtt.error) ? dayAtt : {};
+      if (!attCache[c]._fechasCargadas) attCache[c]._fechasCargadas = {};
+      attCache[c]._fechasCargadas[cleanDate] = true;
+    } catch(e) {
+      attCache[c].attendance[key] = {};
+    }
+  }
+
   renderAttMain();
   var main = document.getElementById('mainArea');
   if (main) main.scrollTo({top:0, behavior:'smooth'});
@@ -2115,6 +2134,32 @@ function renderAttMain() {
     .filter(function(k){ return k.indexOf(prefix)===0; })
     .map(function(k){ return k.replace(prefix,''); })
     .sort().reverse().slice(0,4);
+
+  // Cargar en segundo plano las últimas 3 fechas anteriores que no estén en caché
+  if (attCache[c] && !attCache[c].historialCargado) {
+    var fechasACargar = [];
+    for (var i = 1; i <= 7; i++) {
+      var d = new Date(); d.setDate(d.getDate() - i);
+      var ds = d.toISOString().split('T')[0];
+      var k2 = c + '_' + ds;
+      if (!attCache[c].attendance[k2] && !(attCache[c]._fechasCargadas && attCache[c]._fechasCargadas[ds])) {
+        fechasACargar.push(ds);
+      }
+      if (fechasACargar.length >= 3) break;
+    }
+    fechasACargar.forEach(function(ds) {
+      if (!attCache[c]._fechasCargadas) attCache[c]._fechasCargadas = {};
+      attCache[c]._fechasCargadas[ds] = true; // marcar antes para no duplicar
+      apiAtt({action:'getAttendanceDate', course:c, date:ds}).then(function(res) {
+        if (res && !res.error && Object.keys(res).length > 0) {
+          attCache[c].attendance[c + '_' + ds] = res;
+          // Re-renderizar el historial si hay datos
+          var h = document.getElementById('histBody');
+          if (h) renderAttMain();
+        }
+      }).catch(function(){});
+    });
+  }
   var histHtml=dates.length===0?'':buildAttHistory(c,dates,sts);
 
   document.getElementById('mainArea').innerHTML=
