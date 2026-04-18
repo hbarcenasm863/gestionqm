@@ -2027,94 +2027,56 @@ async function loadAttCourse(course) {
     '<button class="mod-tab att active" onclick="openModule(\'att\')">📋 <span>Asistencia</span></button>' +
     '<button class="mod-tab grd" onclick="openModule(\'grd\')">📝 <span>Notas</span></button>' +
     '<button class="mod-tab inf" onclick="openModule(\'inf\')">📄 <span>Informes</span></button>' +
-    '<div class="date-pill">📅<input type="date" id="dateInput" onchange="renderAttMain()"></div>' +
+    '<div class="date-pill">📅<input type="date" id="dateInput" onchange="attCambiarFecha(this.value)"></div>' +
     '<button class="icon-btn" onclick="openConsolidado()" title="Consolidado">📊</button>' +
     '<button class="icon-btn" onclick="openAttExport()">⬇</button>' +
     '<button class="icon-btn" onclick="openAttBulk()">📋</button>';
-
-  var dateHoy = today();
-  document.getElementById('dateInput').value = dateHoy;
-
-  if (!attCache[course]) {
-    document.getElementById('mainArea').innerHTML =
-      '<div class="spin-wrap"><div class="spin"></div>Cargando asistencia ' + course + '…</div>';
-
-    var loaded = false;
-
-    // Intento 1: getAttInit (una sola llamada, más rápido)
+  document.getElementById('dateInput').value = today();
+  if (attCache[course]) { renderAttMain(); return; }
+  document.getElementById('mainArea').innerHTML =
+    '<div class="spin-wrap"><div class="spin"></div>Cargando asistencia ' + course + '…</div>';
+  try {
+    var res = await apiAtt({action:'getAttInit', course:course, date:today()});
+    if (res && Array.isArray(res.students)) {
+      attCache[course] = {students:res.students, attendance:{}, historialCargado:false};
+      attCache[course].attendance[course+'_'+today()] = res.dayAtt||{};
+    } else { throw new Error('bad'); }
+  } catch(e) {
     try {
-      var data = await apiAtt({action:'getAttInit', course:course, date:dateHoy});
-      if (data && data.students && Array.isArray(data.students)) {
-        attCache[course] = {students: data.students, attendance: {}, historialCargado: false};
-        attCache[course].attendance[course + '_' + dateHoy] = data.dayAtt || {};
-        attCache[course]._fechasCargadas = {}; // registro de fechas ya cargadas
-        attCache[course]._fechasCargadas[dateHoy] = true; // esta fecha ya está
-        loaded = true;
-      }
-    } catch(e) { /* continuar al fallback */ }
-
-    // Fallback: getStudents + getAttendance (método original que siempre funciona)
-    if (!loaded) {
-      try {
-        var attResults = await Promise.all([
-          apiAtt({action:'getStudents', course:course}),
-          apiAtt({action:'getAttendance', course:course, date:dateHoy})
-        ]);
-        var students = attResults[0];
-        var dayAtt   = attResults[1] || {};
-        if (Array.isArray(students)) {
-          attCache[course] = {students: students, attendance: {}, historialCargado: false};
-          attCache[course].attendance[course + '_' + dateHoy] = dayAtt;
-          attCache[course]._fechasCargadas = {};
-          attCache[course]._fechasCargadas[dateHoy] = true;
-          loaded = true;
-        }
-      } catch(e) { /* error de red */ }
-    }
-
-    if (!loaded) {
+      var stu = await apiAtt({action:'getStudents', course:course});
+      attCache[course] = {students:Array.isArray(stu)?stu:[], attendance:{}, historialCargado:false};
+      attCache[course].attendance[course+'_'+today()] = {};
+    } catch(e2) {
       document.getElementById('mainArea').innerHTML =
-        '<div class="empty"><div class="empty-ico">⚠️</div>Error al cargar. Verifica tu conexión y recarga.</div>';
+        '<div class="empty"><div class="empty-ico">⚠️</div>Error de conexión. Recarga la página.</div>';
       return;
     }
   }
   renderAttMain();
 }
 
-async function renderAttMain() {
-  var c=activeCourse, date=getDate();
-  setTimeout(function(){
-    var mob=document.getElementById('dateInputMob');
-    if(mob) mob.value=date;
-  },0);
-
-  // Carga lazy: pedir asistencia del día si no está en caché — NO bloqueante
-  if (attCache[c] && !attCache[c].historialCargado) {
-    var key = c + '_' + date;
-    var yaEnCache = attCache[c].attendance[key] !== undefined;
-    var yaFechaCargada = attCache[c]._fechasCargadas && attCache[c]._fechasCargadas[date];
-    if (!yaEnCache && !yaFechaCargada) {
-      try {
-        var dayAtt = await apiAtt({action:'getAttendanceDate', course:c, date:date});
-        if (!dayAtt || dayAtt.error) {
-          dayAtt = await apiAtt({action:'getAttendance', course:c, date:date});
-        }
-        if (dayAtt && !dayAtt.error) {
-          attCache[c].attendance[key] = dayAtt;
-        } else {
-          attCache[c].attendance[key] = {};
-        }
-      } catch(e) {
-        attCache[c].attendance[key] = {};
-      }
-      if (!attCache[c]._fechasCargadas) attCache[c]._fechasCargadas = {};
-      attCache[c]._fechasCargadas[date] = true;
-    }
+async function attCambiarFecha(date) {
+  var c = activeCourse;
+  if (!attCache[c]) return;
+  var key = c+'_'+date;
+  if (!attCache[c].attendance[key]) {
+    try {
+      var r = await apiAtt({action:'getAttendance', course:c, date:date});
+      attCache[c].attendance[key] = (r&&!r.error) ? r : {};
+    } catch(e) { attCache[c].attendance[key] = {}; }
   }
+  renderAttMain();
+}
 
-  var data=attCache[c]||{students:[],attendance:{}};
-  var att=getAtt(c,date), sts=data.students;
-  sts.sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
+function renderAttMain() {
+  var c = activeCourse;
+  var inp = document.getElementById('dateInput');
+  var date = (inp && inp.value) ? inp.value : today();
+  var mob = document.getElementById('dateInputMob');
+  if (mob) mob.value = date;
+  var data = attCache[c]||{students:[],attendance:{}};
+  var att  = getAtt(c,date);
+  var sts  = data.students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
   function cnt(s){ return sts.filter(function(x){ return att[x.id]===s; }).length; }
   var P=cnt('P'),A=cnt('A'),T=cnt('T'),J=cnt('J'),E=cnt('E'),U=sts.length-P-A-T-J-E;
 
@@ -2137,8 +2099,7 @@ async function renderAttMain() {
           '</tr>';
       }).join('');
 
-  var prefix=course+'_'.replace('course',c);
-  prefix = c + '_';
+  var prefix = c + '_';
   var dates=Object.keys(attCache[c]&&attCache[c].attendance ? attCache[c].attendance : {})
     .filter(function(k){ return k.indexOf(prefix)===0; })
     .map(function(k){ return k.replace(prefix,''); })
