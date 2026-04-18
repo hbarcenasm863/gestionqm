@@ -210,6 +210,7 @@ body {
 .mod-tab:hover { border-color: rgba(255,255,255,.5); color: white; }
 .mod-tab.att.active { background: var(--att); border-color: var(--att); color: white; }
 .mod-tab.grd.active { background: var(--gold); border-color: var(--gold); color: var(--navy); }
+.mod-tab.inf.active { background: #7c3aed; border-color: #7c3aed; color: white; }
 
 /* Date pill */
 .date-pill {
@@ -1796,15 +1797,14 @@ async function generarConsolidado() {
   var stuFresh = results[0];
   var attFresh = results[1];
 
-  // ── FIX: normalización robusta de fechas ──────────────────────────
-  attCache[course] = {students: stuFresh, attendance: {}};
+  // Cargar historial completo y marcarlo en caché
+  attCache[course] = {students: stuFresh, attendance: {}, historialCargado: true};
   Object.keys(attFresh).forEach(function(rawDate) {
     var clean = normAttDate(rawDate);
     if (clean) {
       attCache[course].attendance[course + '_' + clean] = attFresh[rawDate];
     }
   });
-  // ─────────────────────────────────────────────────────────────────
 
   var data     = attCache[course];
   var students = data.students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
@@ -2017,6 +2017,7 @@ async function loadAttCourse(course) {
   document.getElementById('topbarCenter').innerHTML=
     '<button class="mod-tab att active" onclick="openModule(\'att\')">📋 <span>Asistencia</span></button>' +
     '<button class="mod-tab grd" onclick="openModule(\'grd\')">📝 <span>Notas</span></button>' +
+    '<button class="mod-tab inf" onclick="openModule(\'inf\')">📄 <span>Informes</span></button>' +
     '<div class="date-pill">📅<input type="date" id="dateInput" onchange="renderAttMain()"></div>' +
     '<button class="icon-btn" onclick="openConsolidado()" title="Consolidado">📊</button>' +
     '<button class="icon-btn" onclick="openAttExport()">⬇</button>' +
@@ -2029,32 +2030,40 @@ async function loadAttCourse(course) {
   if (!attCache[course]) {
     document.getElementById('mainArea').innerHTML =
       '<div class="spin-wrap"><div class="spin"></div>Cargando asistencia ' + course + '…</div>';
+
+    // CARGA RÁPIDA: solo estudiantes + asistencia del día actual
+    var dateHoy = today();
     var attResults = await Promise.all([
       apiAtt({action:'getStudents', course:course}),
-      apiAtt({action:'getAllAttendance', course:course})
+      apiAtt({action:'getAttendanceDate', course:course, date:dateHoy})
     ]);
-    var students = attResults[0];
-    var attendance = attResults[1];
+    var students   = attResults[0];
+    var dayAtt     = attResults[1] || {};
 
-    // ── FIX: normalización robusta de fechas ──────────────────────────
-    attCache[course] = {students: students, attendance: {}};
-    Object.keys(attendance).forEach(function(rawDate) {
-      var clean = normAttDate(rawDate);
-      if (clean) {
-        attCache[course].attendance[course + '_' + clean] = attendance[rawDate];
-      }
-    });
-    // ─────────────────────────────────────────────────────────────────
+    attCache[course] = {students: students, attendance: {}, historialCargado: false};
+    // Guardar solo la asistencia del día en caché
+    var key = course + '_' + dateHoy;
+    attCache[course].attendance[key] = dayAtt;
   }
   renderAttMain();
 }
 
-function renderAttMain() {
+async function renderAttMain() {
   var c=activeCourse, date=getDate();
   setTimeout(function(){
     var mob=document.getElementById('dateInputMob');
     if(mob) mob.value=date;
   },0);
+
+  // Carga lazy: si no tenemos historial completo, pedir solo la fecha seleccionada
+  if (attCache[c] && !attCache[c].historialCargado) {
+    var key = c + '_' + date;
+    if (!attCache[c].attendance[key]) {
+      var dayAtt = await apiAtt({action:'getAttendanceDate', course:c, date:date});
+      attCache[c].attendance[key] = dayAtt || {};
+    }
+  }
+
   var data=attCache[c]||{students:[],attendance:{}};
   var att=getAtt(c,date), sts=data.students;
   sts.sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
@@ -2281,6 +2290,7 @@ async function grdLoadView(course,period){
   document.getElementById('topbarCenter').innerHTML=
     '<button class="mod-tab att" onclick="openModule(\'att\')">📋 <span>Asistencia</span></button>' +
     '<button class="mod-tab grd active" onclick="openModule(\'grd\')">📝 <span>Notas</span></button>' +
+    '<button class="mod-tab inf" onclick="openModule(\'inf\')">📄 <span>Informes</span></button>' +
     '<div class="period-tabs">' + PERIODS.map(function(p){
       return '<button class="ptab ' + (p===period?'active':'') + '" onclick="grdLoadView(\'' + course + '\',' + p + ')">P' + p + '</button>';
     }).join('') + '</div>' +
@@ -3241,7 +3251,7 @@ function infLoadView() {
   topbar.innerHTML =
     '<button class="mod-tab att" onclick="openModule(\'att\')">📋 <span>Asistencia</span></button>' +
     '<button class="mod-tab grd" onclick="openModule(\'grd\')">📝 <span>Notas</span></button>' +
-    '<button class="mod-tab" style="background:#7c3aed;color:white;border-color:#7c3aed" onclick="openModule(\'inf\')">📄 <span>Informes</span></button>';
+    '<button class="mod-tab inf active" onclick="openModule(\'inf\')">📄 <span>Informes</span></button>';
 
   document.getElementById('mainArea').innerHTML =
     '<div class="spin-wrap"><div class="spin"></div>Cargando estudiantes de ' + activeCourse + '…</div>';
