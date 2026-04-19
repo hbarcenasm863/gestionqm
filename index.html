@@ -43,7 +43,7 @@
   --muted:   #7a8ba8;
 
   --P:#16a34a;--A:#dc2626;--T:#d97706;--J:#7c3aed;--E:#0891b2;
-  --n-hi:#15803d;--n-ok:#4d7c0f;--n-md:#b45309;--n-lo:#c2410c;--n-fl:#b91c1c;
+  --n-sup:#15803d;--n-alt:#1e40af;--n-bas:#92400e;--n-baj:#991b1b;--n-ne:#64748b;--n-hi:#15803d;--n-ok:#1e40af;--n-md:#92400e;--n-lo:#991b1b;--n-fl:#991b1b;
   --col-act:    #ffffff;
   --col-eval:   #f0f7ff;
   --col-esp:    #fffbeb;
@@ -739,11 +739,11 @@ body {
   transition: background .12s;
 }
 .ginp:focus { background: var(--gold-lt); outline: 2px solid var(--gold); }
-.g-hi{color:var(--n-hi);font-weight:700}
-.g-ok{color:var(--n-ok);font-weight:700}
-.g-md{color:var(--n-md)}
-.g-lo{color:var(--n-lo)}
-.g-fl{color:var(--n-fl);font-weight:700}
+.g-hi{color:var(--n-sup);font-weight:700}   /* Superior 4.6-5.0 */
+.g-ok{color:var(--n-alt);font-weight:700}   /* Alto     4.0-4.5 */
+.g-md{color:var(--n-bas);font-weight:600}   /* Básico   3.0-3.9 */
+.g-lo{color:var(--n-baj);font-weight:700}   /* Bajo     0.1-2.9 */
+.g-fl{color:var(--n-ne)}                    /* N/E (0) */
 .prom-cell { font-family: 'DM Mono', monospace; font-size: .82rem; font-weight: 700; background: var(--gold-lt) !important; }
 .code-chip { font-family: 'DM Mono', monospace; font-size: .68rem; color: var(--muted); }
 .no-code { color: var(--warn); font-size: .68rem; }
@@ -782,6 +782,34 @@ body {
 .mabtn.A:hover { background: var(--A); color: white; }
 
 /* Period active control */
+.period-lock-btn {
+  padding: 3px 10px; border-radius: 6px; font-size: .72rem; font-weight: 700;
+  cursor: pointer; border: 1.5px solid; transition: all .15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.period-lock-btn.unlocked { border-color: var(--bord2); color: var(--muted); background: white; }
+.period-lock-btn.locked   { border-color: var(--fail); color: var(--fail); background: #fff1f1; }
+.period-lock-btn.locked:hover { background: #fee2e2; }
+.period-lock-btn.unlocked:hover { border-color: var(--att); color: var(--att); }
+.locked-banner {
+  background: #fff1f1; border: 1.5px solid var(--fail); border-radius: 8px;
+  padding: 6px 12px; font-size: .74rem; color: var(--fail); font-weight: 600;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.period-lock-btn {
+  padding: 3px 10px; border-radius: 6px; font-size: .72rem; font-weight: 700;
+  cursor: pointer; border: 1.5px solid; transition: all .15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.period-lock-btn.unlocked { border-color: var(--bord2); color: var(--muted); background: white; }
+.period-lock-btn.locked   { border-color: var(--fail); color: var(--fail); background: #fff1f1; }
+.period-lock-btn.locked:hover { background: #fee2e2; }
+.period-lock-btn.unlocked:hover { border-color: var(--att); color: var(--att); }
+.locked-banner {
+  background: #fff1f1; border: 1.5px solid var(--fail); border-radius: 8px;
+  padding: 6px 12px; font-size: .74rem; color: var(--fail); font-weight: 600;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
 .period-ctrl {
   display: flex; align-items: center; gap: 8px;
   background: var(--gold-lt);
@@ -1217,11 +1245,11 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
     -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body:not(.printing-informe) .ginp { border: none !important; background: none !important;
     width: auto !important; text-align: center; }
-  body:not(.printing-informe) .g-hi { color: #15803d !important; }
-  body:not(.printing-informe) .g-ok { color: #4d7c0f !important; }
-  body:not(.printing-informe) .g-md { color: #b45309 !important; }
-  body:not(.printing-informe) .g-lo { color: #c2410c !important; }
-  body:not(.printing-informe) .g-fl { color: #b91c1c !important; }
+  body:not(.printing-informe) .g-hi { color: #15803d !important; }  /* Superior */
+  body:not(.printing-informe) .g-ok { color: #1e40af !important; }  /* Alto     */
+  body:not(.printing-informe) .g-md { color: #92400e !important; }  /* Básico   */
+  body:not(.printing-informe) .g-lo { color: #991b1b !important; }  /* Bajo     */
+  body:not(.printing-informe) .g-fl { color: #64748b !important; }  /* N/E      */
   body:not(.printing-informe) .print-header { display: block !important; }
   body:not(.printing-informe) .print-footer { display: block !important; }
   body:not(.printing-informe) .page-head { margin-bottom: 8pt !important; }
@@ -1240,13 +1268,34 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   body.printing-informe .toast { display: none !important; }
   body.printing-informe #appShell { display: block !important; height: auto !important; overflow: visible !important; }
   body.printing-informe .app-body { display: block !important; overflow: visible !important; }
-  body.printing-informe .main { padding: 4px !important; overflow: visible !important; }
+  body.printing-informe .main { padding: 0 !important; overflow: visible !important; }
   body.printing-informe .inf-hoja {
-    box-shadow: none !important; border: 1px solid #ddd !important;
-    padding: 20px !important; max-width: 100% !important;
+    box-shadow: none !important; border: none !important;
+    padding: 8px 10px !important; max-width: 100% !important; margin: 0 !important;
   }
   body.printing-informe .inf-toolbar { display: none !important; }
-  body.printing-informe .inf-cab img { display: block !important; }
+  body.printing-informe .inf-cab img { display: block !important; height: 36px !important; }
+  body.printing-informe .inf-cab { padding-bottom: 6px !important; margin-bottom: 6px !important; }
+  body.printing-informe .inf-badge-n { font-size: 1.1rem !important; }
+  body.printing-informe .inf-asist-n { font-size: 1rem !important; }
+  body.printing-informe .inf-cc-n { font-size: 1rem !important; }
+  body.printing-informe .inf-sec { margin: 8px 0 4px !important; font-size: .65rem !important; }
+  body.printing-informe .inf-tbl { font-size: .72rem !important; }
+  body.printing-informe .inf-tbl th, body.printing-informe .inf-tbl td { padding: 2px 5px !important; }
+  body.printing-informe .inf-ficha { margin-bottom: 6px !important; }
+  body.printing-informe .inf-fi { padding: 4px 8px !important; }
+  body.printing-informe .inf-fi-v { font-size: .76rem !important; }
+  body.printing-informe .inf-comp-grid { gap: 5px !important; margin-bottom: 6px !important; }
+  body.printing-informe .inf-comp-card { padding: 5px 7px !important; }
+  body.printing-informe .inf-asist { gap: 5px !important; margin-bottom: 6px !important; }
+  body.printing-informe .inf-asist-item { padding: 5px 7px !important; }
+  body.printing-informe .inf-analisis { padding: 7px 10px !important; font-size: .73rem !important; line-height: 1.5 !important; margin-bottom: 6px !important; }
+  body.printing-informe .inf-obs-box { min-height: 30px !important; padding: 5px 10px !important; font-size: .73rem !important; margin-bottom: 6px !important; }
+  body.printing-informe .inf-firma-nm { margin-bottom: 14px !important; }
+  body.printing-informe .inf-firma { margin-top: 10px !important; padding-top: 8px !important; }
+  body.printing-informe .inf-def-row { margin-bottom: 6px !important; }
+  body.printing-informe .inf-nivel { margin-bottom: 6px !important; }
+  body.printing-informe .inf-pie { margin-top: 6px !important; padding-top: 4px !important; }
   /* Colores de chips en impresión */
   body.printing-informe .ic-sup { background: #dcfce7 !important; color: #166534 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body.printing-informe .ic-alt { background: #dbeafe !important; color: #1e40af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -1734,6 +1783,9 @@ window.addEventListener('beforeunload', function() {
 var activeModule = 'dash';
 var activeCourse = localStorage.getItem('gqm_course') || COURSES[0];
 var activePeriod = +localStorage.getItem('gqm_period') || 1;
+var lockedPeriods = (function(){
+  try { return JSON.parse(localStorage.getItem('gqm_locks') || '{}'); } catch(e) { return {}; }
+})();
 var attCache={}, grdCache={}, grdConfig={};
 var attHistOpen=true, grdActiveTab={};
 var attViewMode = 'daily'; // 'daily' | 'matrix'
@@ -2532,8 +2584,9 @@ function computeWeights(specials){
 function gcl(n){
   if(n===''||n===null||n===undefined||isNaN(parseFloat(n)))return'';
   n=parseFloat(n);
-  if(n>=4.5)return'g-hi';if(n>=4.0)return'g-ok';
-  if(n>=3.0)return'g-md';if(n>=2.0)return'g-lo';return'g-fl';
+  if(n===0)return'g-fl';                          // N/E sin entregar
+  if(n>=4.6)return'g-hi';if(n>=4.0)return'g-ok'; // Superior / Alto
+  if(n>=3.0)return'g-md';return'g-lo';            // Básico / Bajo
 }
 function grdTabKey(){
   var k=activeCourse+'_'+activePeriod;
@@ -2608,10 +2661,12 @@ function grdRenderMain(){
 
     '<div class="period-ctrl">' +
     '<span class="period-ctrl-label">📌 PERIODO ACTIVO DEL CURSO</span>' +
-    '<div style="display:flex;gap:4px">' + PERIODS.map(function(p){
-      return '<button class="pa-btn ' + (ap===p?'active':'') + '" onclick="grdSetActivePeriod(' + p + ')">P' + p + '</button>';
-    }).join('') + '</div>' +
-    '<span style="font-size:.7rem;color:var(--gold)">P' + ap + ' carga por defecto · estudiantes ven todos los periodos con notas</span>' +
+    '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' + PERIODS.map(function(p){
+      var lk = lockedPeriods[activeCourse + '_' + p];
+      return '<button class="pa-btn ' + (ap===p?'active':'') + '" onclick="grdSetActivePeriod(' + p + ')">P' + p + '</button>' +
+        '<button class="period-lock-btn ' + (lk?'locked':'unlocked') + '" onclick="grdToggleLock(' + p + ')" title="' + (lk?'Desbloquear':'Bloquear') + ' periodo ' + p + '">' + (lk?'🔒':'🔓') + '</button>';
+    }).join('<span style="width:6px;display:inline-block"></span>') + '</div>' +
+    '<span style="font-size:.7rem;color:var(--gold)">P' + ap + ' carga por defecto · 🔒 = bloqueado, no permite editar notas</span>' +
     '</div>' +
 
     '<div class="weights-panel">' +
@@ -2624,6 +2679,10 @@ function grdRenderMain(){
     '<button class="btn btn-outline btn-sm" onclick="openWeightsEditor()">✏ Editar pesos</button>' +
     '</div></div>' +
 
+    (grdIsLocked(activeCourse, activePeriod) ?
+      '<div class="locked-banner">🔒 Periodo ' + activePeriod + ' bloqueado — las notas no se pueden editar. Usa el botón 🔓 para desbloquear.</div>' : '') +
+    (grdIsLocked(activeCourse, activePeriod) ?
+      '<div class="locked-banner">🔒 Periodo ' + activePeriod + ' bloqueado — las notas no se pueden editar. Usa 🔓 para desbloquear.</div>' : '') +
     grdBuildStats(students,actNames,grades,baseW,specials) +
     grdBuildUnifiedTable(students,actNames,grades,baseW,specials) +
 
@@ -2637,6 +2696,7 @@ function grdRenderMain(){
 }
 
 function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
+  var locked = grdIsLocked(activeCourse, activePeriod);
   if(!students.length) return '<div class="empty"><div class="empty-ico">📓</div>Sin estudiantes aún. Usa 📋 para importar.</div>';
   students=students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
 
@@ -2665,7 +2725,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     actNames.forEach(function(n){
       var raw=grades['actividad']&&grades['actividad'][n]?grades['actividad'][n][s.id]:undefined;
       var val=raw!=null?raw:'';
-      tds+='<td><input class="ginp ' + gcl(val) + '" type="number" min="0" max="5" step="0.1"' +
+      tds+='<td><input class="ginp ' + gcl(val) + '" type="number" min="0" max="5" step="0.1"' + ro + '' +
         ' value="' + val + '" data-comp="actividad" data-item="' + n + '" data-sid="' + s.id + '" data-orig="' + val + '"' +
         ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
         ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
@@ -2673,21 +2733,21 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
 
     var ae=grades['autoeval']&&grades['autoeval']['_']?grades['autoeval']['_'][s.id]:undefined;
     var aeVal=ae!=null?ae:'';
-    tds+='<td class="td-eval"><input class="ginp ' + gcl(aeVal) + '" type="number" min="0" max="5" step="0.1"' +
+    tds+='<td class="td-eval"><input class="ginp ' + gcl(aeVal) + '" type="number" min="0" max="5" step="0.1"' + ro + '' +
       ' value="' + aeVal + '" data-comp="autoeval" data-item="_" data-sid="' + s.id + '" data-orig="' + aeVal + '"' +
       ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
       ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
 
     var ce=grades['coeval']&&grades['coeval']['_']?grades['coeval']['_'][s.id]:undefined;
     var ceVal=ce!=null?ce:'';
-    tds+='<td class="td-eval"><input class="ginp ' + gcl(ceVal) + '" type="number" min="0" max="5" step="0.1"' +
+    tds+='<td class="td-eval"><input class="ginp ' + gcl(ceVal) + '" type="number" min="0" max="5" step="0.1"' + ro + '' +
       ' value="' + ceVal + '" data-comp="coeval" data-item="_" data-sid="' + s.id + '" data-orig="' + ceVal + '"' +
       ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
       ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
 
     var fi=grades['final']&&grades['final']['_']?grades['final']['_'][s.id]:undefined;
     var fiVal=fi!=null?fi:'';
-    tds+='<td class="td-eval"><input class="ginp ' + gcl(fiVal) + '" type="number" min="0" max="5" step="0.1"' +
+    tds+='<td class="td-eval"><input class="ginp ' + gcl(fiVal) + '" type="number" min="0" max="5" step="0.1"' + ro + '' +
       ' value="' + fiVal + '" data-comp="final" data-item="_" data-sid="' + s.id + '" data-orig="' + fiVal + '"' +
       ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
       ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
@@ -2695,7 +2755,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     specials.forEach(function(sp){
       var sg=grades['especial']&&grades['especial'][sp.id]?grades['especial'][sp.id][s.id]:undefined;
       var sgVal=sg!=null?sg:'';
-      tds+='<td class="td-esp"><input class="ginp ' + gcl(sgVal) + '" type="number" min="0" max="5" step="0.1"' +
+      tds+='<td class="td-esp"><input class="ginp ' + gcl(sgVal) + '" type="number" min="0" max="5" step="0.1"' + ro + '' +
         ' value="' + sgVal + '" data-comp="especial" data-item="' + sp.id + '" data-sid="' + s.id + '" data-orig="' + sgVal + '"' +
         ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
         ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
@@ -2891,6 +2951,12 @@ function getColCount(){
 }
 
 async function grdHandleChange(inp){
+  // Bloqueo de periodo
+  if (grdIsLocked(activeCourse, activePeriod)) {
+    inp.value = inp.dataset.orig || '';
+    toast('🔒 P' + activePeriod + ' está bloqueado. Desbloquéalo para editar notas.');
+    return;
+  }
   var orig=inp.dataset.orig||'';
   var newVal=inp.value.trim();
   if(orig!==''&&newVal!==''&&newVal!==orig){
@@ -3026,6 +3092,41 @@ async function grdRemoveSpecial(spId){
 }
 
 /* Period active */
+async function grdToggleLock(period) {
+  var key = activeCourse + '_' + period;
+  var isLocked = !!lockedPeriods[key];
+  var msg = isLocked
+    ? '¿Desbloquear P' + period + ' de ' + activeCourse + '? Se podrán editar notas nuevamente.'
+    : '¿Bloquear P' + period + ' de ' + activeCourse + '? No se podrán editar notas hasta desbloquear.';
+  if (!confirm(msg)) return;
+  lockedPeriods[key] = !isLocked;
+  // Persistir en localStorage
+  try { localStorage.setItem('gqm_locks', JSON.stringify(lockedPeriods)); } catch(e) {}
+  toast((lockedPeriods[key] ? '🔒 P' + period + ' bloqueado' : '🔓 P' + period + ' desbloqueado'));
+  grdRenderMain();
+}
+
+function grdIsLocked(course, period) {
+  return !!lockedPeriods[(course||activeCourse) + '_' + (period||activePeriod)];
+}
+
+async function grdToggleLock(period) {
+  var key = activeCourse + '_' + period;
+  var isLocked = !!lockedPeriods[key];
+  var msg = isLocked
+    ? '¿Desbloquear P' + period + ' de ' + activeCourse + '? Se podrán editar notas nuevamente.'
+    : '¿Bloquear P' + period + ' de ' + activeCourse + '? No se podrán editar notas hasta desbloquear.';
+  if (!confirm(msg)) return;
+  lockedPeriods[key] = !isLocked;
+  try { localStorage.setItem('gqm_locks', JSON.stringify(lockedPeriods)); } catch(e) {}
+  toast((lockedPeriods[key] ? '🔒 P' + period + ' bloqueado' : '🔓 P' + period + ' desbloqueado'));
+  grdRenderMain();
+}
+
+function grdIsLocked(course, period) {
+  return !!lockedPeriods[(course||activeCourse) + '_' + (period||activePeriod)];
+}
+
 async function grdSetActivePeriod(period){
   grdConfig[activeCourse]=period; grdRenderMain(); renderNav();
   await apiGrdPost({action:'setActivePeriod',course:activeCourse,period:period});
@@ -3510,11 +3611,89 @@ function toast(msg){
 }
 
 function infImprimir() {
-  document.body.classList.add('printing-informe');
-  window.print();
-  setTimeout(function() {
-    document.body.classList.remove('printing-informe');
-  }, 1000);
+  // Obtener el HTML del informe actual
+  var hoja = document.querySelector('.inf-hoja');
+  if (!hoja) { toast('Genera el informe primero'); return; }
+
+  // Extraer solo el CSS del informe (sin toda la app)
+  var estilos = '';
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    try {
+      var rules = sheets[i].cssRules || sheets[i].rules;
+      for (var j = 0; j < rules.length; j++) {
+        var txt = rules[j].cssText || '';
+        if (txt.indexOf('inf-') !== -1 || txt.indexOf('@font-face') !== -1 ||
+            txt.indexOf('--') !== -1 || txt.indexOf('body') !== -1 ||
+            txt.indexOf('@page') !== -1) {
+          estilos += txt + '\n';
+        }
+      }
+    } catch(e) {}
+  }
+
+  var html = '<!DOCTYPE html><html lang="es"><head>' +
+    '<meta charset="UTF-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<title>Informe académico</title>' +
+    '<style>' +
+    ':root{--navy:#1a2e5a;--gold:#c9952a;--gold-md:#e6c068;--bord:#e2e8f0;--bord2:#cbd5e1;' +
+    '--muted:#64748b;--text-main:#1e293b;--text2:#334155;--ok:#16a34a;--fail:#dc2626;}' +
+    'body{margin:0;padding:8px 10px;font-family:"DM Sans",Arial,sans-serif;font-size:13px;color:#1e293b;background:white}' +
+    '.inf-cab{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;border-bottom:3px solid #1a2e5a;padding-bottom:8px;margin-bottom:8px}' +
+    '.inf-cab img{height:40px}' +
+    '.inf-cab-tit{font-size:.95rem;font-weight:800;color:#1a2e5a;margin-bottom:2px}' +
+    '.inf-cab-sub{font-size:.68rem;color:#64748b}' +
+    '.inf-badge{border-radius:8px;padding:6px 10px;text-align:center;min-width:60px;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+    '.inf-badge-n{font-size:1.1rem;font-weight:900;line-height:1;color:white}' +
+    '.inf-badge-l{font-size:.6rem;color:rgba(255,255,255,.85);text-transform:uppercase}' +
+    '.inf-ficha{display:grid;grid-template-columns:repeat(5,1fr);border:1.5px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:6px}' +
+    '.inf-fi{padding:4px 8px;border-right:1px solid #e2e8f0}' +
+    '.inf-fi-l{font-size:.62rem;font-weight:700;color:#64748b;text-transform:uppercase}' +
+    '.inf-fi-v{font-size:.76rem;font-weight:700;color:#1e293b;margin-top:1px}' +
+    '.inf-nivel{display:inline-block;border-radius:20px;padding:2px 10px;font-size:.72rem;font-weight:800;margin-bottom:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+    '.inf-sec{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#1a2e5a;border-bottom:2px solid #1a2e5a;padding-bottom:2px;margin:8px 0 4px}' +
+    '.inf-tbl{width:100%;border-collapse:collapse;margin-bottom:6px;font-size:.72rem}' +
+    '.inf-tbl th{background:#1a2e5a;color:white;padding:3px 5px;text-align:left;font-size:.65rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+    '.inf-tbl td{padding:2px 5px;border-bottom:1px solid #e2e8f0}' +
+    '.inf-chip{display:inline-block;border-radius:4px;padding:1px 5px;font-weight:800;font-size:.72rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+    '.ic-sup{background:#dcfce7;color:#166534}.ic-alt{background:#dbeafe;color:#1e40af}.ic-bas{background:#fef9c3;color:#713f12}.ic-baj{background:#fee2e2;color:#991b1b}.ic-ne{background:#f1f5f9;color:#64748b}' +
+    '.inf-comp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:6px}' +
+    '.inf-comp-card{border:1.5px solid #e2e8f0;border-radius:6px;padding:5px 7px;text-align:center}' +
+    '.inf-cc-l{font-size:.6rem;font-weight:700;color:#64748b;text-transform:uppercase}' +
+    '.inf-cc-n{font-size:1rem;font-weight:900;line-height:1.2}' +
+    '.inf-cc-p{font-size:.6rem;color:#64748b}.inf-cc-a{font-size:.65rem;font-weight:700;margin-top:2px;padding:1px 5px;border-radius:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+    '.inf-asist{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}' +
+    '.inf-asist-item{flex:1;min-width:60px;border:1.5px solid #e2e8f0;border-radius:6px;padding:5px 7px;text-align:center}' +
+    '.inf-asist-n{font-size:1rem;font-weight:900;line-height:1}' +
+    '.inf-asist-l{font-size:.6rem;color:#64748b;text-transform:uppercase;font-weight:700}' +
+    '.inf-analisis{background:#f8fafc;border-left:4px solid #1a2e5a;border-radius:0 6px 6px 0;padding:6px 10px;font-size:.73rem;line-height:1.5;margin-bottom:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+    '.inf-obs-box{border:1.5px solid #e2e8f0;border-radius:6px;padding:5px 10px;min-height:24px;font-size:.73rem;color:#64748b;font-style:italic;margin-bottom:6px;line-height:1.5}' +
+    '.inf-def-row{text-align:right;margin-bottom:6px;font-size:.78rem;font-weight:700;color:#1a2e5a}' +
+    '.inf-firma{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:10px;padding-top:8px;border-top:1.5px solid #e2e8f0}' +
+    '.inf-firma-item{text-align:center}' +
+    '.inf-firma-linea{border-top:1.5px solid #1e293b;margin:0 8px 3px}' +
+    '.inf-firma-nm{font-size:.68rem;font-weight:700;margin-bottom:18px}' +
+    '.inf-firma-l{font-size:.6rem;color:#64748b;text-transform:uppercase}' +
+    '.inf-pie{text-align:center;font-size:.6rem;color:#94a3b8;margin-top:6px;padding-top:4px;border-top:1px solid #e2e8f0}' +
+    'ul{margin:4px 0;padding-left:14px}li{margin-bottom:2px}' +
+    '@page{size:A4 portrait;margin:0.8cm}' +
+    '</style></head><body>' +
+    hoja.innerHTML +
+    '</body></html>';
+
+  var win = window.open('', '_blank');
+  if (!win) { 
+    // Popup bloqueado — fallback a print directo
+    document.body.classList.add('printing-informe');
+    window.print();
+    setTimeout(function() { document.body.classList.remove('printing-informe'); }, 1000);
+    return;
+  }
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(function() { win.print(); }, 600);
 }
 
 /* ════════════════════════════════════════════════════════
@@ -3893,13 +4072,15 @@ function infNivel(n) {
   return             {label:'Bajo',     color:'#991b1b', bg:'#fee2e2'};
 }
 function infChipCls(n) {
-  if (n===null||n===undefined) return 'ic-nd';
+  if (n===null||n===undefined) return 'ic-ne';
+  if (n===0) return 'ic-ne';
   if (n>=4.6) return 'ic-sup'; if (n>=4.0) return 'ic-alt';
   if (n>=3.0) return 'ic-bas'; return 'ic-baj';
 }
 function infChipBg(n) {
+  if (!n) return '#64748b';
   if (n>=4.6) return '#166534'; if (n>=4.0) return '#1e40af';
-  if (n>=3.0) return '#713f12'; return '#991b1b';
+  if (n>=3.0) return '#92400e'; return '#991b1b';
 }
 function infDesc(n) {
   if (n===null||n===undefined) return '—';
@@ -4146,52 +4327,146 @@ function infObjetivomejora(d, actsValidas, nivel) {
 
 /* ── Genera la sección de Compromisos ── */
 function infCompromisos(d, actsValidas, nivel, periodo) {
-  // Mostrar solo si: Bajo/Básico O hay brechas específicas
-  var esBajoBas = nivel.label === 'Bajo' || nivel.label === 'Básico';
-  var realizadas = actsValidas.filter(function(a){ return a.nota > 0; });
+  var esBajo   = nivel.label === 'Bajo';
+  var esBas    = nivel.label === 'Básico';
+  var realizadas   = actsValidas.filter(function(a){ return a.nota > 0; });
   var noRealizadas = actsValidas.filter(function(a){ return a.nota === 0; });
   var brechaAutoeval = d.autoeval !== null && d.finalN !== null && d.autoeval - d.finalN > 0.8;
-  var asistenciaBaja = d.asistencia && d.asistencia.total > 0 && Math.round((d.asistencia.asistidas/d.asistencia.total)*100) < 80;
+  var asistenciaBaja = d.asistencia && d.asistencia.total > 0 &&
+                       Math.round((d.asistencia.asistidas/d.asistencia.total)*100) < 80;
   var tieneZeros = noRealizadas.length > 0;
-
-  if (!esBajoBas && !brechaAutoeval && !asistenciaBaja && !tieneZeros) return '';
-
-  var periodoLabel = periodo === 3 ? 'el próximo año escolar' : 'el siguiente periodo';
   var evals = realizadas.filter(function(a){ return infTipoActividad(a.nombre)==='evaluacion'; });
   var labs  = realizadas.filter(function(a){ return infTipoActividad(a.nombre)==='lab'; });
+  var talleres = realizadas.filter(function(a){ return infTipoActividad(a.nombre)==='taller'; });
+
+  var esAlto = nivel.label === 'Alto';
+  var esSup  = nivel.label === 'Superior';
+  if (!esBajo && !esBas && !esAlto && !esSup && !brechaAutoeval && !asistenciaBaja && !tieneZeros) return '';
+
+  // Caso Superior: felicitación y exhortación a mantener el nivel
+  if (esSup && !brechaAutoeval && !asistenciaBaja && !tieneZeros) {
+    return '<div class="inf-sec">¡Felicitaciones!</div>' +
+      '<div style="border:1.5px solid var(--ok);border-radius:8px;padding:12px 14px;font-size:.76rem;line-height:1.7;margin-bottom:14px;background:#f0fdf4">' +
+      '<p style="margin:0 0 8px;font-size:.8rem;font-weight:700;color:#166534">🏆 Desempeño Superior en Química — Periodo ' + periodo + '</p>' +
+      '<p style="margin:0 0 10px;color:var(--text2)">El/La estudiante ha alcanzado el nivel más alto de desempeño en el área, demostrando dominio conceptual, procedimental y actitudinal. Este resultado es fruto del compromiso, la dedicación y el trabajo constante durante el periodo.</p>' +
+      '<p style="margin:0 0 6px;font-weight:700;color:#166534">Para seguir en este camino:</p>' +
+      '<ul style="margin:0 0 0 16px;color:var(--text2)">' +
+      '<li>Mantener los hábitos de estudio y la disciplina que llevaron a este resultado.</li>' +
+      '<li>Continuar participando activamente en clase, aportando y profundizando en los temas.</li>' +
+      (labs.length > 0 ? '<li>Seguir desarrollando informes de laboratorio con rigor científico, conectando los datos experimentales con la teoría.</li>' : '') +
+      '<li>El acudiente reconoce y celebra el esfuerzo del/la estudiante, y acompaña su proceso para mantener este nivel de excelencia.</li>' +
+      '</ul>' +
+      '</div>';
+  }
+
+  var periodoLabel = periodo === 3 ? 'el próximo año escolar' : 'el siguiente periodo';
 
   // ── Bloque 1: Fortalecimiento Académico ──
   var b1items = [];
-  b1items.push('Establecer un horario de estudio diario de 30 minutos exclusivos para Química, enfocándose en los temas con menor desempeño del periodo.');
-  if (evals.length > 0 && evals.some(function(e){ return e.nota < 3.5; })) {
-    var minEval = evals.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, evals[0]);
-    b1items.push('Practicar con ejercicios variados antes de cada evaluación: tanto preguntas de selección múltiple como ejercicios abiertos de aplicación, para ganar seguridad y manejo del tiempo. Especial atención en los temas de "' + infEsc(minEval.nombre) + '".');
-  }
-  b1items.push('El acudiente se compromete a ingresar semanalmente a la plataforma de seguimiento con el código del/la estudiante para monitorear el registro de cada nota en tiempo real.');
-  if (tieneZeros) {
-    b1items.push('Entregar <strong>todas</strong> las actividades asignadas en las fechas indicadas. En caso de dificultad, comunicarse con el docente antes del vencimiento del plazo.');
+
+  if (esAlto) {
+    // Alto: reto hacia Superior, lenguaje de profundización
+    b1items.push('Profundizar en los temas del área más allá del contenido básico: consultar fuentes adicionales, resolver ejercicios de mayor complejidad y conectar los conceptos de Química con situaciones reales o con otras asignaturas.');
+    if (evals.length > 0) {
+      var minEvalAlto = evals.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, evals[0]);
+      if (minEvalAlto.nota < 4.5) {
+        b1items.push('Identificar los temas específicos de <strong>"' + infEsc(minEvalAlto.nombre) + '"</strong> (' + minEvalAlto.nota.toFixed(1) + ') donde hubo mayor dificultad y reforzarlos para alcanzar el desempeño Superior.');
+      }
+    }
+    if (tieneZeros) {
+      b1items.push('Entregar todas las actividades asignadas — hay ' + noRealizadas.length + ' sin entregar que pueden impedir alcanzar el nivel Superior.');
+    }
+    b1items.push('El acudiente acompaña el proceso reconociendo los logros alcanzados y motivando a continuar con el nivel de compromiso demostrado.');
+  } else if (esBajo) {
+    // Bajo: intervención urgente, mínimo 3 acciones concretas
+    b1items.push('Establecer un horario <strong>diario</strong> de estudio de al menos 45 minutos para Química, con un espacio fijo en casa supervisado por el acudiente.');
+    if (evals.length > 0 && evals.some(function(e){ return e.nota < 3.0; })) {
+      var minEval = evals.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, evals[0]);
+      b1items.push('Preparar cada evaluación con anticipación mínima de 3 días, practicando ejercicios variados (selección múltiple y problemas abiertos). Especial atención en los temas de <strong>"' + infEsc(minEval.nombre) + '"</strong> (' + minEval.nota.toFixed(1) + ').');
+    } else {
+      b1items.push('Preparar cada evaluación con anticipación, practicando ejercicios variados (selección múltiple y problemas abiertos de aplicación) para ganar seguridad.');
+    }
+    if (tieneZeros) {
+      b1items.push('Entregar <strong>todas</strong> las actividades asignadas. Las ' + noRealizadas.length + ' actividad' + (noRealizadas.length>1?'es':'') + ' sin entregar impactan directamente el promedio y deben ser recuperadas en el menor tiempo posible.');
+    }
+    b1items.push('El acudiente se compromete a revisar semanalmente la plataforma con el código del/la estudiante para monitorear notas y comunicarse con el docente ante cualquier dificultad.');
+  } else if (esBas || brechaAutoeval || asistenciaBaja || tieneZeros) {
+    // Básico / brecha específica: consolidación y mejora gradual
+    b1items.push('Reservar un espacio de estudio de 30 minutos diarios para repasar los temas con menor desempeño del periodo y practicar ejercicios antes de cada evaluación.');
+    if (evals.length > 0 && evals.some(function(e){ return e.nota < 3.8; })) {
+      var minEvalBas = evals.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, evals[0]);
+      b1items.push('Preparar las evaluaciones con anticipación practicando ejercicios variados (selección múltiple y problemas abiertos). Mayor atención en los temas de <strong>"' + infEsc(minEvalBas.nombre) + '"</strong>.');
+    }
+    if (tieneZeros) {
+      b1items.push('Entregar todas las actividades asignadas en los plazos indicados — hay ' + noRealizadas.length + ' sin entregar que pueden mejorar notablemente el promedio.');
+    }
+    b1items.push('El acudiente ingresa periódicamente a la plataforma de seguimiento con el código del/la estudiante para acompañar el proceso académico.');
   }
 
   // ── Bloque 2: Competencias Científicas ──
   var b2items = [];
   if (labs.length > 0) {
-    b2items.push('En los próximos informes de laboratorio, dedicar un apartado especial a la <strong>"Conexión Teórica"</strong>, explicando cómo los datos experimentales se sustentan en las leyes químicas vistas en clase.');
+    if (esAlto) {
+      b2items.push('Aprovechar los informes de laboratorio para desarrollar un análisis más profundo: proponer hipótesis alternativas, comparar resultados con valores teóricos y plantear mejoras al procedimiento experimental.');
+    } else if (esBajo) {
+      b2items.push('En los informes de laboratorio, incluir obligatoriamente un apartado de <strong>"Conexión Teórica"</strong> que explique cómo los resultados experimentales se relacionan con las leyes y conceptos químicos vistos en clase.');
+    } else {
+      b2items.push('Fortalecer los informes de laboratorio con un apartado de <strong>"Conexión Teórica"</strong> que profundice la relación entre los datos experimentales y los conceptos teóricos del área.');
+    }
   }
-  b2items.push('Participar más activamente en clase, preguntando y resolviendo dudas en el momento en que surgen, sin acumularlas para después.');
+  if (talleres.length > 0 && talleres.some(function(t){ return t.nota < (esBajo ? 3.5 : 4.0); })) {
+    if (esBajo) {
+      b2items.push('Resolver los talleres con mayor rigurosidad, buscando apoyo antes de la entrega. Cada taller debe entregarse completo y con desarrollo visible de los procedimientos.');
+    } else {
+      b2items.push('Revisar con mayor detalle los talleres antes de entregarlos, asegurando que todos los procedimientos están desarrollados y justificados.');
+    }
+  }
+  if (esAlto) {
+    b2items.push('Participar en clase con aportes que vayan más allá de la respuesta correcta: relacionar los temas con fenómenos cotidianos, plantear preguntas de profundización y apoyar a los compañeros cuando sea posible.');
+  } else if (esBajo) {
+    b2items.push('Participar activamente en clase: hacer preguntas, intervenir en discusiones y aclarar dudas en el momento en que surgen, sin dejarlas acumular.');
+  } else {
+    b2items.push('Participar más activamente en clase, aprovechando las sesiones para aclarar dudas y consolidar los conceptos antes de las evaluaciones.');
+  }
 
   // ── Bloque 3: Metacognición (solo si hay brecha) ──
   var b3html = '';
   if (brechaAutoeval) {
-    b3html = '<div style="margin-top:10px"><strong style="font-size:.78rem;color:var(--navy)">3. Ajuste de Autopercepción</strong>' +
-      '<ul style="margin:6px 0 0 16px;font-size:.76rem;line-height:1.8;color:var(--text2)">' +
-      '<li>Tras cada actividad, anotar la nota esperada y compararla con la nota real. El objetivo es reducir la brecha actual entre la autovaloración (' + d.autoeval.toFixed(1) + ') y el desempeño real (' + d.finalN.toFixed(1) + ').</li>' +
-      '<li>El docente realizará seguimiento de este contraste en las próximas entregas.</li>' +
+    if (esBajo) {
+      b3html = '<div style="margin-top:10px"><strong style="font-size:.78rem;color:var(--navy)">3. Ajuste de Autopercepción</strong>' +
+        '<ul style="margin:6px 0 0 16px;font-size:.76rem;line-height:1.7;color:var(--text2)">' +
+        '<li>Existe una brecha importante de <strong>' + (d.autoeval - d.finalN).toFixed(1) + ' puntos</strong> entre la autovaloración (' + d.autoeval.toFixed(1) + ') y el desempeño real (' + d.finalN.toFixed(1) + '). El/La estudiante sobreestima su aprendizaje, lo que lleva a una preparación insuficiente.</li>' +
+        '<li>Después de cada actividad, anotar la nota esperada y la nota obtenida. El docente hará seguimiento de este contraste.</li>' +
+        '<li>El acudiente puede apoyar este proceso preguntando en casa: <em>"¿Cuánto crees que sacaste? ¿Cuánto sacaste realmente?"</em></li>' +
+        '</ul></div>';
+    } else {
+      b3html = '<div style="margin-top:10px"><strong style="font-size:.78rem;color:var(--navy)">3. Ajuste de Autopercepción</strong>' +
+        '<ul style="margin:6px 0 0 16px;font-size:.76rem;line-height:1.7;color:var(--text2)">' +
+        '<li>La autovaloración (' + d.autoeval.toFixed(1) + ') supera al desempeño real (' + d.finalN.toFixed(1) + ') en ' + (d.autoeval - d.finalN).toFixed(1) + ' puntos. Reducir esta brecha ayuda a prepararse mejor.</li>' +
+        '<li>Anotar la nota esperada antes de conocer la nota real, y reflexionar sobre la diferencia.</li>' +
+        '</ul></div>';
+    }
+  }
+
+  // ── Asistencia (bloque adicional si aplica) ──
+  var b4html = '';
+  if (asistenciaBaja) {
+    var pctAsis = Math.round((d.asistencia.asistidas/d.asistencia.total)*100);
+    b4html = '<div style="margin-top:10px"><strong style="font-size:.78rem;color:var(--navy)">' + (brechaAutoeval ? '4' : '3') + '. Asistencia y puntualidad</strong>' +
+      '<ul style="margin:6px 0 0 16px;font-size:.76rem;line-height:1.7;color:var(--text2)">' +
+      '<li>La asistencia actual (' + pctAsis + '%) está por debajo del mínimo institucional del 80%. Cada clase perdida afecta directamente la comprensión de los temas.</li>' +
+      (esBajo ? '<li>El acudiente debe garantizar la asistencia puntual y justificar oportunamente las ausencias ante el docente.</li>' :
+                '<li>Se recomienda garantizar la asistencia regular y justificar con anticipación cualquier ausencia prevista.</li>') +
       '</ul></div>';
   }
 
-  var html = '<div class="inf-sec">Compromisos para ' + periodoLabel + '</div>' +
-    '<div style="border:1.5px solid var(--bord);border-radius:8px;padding:12px 14px;font-size:.76rem;line-height:1.8;margin-bottom:14px">' +
-    '<p style="font-size:.74rem;color:var(--muted);margin-bottom:10px">Para transformar el resultado actual, se establecen los siguientes acuerdos entre Institución, Estudiante y Familia:</p>' +
+  var html = '<div class="inf-sec">' + (esAlto ? 'Retos para ' : 'Compromisos para ') + periodoLabel + '</div>' +
+    '<div style="border:1.5px solid var(--bord);border-radius:8px;padding:12px 14px;font-size:.76rem;line-height:1.7;margin-bottom:14px">' +
+    '<p style="font-size:.74rem;color:var(--muted);margin-bottom:10px">' +
+    (esBajo ? 'Para revertir el resultado actual y alcanzar los desempeños mínimos, se establecen los siguientes acuerdos entre Institución, Estudiante y Familia:' :
+     esAlto  ? 'Para proyectar el desempeño Alto hacia el nivel Superior, se proponen los siguientes retos entre Institución, Estudiante y Familia:' :
+              'Para consolidar el desempeño y avanzar hacia el nivel Alto, se establecen los siguientes acuerdos entre Institución, Estudiante y Familia:') +
+    '</p>' +
 
     '<div><strong style="font-size:.78rem;color:var(--navy)">1. Fortalecimiento Académico</strong>' +
     '<ul style="margin:6px 0 0 16px;color:var(--text2)">' +
@@ -4203,7 +4478,7 @@ function infCompromisos(d, actsValidas, nivel, periodo) {
     b2items.map(function(i){ return '<li>' + i + '</li>'; }).join('') +
     '</ul></div>' : '') +
 
-    b3html +
+    b3html + b4html +
 
     '<div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--bord);display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;text-align:center">' +
     '<div><div style="border-top:1.5px solid var(--text);margin:0 8px 4px"></div><div style="font-size:.65rem;color:var(--muted);text-transform:uppercase">Firma del/la estudiante</div></div>' +
