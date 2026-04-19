@@ -468,6 +468,18 @@ body {
   .inf-hoja { box-shadow: none; border: none; padding: 16px; }
   body { background: white; }
 }
+@media (max-width: 700px) {
+  .inf-hoja { padding: 14px 12px !important; }
+  .inf-cab { grid-template-columns: auto 1fr !important; gap: 8px !important; }
+  .inf-badge { display: none; } /* la definitiva ya aparece en la ficha */
+  .inf-ficha { grid-template-columns: 1fr 1fr !important; }
+  .inf-comp-grid { grid-template-columns: 1fr 1fr !important; }
+  .inf-firma { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .inf-toolbar span { display: none; }
+  .inf-toolbar { flex-wrap: nowrap; gap: 6px; }
+  .btn-inf-back, .btn-inf-print { padding: 8px 12px; font-size: .8rem; }
+}
+
 /* ═══ VISTA MATRICIAL DE ASISTENCIA ═══ */
 .att-view-toggle {
   display: flex; gap: 4px; margin-bottom: 14px;
@@ -3304,26 +3316,35 @@ async function saveWeights() {
 /* ═══ MOBILE MENU ═══ */
 function buildMobMenuItems() {
   var items = [];
+  // Navegación entre módulos siempre visible
+  items.push({icon:'📋', label:'Asistencia', fn:"openModule('att')"});
+  items.push({icon:'📝', label:'Notas', fn:"openModule('grd')"});
+  items.push({icon:'📄', label:'Informes', fn:"openModule('inf')"});
+  items.push({sep:true});
   if (activeModule === 'att') {
-    items.push({icon:'📋', label:'Lista masiva', fn:'openAttBulk()'});
     items.push({icon:'🔄', label:'Sincronizar historial', fn:'attSincronizar()'});
     items.push({icon:'📊', label:'Consolidado de asistencia', fn:'openConsolidado()'});
+    items.push({icon:'📋', label:'Lista masiva', fn:'openAttBulk()'});
     items.push({icon:'⬇', label:'Exportar asistencia', fn:'openAttExport()'});
     items.push({sep:true});
   }
   if (activeModule === 'grd') {
-    items.push({icon:'+ Actividad', label:'Nueva actividad', fn:'grdOpenActColModal()'});
-    items.push({icon:'+ Especial', label:'Componente especial', fn:"openModal('specialModal')"});
+    items.push({icon:'+ Act.', label:'Nueva actividad', fn:'grdOpenActColModal()'});
+    items.push({icon:'+ Esp.', label:'Componente especial', fn:"openModal('specialModal')"});
     items.push({icon:'📥', label:'Importar notas JSON', fn:'openImportModal()'});
     items.push({icon:'📋', label:'Lista masiva', fn:'openGrdBulk()'});
-    items.push({icon:'🖨', label:'Generar PDF', fn:'printPDF()'});
+    items.push({icon:'🖨', label:'Generar PDF notas', fn:'printPDF()'});
     items.push({icon:'📤', label:'Exportar sistematizadora', fn:'exportSistematizadora()'});
     items.push({icon:'⬇', label:'Exportar notas', fn:'openGrdExport()'});
     items.push({icon:'💾', label:'Backup CSV', fn:'downloadBackup()'});
     items.push({sep:true});
   }
+  if (activeModule === 'inf') {
+    items.push({icon:'🖨', label:'Imprimir informe', fn:'infImprimir()'});
+    items.push({sep:true});
+  }
   items.push({icon:'⊞', label:'Inicio', fn:'showDash()'});
-  items.push({icon:'↺', label:'Actualizar datos', fn:'refreshModule()'});
+  items.push({icon:'↺', label:'Actualizar', fn:'refreshModule()'});
   items.push({icon:'🔒', label:'Cerrar sesión', fn:'logout()'});
   return items;
 }
@@ -3750,7 +3771,7 @@ function infRenderInforme(d) {
     var pct = Math.round((d.asistencia.asistidas/d.asistencia.total)*100);
     var riesgo = pct < 80;
     asistHTML =
-      '<div class="inf-sec">4. Asistencia</div>' +
+      '<div class="inf-sec">3. Asistencia</div>' +
       '<div class="inf-asist">' +
       infAsistItem(d.asistencia.total, 'Clases', '#1a2e5a') +
       infAsistItem(d.asistencia.asistidas, 'Asistencias', '#166534') +
@@ -3761,7 +3782,7 @@ function infRenderInforme(d) {
       (riesgo?'<div style="font-size:.72rem;color:#991b1b;font-weight:700;margin-bottom:10px">⚠ Asistencia por debajo del 80% — riesgo de pérdida por inasistencia.</div>':'');
   } else {
     asistHTML =
-      '<div class="inf-sec">4. Asistencia</div>' +
+      '<div class="inf-sec">3. Asistencia</div>' +
       '<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px">No hay datos de asistencia disponibles para este curso en este periodo.</div>';
   }
 
@@ -3771,8 +3792,9 @@ function infRenderInforme(d) {
   // Definitiva badge color
   var badgeBg = nivel.color;
 
-  document.getElementById('mainArea').innerHTML =
-    '<div class="inf-toolbar">' +
+  // Renderizar en partes para evitar truncamiento en móvil
+  var mainArea = document.getElementById('mainArea');
+  mainArea.innerHTML = '<div class="inf-toolbar">' +
     '<button class="btn-inf-back" onclick="infLoadView()">← Volver</button>' +
     '<button class="btn-inf-print" onclick="infImprimir()">🖨️ Imprimir / PDF</button>' +
     '<span style="font-size:.72rem;color:var(--muted)">Imprimir → Guardar como PDF para adjuntar a citación</span>' +
@@ -3813,12 +3835,8 @@ function infRenderInforme(d) {
     '<td style="padding:6px 8px;font-size:.72rem">' + infDesc(d.promAct) + '</td>' +
     '</tr></tfoot></table>' +
 
-    // 2. Tendencia
-    '<div class="inf-sec">2. Evolución por actividad</div>' +
-    tendHTML +
-
     // 3. Componentes
-    '<div class="inf-sec">3. Componentes de evaluación</div>' +
+    '<div class="inf-sec">2. Componentes de evaluación</div>' +
     '<div class="inf-comp-grid">' + compGrid + '</div>' +
     '<div class="inf-def-row">NOTA DEFINITIVA: <span class="inf-chip ' + infChipCls(d.definitiva) + '" style="font-size:.9rem;padding:3px 12px">' + (d.definitiva!==null?d.definitiva.toFixed(2):'—') + '</span></div>' +
 
@@ -3826,12 +3844,18 @@ function infRenderInforme(d) {
     asistHTML +
 
     // 5. Análisis
-    '<div class="inf-sec">5. Análisis del proceso académico</div>' +
+    '<div class="inf-sec">4. Análisis del proceso académico</div>' +
     '<div class="inf-analisis">' + analisis + '</div>' +
 
+    // Objetivo principal de mejora
+    infObjetivomejora(d, actsValidas, nivel) +
+
     // 6. Observaciones
-    '<div class="inf-sec">6. Observaciones del docente</div>' +
+    '<div class="inf-sec">5. Observaciones del docente</div>' +
     '<div class="inf-obs-box">' + (d.obs ? infEsc(d.obs) : 'Sin observaciones registradas.') + '</div>' +
+
+    // Compromisos para el siguiente periodo
+    infCompromisos(d, actsValidas, nivel, d.period) +
 
     // Firmas
     '<div class="inf-firma">' +
@@ -3843,6 +3867,9 @@ function infRenderInforme(d) {
 
     '<div class="inf-pie">Generado con HBMol · Colegio Rufino José Cuervo IED · Ciencias Naturales — Química · Documento de uso interno.</div>' +
     '</div>';
+  // Scroll al inicio en móvil para mostrar el informe desde arriba
+  mainArea.scrollTop = 0;
+  window.scrollTo(0, 0);
 }
 
 /* ── Helpers del módulo informes ── */
@@ -4055,7 +4082,7 @@ function infAnalisis(d, actsValidas, nivel) {
   /* ── 10. CONCLUSIÓN SEGÚN NIVEL ── */
   var tieneNR = noRealizadas.length > 0;
   if (nivel.label==='Bajo')
-    lineas.push('⚠ <strong>Conclusión:</strong> El/La estudiante <strong>no ha alcanzado los desempeños mínimos</strong> del periodo en Química.' + (tieneNR?' Parte del resultado se explica por actividades no entregadas, situación que puede corregirse con compromiso inmediato.':'') + ' Se requiere <strong>citación urgente al acudiente</strong> para establecer un plan de nivelación con fechas concretas y seguimiento semanal desde el hogar. Sin intervención oportuna, el/la estudiante corre riesgo de perder el área.');
+    lineas.push('<strong>Conclusión:</strong> El/La estudiante <strong>no ha alcanzado los desempeños mínimos</strong> del periodo en Química.' + (tieneNR?' Parte del resultado se explica por actividades no entregadas, situación que puede corregirse con compromiso inmediato.':'') + ' Se recomienda establecer un plan de nivelación con fechas concretas y seguimiento desde el hogar.');
   else if (nivel.label==='Básico')
     lineas.push('<strong>Conclusión:</strong> El/La estudiante <strong>alcanza los desempeños mínimos</strong> del periodo, pero con margen estrecho.' + (tieneNR?' Entregar las actividades pendientes mejoraría notablemente su promedio.':'') + ' Se recomienda refuerzo en los temas con menor dominio, mayor dedicación al estudio en casa y participación activa en clase.');
   else if (nivel.label==='Alto')
@@ -4072,6 +4099,119 @@ function infTipoLabel(tipo) {
   if (tipo==='taller') return 'Taller';
   if (tipo==='evaluacion') return 'Evaluación';
   return 'Actividad';
+}
+
+/* ── Genera la sección de Objetivo Principal de Mejora ── */
+function infObjetivomejora(d, actsValidas, nivel) {
+  var items = [];
+  var realizadas = actsValidas.filter(function(a){ return a.nota > 0; });
+  var noRealizadas = actsValidas.filter(function(a){ return a.nota === 0; });
+
+  // Actividad con menor nota
+  if (realizadas.length > 0) {
+    var minAct = realizadas.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, realizadas[0]);
+    if (minAct.nota < 4.0) {
+      var tipo = infTipoActividad(minAct.nombre);
+      var msg = '';
+      if (tipo === 'lab') msg = 'Fortalecer la redacción de conclusiones y la conexión entre los datos experimentales y las leyes químicas vistas en clase.';
+      else if (tipo === 'taller') msg = 'Mejorar la resolución de ejercicios prácticos y la consulta oportuna de dudas antes de la evaluación.';
+      else if (tipo === 'evaluacion') msg = 'Desarrollar mayor seguridad en evaluaciones formales mediante práctica con preguntas tipo ICFES.';
+      else msg = 'Reforzar los contenidos de "' + infEsc(minAct.nombre) + '" (' + minAct.nota.toFixed(1) + ').';
+      items.push('📌 <strong>Actividad prioritaria:</strong> "' + infEsc(minAct.nombre) + '" (' + minAct.nota.toFixed(1) + ') — ' + msg);
+    }
+  }
+
+  // Brecha autoeval vs final
+  if (d.autoeval !== null && d.finalN !== null && d.autoeval - d.finalN > 0.8) {
+    items.push('📌 <strong>Metacognición:</strong> Existe una brecha de ' + (d.autoeval - d.finalN).toFixed(1) + ' puntos entre la autovaloración (' + d.autoeval.toFixed(1) + ') y el desempeño real en evaluaciones (' + d.finalN.toFixed(1) + '). El objetivo es reducir esta diferencia mediante contraste sistemático entre nota esperada y nota obtenida.');
+  }
+
+  // Actividades no entregadas
+  if (noRealizadas.length > 0) {
+    items.push('📌 <strong>Cumplimiento:</strong> Entregar todas las actividades asignadas. Hay ' + noRealizadas.length + ' actividad' + (noRealizadas.length>1?'es':'') + ' sin entregar que impactan directamente el promedio.');
+  }
+
+  // Asistencia
+  if (d.asistencia && d.asistencia.total > 0) {
+    var pct = Math.round((d.asistencia.asistidas/d.asistencia.total)*100);
+    if (pct < 80) items.push('📌 <strong>Asistencia:</strong> Mejorar la asistencia (actualmente ' + pct + '%) para garantizar la continuidad del proceso de aprendizaje.');
+  }
+
+  if (!items.length) return '';
+  return '<div class="inf-sec">Objetivo Principal de Mejora</div>' +
+    '<div style="background:#fff8e1;border-left:4px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;font-size:.78rem;line-height:1.8;margin-bottom:14px">' +
+    items.join('<br>') + '</div>';
+}
+
+/* ── Genera la sección de Compromisos ── */
+function infCompromisos(d, actsValidas, nivel, periodo) {
+  // Mostrar solo si: Bajo/Básico O hay brechas específicas
+  var esBajoBas = nivel.label === 'Bajo' || nivel.label === 'Básico';
+  var realizadas = actsValidas.filter(function(a){ return a.nota > 0; });
+  var noRealizadas = actsValidas.filter(function(a){ return a.nota === 0; });
+  var brechaAutoeval = d.autoeval !== null && d.finalN !== null && d.autoeval - d.finalN > 0.8;
+  var asistenciaBaja = d.asistencia && d.asistencia.total > 0 && Math.round((d.asistencia.asistidas/d.asistencia.total)*100) < 80;
+  var tieneZeros = noRealizadas.length > 0;
+
+  if (!esBajoBas && !brechaAutoeval && !asistenciaBaja && !tieneZeros) return '';
+
+  var periodoLabel = periodo === 3 ? 'el próximo año escolar' : 'el siguiente periodo';
+  var evals = realizadas.filter(function(a){ return infTipoActividad(a.nombre)==='evaluacion'; });
+  var labs  = realizadas.filter(function(a){ return infTipoActividad(a.nombre)==='lab'; });
+
+  // ── Bloque 1: Fortalecimiento Académico ──
+  var b1items = [];
+  b1items.push('Establecer un horario de estudio diario de 30 minutos exclusivos para Química, enfocándose en los temas con menor desempeño del periodo.');
+  if (evals.length > 0 && evals.some(function(e){ return e.nota < 3.5; })) {
+    var minEval = evals.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, evals[0]);
+    b1items.push('Realizar simulacros de preguntas tipo ICFES antes de cada evaluación formal para ganar seguridad y manejo del tiempo. Especial atención en los temas de "' + infEsc(minEval.nombre) + '".');
+  }
+  b1items.push('El acudiente se compromete a ingresar semanalmente a la plataforma de seguimiento con el código del/la estudiante para monitorear el registro de cada nota en tiempo real.');
+  if (tieneZeros) {
+    b1items.push('Entregar <strong>todas</strong> las actividades asignadas en las fechas indicadas. En caso de dificultad, comunicarse con el docente antes del vencimiento del plazo.');
+  }
+
+  // ── Bloque 2: Competencias Científicas ──
+  var b2items = [];
+  if (labs.length > 0) {
+    b2items.push('En los próximos informes de laboratorio, dedicar un apartado especial a la <strong>"Conexión Teórica"</strong>, explicando cómo los datos experimentales se sustentan en las leyes químicas vistas en clase.');
+  }
+  b2items.push('Entregar los talleres con una lista de <strong>"Dudas Pendientes"</strong> para ser resueltas con el docente antes del día de la evaluación.');
+
+  // ── Bloque 3: Metacognición (solo si hay brecha) ──
+  var b3html = '';
+  if (brechaAutoeval) {
+    b3html = '<div style="margin-top:10px"><strong style="font-size:.78rem;color:var(--navy)">3. Ajuste de Autopercepción</strong>' +
+      '<ul style="margin:6px 0 0 16px;font-size:.76rem;line-height:1.8;color:var(--text2)">' +
+      '<li>Tras cada actividad, anotar la nota esperada y compararla con la nota real. El objetivo es reducir la brecha actual entre la autovaloración (' + d.autoeval.toFixed(1) + ') y el desempeño real (' + d.finalN.toFixed(1) + ').</li>' +
+      '<li>El docente realizará seguimiento de este contraste en las próximas entregas.</li>' +
+      '</ul></div>';
+  }
+
+  var html = '<div class="inf-sec">Compromisos para ' + periodoLabel + '</div>' +
+    '<div style="border:1.5px solid var(--bord);border-radius:8px;padding:12px 14px;font-size:.76rem;line-height:1.8;margin-bottom:14px">' +
+    '<p style="font-size:.74rem;color:var(--muted);margin-bottom:10px">Para transformar el resultado actual, se establecen los siguientes acuerdos entre Institución, Estudiante y Familia:</p>' +
+
+    '<div><strong style="font-size:.78rem;color:var(--navy)">1. Fortalecimiento Académico</strong>' +
+    '<ul style="margin:6px 0 0 16px;color:var(--text2)">' +
+    b1items.map(function(i){ return '<li>' + i + '</li>'; }).join('') +
+    '</ul></div>' +
+
+    (b2items.length ? '<div style="margin-top:10px"><strong style="font-size:.78rem;color:var(--navy)">2. Desarrollo de Competencias Científicas</strong>' +
+    '<ul style="margin:6px 0 0 16px;color:var(--text2)">' +
+    b2items.map(function(i){ return '<li>' + i + '</li>'; }).join('') +
+    '</ul></div>' : '') +
+
+    b3html +
+
+    '<div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--bord);display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;text-align:center">' +
+    '<div><div style="border-top:1.5px solid var(--text);margin:0 8px 4px"></div><div style="font-size:.65rem;color:var(--muted);text-transform:uppercase">Firma del/la estudiante</div></div>' +
+    '<div><div style="border-top:1.5px solid var(--text);margin:0 8px 4px"></div><div style="font-size:.65rem;color:var(--muted);text-transform:uppercase">Firma del acudiente</div></div>' +
+    '<div><div style="border-top:1.5px solid var(--text);margin:0 8px 4px"></div><div style="font-size:.65rem;color:var(--muted);text-transform:uppercase">Firma del docente</div></div>' +
+    '</div>' +
+    '</div>';
+
+  return html;
 }
 
 /* ════════════════════════════════════════════════════════
