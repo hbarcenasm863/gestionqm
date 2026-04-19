@@ -3818,6 +3818,7 @@ function infRenderInforme(d) {
     // Ficha
     '<div class="inf-ficha">' +
     infFi('Estudiante', d.student.name) +
+    infFi('Código', d.student.id || '—') +
     infFi('Curso', 'Grado ' + d.course) +
     infFi('Periodo', 'Periodo ' + d.period) +
     infFi('Docente', 'Harvey Barcenas M.') +
@@ -4115,7 +4116,7 @@ function infObjetivomejora(d, actsValidas, nivel) {
       var msg = '';
       if (tipo === 'lab') msg = 'Fortalecer la redacción de conclusiones y la conexión entre los datos experimentales y las leyes químicas vistas en clase.';
       else if (tipo === 'taller') msg = 'Mejorar la resolución de ejercicios prácticos y la consulta oportuna de dudas antes de la evaluación.';
-      else if (tipo === 'evaluacion') msg = 'Desarrollar mayor seguridad en evaluaciones formales mediante práctica con preguntas tipo ICFES.';
+      else if (tipo === 'evaluacion') msg = 'Desarrollar mayor seguridad en evaluaciones formales mediante práctica con ejercicios variados: selección múltiple y problemas abiertos de aplicación.';
       else msg = 'Reforzar los contenidos de "' + infEsc(minAct.nombre) + '" (' + minAct.nota.toFixed(1) + ').';
       items.push('📌 <strong>Actividad prioritaria:</strong> "' + infEsc(minAct.nombre) + '" (' + minAct.nota.toFixed(1) + ') — ' + msg);
     }
@@ -4164,7 +4165,7 @@ function infCompromisos(d, actsValidas, nivel, periodo) {
   b1items.push('Establecer un horario de estudio diario de 30 minutos exclusivos para Química, enfocándose en los temas con menor desempeño del periodo.');
   if (evals.length > 0 && evals.some(function(e){ return e.nota < 3.5; })) {
     var minEval = evals.reduce(function(mn,a){ return a.nota<mn.nota?a:mn; }, evals[0]);
-    b1items.push('Realizar simulacros de preguntas tipo ICFES antes de cada evaluación formal para ganar seguridad y manejo del tiempo. Especial atención en los temas de "' + infEsc(minEval.nombre) + '".');
+    b1items.push('Practicar con ejercicios variados antes de cada evaluación: tanto preguntas de selección múltiple como ejercicios abiertos de aplicación, para ganar seguridad y manejo del tiempo. Especial atención en los temas de "' + infEsc(minEval.nombre) + '".');
   }
   b1items.push('El acudiente se compromete a ingresar semanalmente a la plataforma de seguimiento con el código del/la estudiante para monitorear el registro de cada nota en tiempo real.');
   if (tieneZeros) {
@@ -4176,7 +4177,7 @@ function infCompromisos(d, actsValidas, nivel, periodo) {
   if (labs.length > 0) {
     b2items.push('En los próximos informes de laboratorio, dedicar un apartado especial a la <strong>"Conexión Teórica"</strong>, explicando cómo los datos experimentales se sustentan en las leyes químicas vistas en clase.');
   }
-  b2items.push('Entregar los talleres con una lista de <strong>"Dudas Pendientes"</strong> para ser resueltas con el docente antes del día de la evaluación.');
+  b2items.push('Participar más activamente en clase, preguntando y resolviendo dudas en el momento en que surgen, sin acumularlas para después.');
 
   // ── Bloque 3: Metacognición (solo si hay brecha) ──
   var b3html = '';
