@@ -2796,6 +2796,7 @@ function grdRenderMain(){
 
 function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
   var locked = grdIsLocked(activeCourse, activePeriod);
+  var ro = locked ? ' readonly' : '';
   if(!students.length) return '<div class="empty"><div class="empty-ico">📓</div>Sin estudiantes aún. Usa 📋 para importar.</div>';
   students=students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
 
