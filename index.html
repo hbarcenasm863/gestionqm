@@ -1421,6 +1421,10 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   </header>
   <div class="mob-menu-overlay" id="mobOverlay" onclick="closeMobMenu()"></div>
   <div class="mob-menu" id="mobMenu"></div>
+  <div id="offlineBanner" style="display:none;background:#991b1b;color:white;text-align:center;padding:5px 12px;font-size:.74rem;font-weight:600;position:sticky;top:0;z-index:200">
+    📴 Sin conexión — los cambios se guardan en cola y se sincronizarán al recuperar la red
+    <span id="offlineQueueCount"></span>
+  </div>
   <div class="app-body">
     <nav class="sidebar" id="sidebar" style="display:none">
       <div class="sidebar-head" id="sidebarHead">Cursos</div>
@@ -1788,7 +1792,44 @@ var lockedPeriods = (function(){
 })();
 var attCache={}, grdCache={}, grdConfig={};
 var attHistOpen=true, grdActiveTab={};
-var attViewMode = 'daily'; // 'daily' | 'matrix'
+var attViewMode = 'daily';
+var offlineQueue = (function(){
+  try { return JSON.parse(localStorage.getItem('gqm_offline_queue') || '[]'); } catch(e){ return []; }
+})();
+
+// Listener de reconexión — vacía la cola al volver la red
+window.addEventListener('online', function() {
+  var b = document.getElementById('offlineBanner');
+  if (b) b.style.display = 'none';
+  toast('✅ Red restaurada' + (offlineQueue.length ? ' — sincronizando ' + offlineQueue.length + ' cambio' + (offlineQueue.length>1?'s':'') + '…' : ''));
+  if (offlineQueue.length) flushOfflineQueue();
+});
+window.addEventListener('offline', function() {
+  var b = document.getElementById('offlineBanner');
+  if (b) b.style.display = 'block';
+  toast('📴 Sin conexión — los cambios se guardarán en cola');
+});
+
+async function flushOfflineQueue() {
+  var queue = offlineQueue.slice();
+  offlineQueue = [];
+  try { localStorage.removeItem('gqm_offline_queue'); } catch(e) {}
+  var ok = 0, fail = 0;
+  for (var i = 0; i < queue.length; i++) {
+    var item = queue[i];
+    try {
+      var res;
+      if (item.type === 'grd') res = await apiGrdPost(item.body);
+      else if (item.type === 'att') res = await apiAttPost(item.body);
+      if (res && !res.error) ok++;
+      else { fail++; offlineQueue.push(item); }
+    } catch(e) { fail++; offlineQueue.push(item); }
+  }
+  if (offlineQueue.length) {
+    try { localStorage.setItem('gqm_offline_queue', JSON.stringify(offlineQueue)); } catch(e) {}
+  }
+  toast(ok + ' cambio' + (ok>1?'s':'') + ' sincronizado' + (ok>1?'s':'') + (fail?' · ' + fail + ' fallido' + (fail>1?'s':'') : ''));
+} // 'daily' | 'matrix'
 var pendingSaves={}, saveTimers={};
 
 /* ═══ SCREENS ═══ */
@@ -1886,7 +1927,12 @@ function openModule(mod) {
   document.getElementById('sidebar').style.display = '';
   renderNav();
   if (mod === 'att') loadAttCourse(activeCourse);
-  if (mod === 'grd') grdLoadView(activeCourse, activePeriod);
+  if (mod === 'grd') {
+    // Mostrar spinner inmediato antes de evaluar caché
+    document.getElementById('mainArea').innerHTML =
+      '<div class="spin-wrap"><div class="spin"></div>Cargando notas…</div>';
+    grdLoadView(activeCourse, activePeriod);
+  }
   if (mod === 'inf') infLoadView();
 }
 
@@ -1940,16 +1986,68 @@ async function apiAtt(params) {
   }
 }
 async function apiAttPost(body) {
-  var r = await fetch(URL_ATT,{method:'POST',body:JSON.stringify(Object.assign({},body,{pwd:SESSION_PWD})),redirect:'follow'});
-  return r.json();
+  var controller = new AbortController();
+  var timer = setTimeout(function(){ controller.abort(); }, 15000);
+  try {
+    var r = await fetch(URL_ATT, {method:'POST',
+      body: JSON.stringify(Object.assign({}, body, {pwd: SESSION_PWD})),
+      redirect:'follow', signal: controller.signal});
+    clearTimeout(timer);
+    return r.json();
+  } catch(e) {
+    clearTimeout(timer);
+    if (!navigator.onLine) {
+      offlineQueue.push({type:'att', body: body});
+      try { localStorage.setItem('gqm_offline_queue', JSON.stringify(offlineQueue)); } catch(ex) {}
+      toast('📴 Sin red — asistencia en cola offline');
+      return {queued: true};
+    }
+    return {error: 'timeout'};
+  }
 }
-async function apiGrd(params,pwd) {
-  var r = await fetch(URL_GRD+'?'+new URLSearchParams(Object.assign({},params,{pwd:pwd||SESSION_PWD})),{method:'GET',redirect:'follow'});
-  return r.json();
+async function apiGrd(params, pwd) {
+  var timeout = (params.action === 'getAll' || params.action === 'downloadBackup') ? 45000 : 12000;
+  for (var attempt = 1; attempt <= 2; attempt++) {
+    var controller = new AbortController();
+    var timer = setTimeout(function(){ controller.abort(); }, timeout);
+    try {
+      var r = await fetch(URL_GRD + '?' + new URLSearchParams(Object.assign({}, params, {pwd: pwd||SESSION_PWD})),
+        {method:'GET', redirect:'follow', signal: controller.signal});
+      clearTimeout(timer);
+      return r.json();
+    } catch(e) {
+      clearTimeout(timer);
+      if (attempt === 1 && (e.name === 'AbortError' || !navigator.onLine)) {
+        toast('⏳ Red lenta, reintentando…');
+        await new Promise(function(res){ setTimeout(res, 2000); });
+      } else {
+        return {error: navigator.onLine ? 'timeout' : 'offline'};
+      }
+    }
+  }
+  return {error: 'timeout'};
 }
+
 async function apiGrdPost(body) {
-  var r = await fetch(URL_GRD,{method:'POST',body:JSON.stringify(Object.assign({},body,{pwd:SESSION_PWD})),redirect:'follow'});
-  return r.json();
+  var controller = new AbortController();
+  var timer = setTimeout(function(){ controller.abort(); }, 15000);
+  try {
+    var r = await fetch(URL_GRD, {method:'POST',
+      body: JSON.stringify(Object.assign({}, body, {pwd: SESSION_PWD})),
+      redirect:'follow', signal: controller.signal});
+    clearTimeout(timer);
+    return r.json();
+  } catch(e) {
+    clearTimeout(timer);
+    // Guardar en cola offline si no hay red
+    if (!navigator.onLine) {
+      offlineQueue.push({type:'grd', body: body});
+      try { localStorage.setItem('gqm_offline_queue', JSON.stringify(offlineQueue)); } catch(ex) {}
+      toast('📴 Sin red — guardado en cola offline');
+      return {queued: true};
+    }
+    return {error: 'timeout'};
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -2606,6 +2704,7 @@ async function grdLoadView(course,period){
     '<div class="period-tabs">' + PERIODS.map(function(p){
       return '<button class="ptab ' + (p===period?'active':'') + '" onclick="grdLoadView(\'' + course + '\',' + p + ')">P' + p + '</button>';
     }).join('') + '</div>' +
+    '<button class="icon-btn" id="btnGrdSync" onclick="grdSincronizar()" title="Actualizar notas del servidor">🔄</button>' +
     '<button class="icon-btn" onclick="printPDF()" title="Generar PDF">🖨</button>' +
     '<button class="icon-btn" onclick="exportSistematizadora()" title="Exportar sistematizadora">📤</button>' +
     '<button class="icon-btn" onclick="openGrdExport()">⬇</button>' +
@@ -3127,6 +3226,17 @@ function grdIsLocked(course, period) {
   return !!lockedPeriods[(course||activeCourse) + '_' + (period||activePeriod)];
 }
 
+async function grdSincronizar() {
+  var c = activeCourse, p = activePeriod;
+  var btn = document.getElementById('btnGrdSync');
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+  toast('Actualizando notas ' + c + ' · P' + p + '…');
+  // Limpiar caché del curso/periodo actual para forzar recarga
+  if (grdCache[c]) delete grdCache[c][p];
+  await grdLoadView(c, p);
+  if (btn) { btn.textContent = '🔄'; btn.disabled = false; }
+}
+
 async function grdSetActivePeriod(period){
   grdConfig[activeCourse]=period; grdRenderMain(); renderNav();
   await apiGrdPost({action:'setActivePeriod',course:activeCourse,period:period});
@@ -3430,6 +3540,7 @@ function buildMobMenuItems() {
     items.push({sep:true});
   }
   if (activeModule === 'grd') {
+    items.push({icon:'🔄', label:'Actualizar notas', fn:'grdSincronizar()'});
     items.push({icon:'+ Act.', label:'Nueva actividad', fn:'grdOpenActColModal()'});
     items.push({icon:'+ Esp.', label:'Componente especial', fn:"openModal('specialModal')"});
     items.push({icon:'📥', label:'Importar notas JSON', fn:'openImportModal()'});
