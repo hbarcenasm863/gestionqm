@@ -1483,6 +1483,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
     <input type="hidden" id="editStuId">
     <div class="mbtns">
       <button class="btn btn-outline" onclick="closeModal('editStuModal')">Cancelar</button>
+      <button class="btn btn-outline btn-sm" onclick="openTransferModal()">🔀 Trasladar</button>
       <button class="btn btn-danger btn-sm" onclick="grdRemoveStuFromModal()">Quitar</button>
       <button class="btn btn-navy" onclick="grdSaveEditStu()">Guardar</button>
     </div>
@@ -1749,6 +1750,25 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   </div>
 </div>
 
+
+<!-- MODAL: TRASLADO DE ESTUDIANTE -->
+<div class="overlay" id="transferModal">
+  <div class="modal">
+    <div class="modal-title">🔀 Trasladar estudiante</div>
+    <div id="transferStuInfo" style="background:var(--card);border:1px solid var(--bord);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:.84rem;color:var(--text2)"></div>
+    <div class="mrow">
+      <label class="mlabel">Curso destino</label>
+      <select class="minput" id="transferDestCourse"></select>
+    </div>
+    <div style="background:#fff8e1;border:1px solid var(--gold-md);border-radius:8px;padding:9px 12px;font-size:.74rem;color:#713f12;margin-bottom:4px">
+      ⚠ El traslado moverá al estudiante y <strong>todas sus notas</strong> al nuevo curso. La asistencia se conserva en el historial. Esta acción no se puede deshacer.
+    </div>
+    <div class="mbtns">
+      <button class="btn btn-outline" onclick="closeModal('transferModal')">Cancelar</button>
+      <button class="btn btn-navy" onclick="executeTransfer()">🔀 Trasladar</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -4865,6 +4885,69 @@ async function attSincronizar() {
     if (btn) { btn.textContent = '🔄'; btn.disabled = false; }
   }
 }
+
+/* ═══════════════════════════════════════════
+   TRASLADO DE ESTUDIANTE
+═══════════════════════════════════════════ */
+function openTransferModal() {
+  var id   = document.getElementById('editStuId').value;
+  var name = document.getElementById('editStuName').value;
+  var code = document.getElementById('editStuCode').value;
+
+  document.getElementById('transferStuInfo').innerHTML =
+    '<strong>' + name + '</strong>' +
+    (code ? ' &nbsp;·&nbsp; Código: <code style="font-size:.78rem;color:var(--navy)">' + code + '</code>' : '') +
+    ' &nbsp;·&nbsp; Curso actual: <strong>' + activeCourse + '</strong>';
+
+  var sel = document.getElementById('transferDestCourse');
+  sel.innerHTML = COURSES
+    .filter(function(c){ return c !== activeCourse; })
+    .map(function(c){ return '<option value="' + c + '">' + c + '</option>'; })
+    .join('');
+
+  closeModal('editStuModal');
+  openModal('transferModal');
+}
+
+async function executeTransfer() {
+  var stuId      = document.getElementById('editStuId').value;
+  var name       = document.getElementById('editStuName').value;
+  var destCourse = document.getElementById('transferDestCourse').value;
+
+  if (!confirm('¿Trasladar a "' + name + '" de ' + activeCourse +
+               ' a ' + destCourse + '?\n\nSe moverán todas sus notas.')) return;
+
+  closeModal('transferModal');
+  toast('Trasladando\u2026');
+
+  var res = await apiGrdPost({
+    action:     'transferStudent',
+    course:     activeCourse,
+    studentId:  stuId,
+    destCourse: destCourse
+  });
+
+  if (res.error) {
+    toast('\u26a0 Error al trasladar: ' + res.error);
+    return;
+  }
+
+  // Quitar del caché del curso origen en todos los periodos
+  PERIODS.forEach(function(p) {
+    if (grdCache[activeCourse] && grdCache[activeCourse][p]) {
+      grdCache[activeCourse][p].students =
+        grdCache[activeCourse][p].students.filter(function(s){ return s.id !== stuId; });
+    }
+  });
+
+  // Invalidar caché del curso destino para forzar recarga fresca
+  if (grdCache[destCourse]) delete grdCache[destCourse];
+
+  grdRenderMain();
+  renderNav();
+  toast('\u2705 ' + name + ' trasladado/a a ' + destCourse);
+}
+
 
 init();
 </script>
