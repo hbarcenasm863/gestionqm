@@ -462,6 +462,30 @@ body {
 .btn-inf-back { background: white; color: #7c3aed; border: 2px solid #7c3aed; border-radius: 7px; padding: 7px 14px; font-size: .82rem; font-weight: 700; cursor: pointer; }
 .btn-inf-print { background: #1a2e5a; color: white; border: none; border-radius: 7px; padding: 7px 16px; font-size: .82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 .inf-def-row { text-align: right; margin-bottom: 12px; font-size: .82rem; font-weight: 700; color: #1a2e5a; }
+
+/* ═══ REPORTE DE REPROBADOS ═══ */
+.btn-inf-rep { background: white; color: #991b1b; border: 2px solid #fca5a5; border-radius: 8px; padding: 10px 20px; font-size: .88rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; margin-top: 8px; }
+.btn-inf-rep:hover { background: #fef2f2; border-color: #991b1b; }
+.rep-wrap { max-width: 760px; margin: 0 auto; }
+.rep-summary { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 18px; }
+.rep-sum-card { border: 1.5px solid var(--bord); border-radius: 8px; padding: 10px 14px; text-align: center; background: white; }
+.rep-sum-n { font-size: 1.8rem; font-weight: 900; line-height: 1.1; }
+.rep-sum-l { font-size: .68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
+.rep-course-block { margin-bottom: 18px; }
+.rep-course-head { font-family: 'Syne',sans-serif; font-weight: 800; font-size: .95rem; color: #1a2e5a; padding: 8px 12px; background: #f1f5f9; border-radius: 7px 7px 0 0; border: 1.5px solid var(--bord); border-bottom: none; display: flex; align-items: center; justify-content: space-between; }
+.rep-course-badge { background: #fee2e2; color: #991b1b; border-radius: 20px; padding: 2px 10px; font-size: .72rem; font-weight: 800; }
+.rep-tbl { width: 100%; border-collapse: collapse; border: 1.5px solid var(--bord); border-radius: 0 0 7px 7px; overflow: hidden; }
+.rep-tbl th { background: #1a2e5a; color: white; padding: 7px 10px; text-align: left; font-size: .68rem; text-transform: uppercase; letter-spacing: .3px; }
+.rep-tbl td { padding: 7px 10px; border-bottom: 1px solid var(--bord); font-size: .83rem; }
+.rep-tbl tr:last-child td { border-bottom: none; }
+.rep-tbl tr:nth-child(even) td { background: #fef2f2; }
+.rep-def { font-weight: 900; color: #991b1b; font-size: .95rem; }
+.rep-empty { text-align: center; padding: 36px; color: var(--muted); font-size: .9rem; background: white; border: 1.5px solid var(--bord); border-radius: 8px; }
+@media print {
+  .rep-course-head { background: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .rep-tbl th { background: #1a2e5a !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
 @media print {
   .topbar, .sidebar, .inf-toolbar { display: none !important; }
   .main-area { margin: 0 !important; padding: 8px !important; }
@@ -1271,31 +1295,32 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   body.printing-informe .main { padding: 0 !important; overflow: visible !important; }
   body.printing-informe .inf-hoja {
     box-shadow: none !important; border: none !important;
-    padding: 8px 10px !important; max-width: 100% !important; margin: 0 !important;
+    padding: 6px 8px !important; max-width: 100% !important; margin: 0 !important;
   }
   body.printing-informe .inf-toolbar { display: none !important; }
-  body.printing-informe .inf-cab img { display: block !important; height: 36px !important; }
-  body.printing-informe .inf-cab { padding-bottom: 6px !important; margin-bottom: 6px !important; }
-  body.printing-informe .inf-badge-n { font-size: 1.1rem !important; }
-  body.printing-informe .inf-asist-n { font-size: 1rem !important; }
-  body.printing-informe .inf-cc-n { font-size: 1rem !important; }
-  body.printing-informe .inf-sec { margin: 8px 0 4px !important; font-size: .65rem !important; }
-  body.printing-informe .inf-tbl { font-size: .72rem !important; }
-  body.printing-informe .inf-tbl th, body.printing-informe .inf-tbl td { padding: 2px 5px !important; }
-  body.printing-informe .inf-ficha { margin-bottom: 6px !important; }
-  body.printing-informe .inf-fi { padding: 4px 8px !important; }
-  body.printing-informe .inf-fi-v { font-size: .76rem !important; }
-  body.printing-informe .inf-comp-grid { gap: 5px !important; margin-bottom: 6px !important; }
-  body.printing-informe .inf-comp-card { padding: 5px 7px !important; }
-  body.printing-informe .inf-asist { gap: 5px !important; margin-bottom: 6px !important; }
-  body.printing-informe .inf-asist-item { padding: 5px 7px !important; }
-  body.printing-informe .inf-analisis { padding: 7px 10px !important; font-size: .73rem !important; line-height: 1.5 !important; margin-bottom: 6px !important; }
-  body.printing-informe .inf-obs-box { min-height: 30px !important; padding: 5px 10px !important; font-size: .73rem !important; margin-bottom: 6px !important; }
-  body.printing-informe .inf-firma-nm { margin-bottom: 14px !important; }
-  body.printing-informe .inf-firma { margin-top: 10px !important; padding-top: 8px !important; }
-  body.printing-informe .inf-def-row { margin-bottom: 6px !important; }
-  body.printing-informe .inf-nivel { margin-bottom: 6px !important; }
-  body.printing-informe .inf-pie { margin-top: 6px !important; padding-top: 4px !important; }
+  body.printing-informe .inf-tend { display: none !important; }
+  body.printing-informe .inf-cab img { display: block !important; height: 32px !important; }
+  body.printing-informe .inf-cab { padding-bottom: 5px !important; margin-bottom: 5px !important; }
+  body.printing-informe .inf-cab-c h3 { font-size: .82rem !important; }
+  body.printing-informe .inf-badge-n { font-size: 1rem !important; }
+  body.printing-informe .inf-asist-n { font-size: .95rem !important; }
+  body.printing-informe .inf-sec { margin: 6px 0 3px !important; font-size: .62rem !important; }
+  body.printing-informe .inf-tbl { font-size: .68rem !important; }
+  body.printing-informe .inf-tbl th, body.printing-informe .inf-tbl td { padding: 2px 4px !important; }
+  body.printing-informe .inf-ficha { margin-bottom: 5px !important; }
+  body.printing-informe .inf-fi { padding: 3px 7px !important; }
+  body.printing-informe .inf-fi-l { font-size: .6rem !important; }
+  body.printing-informe .inf-fi-v { font-size: .7rem !important; }
+  body.printing-informe .inf-asist { gap: 4px !important; margin-bottom: 5px !important; }
+  body.printing-informe .inf-asist-item { padding: 4px 6px !important; }
+  body.printing-informe .inf-analisis { padding: 6px 9px !important; font-size: .7rem !important; line-height: 1.45 !important; margin-bottom: 5px !important; }
+  body.printing-informe .inf-obs-box { min-height: 24px !important; padding: 4px 9px !important; font-size: .7rem !important; margin-bottom: 5px !important; }
+  body.printing-informe .inf-firma-nm { margin-bottom: 12px !important; font-size: .68rem !important; }
+  body.printing-informe .inf-firma { margin-top: 8px !important; padding-top: 6px !important; }
+  body.printing-informe .inf-nivel { margin-bottom: 5px !important; padding: 2px 9px !important; font-size: .72rem !important; }
+  body.printing-informe .inf-pie { margin-top: 5px !important; padding-top: 3px !important; font-size: .58rem !important; }
+  body.printing-informe .inf-chip { font-size: .68rem !important; padding: 1px 5px !important; }
+  @page { margin: 1.2cm; size: A4 portrait; }
   /* Colores de chips en impresión */
   body.printing-informe .ic-sup { background: #dcfce7 !important; color: #166534 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body.printing-informe .ic-alt { background: #dbeafe !important; color: #1e40af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -2883,7 +2908,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
 
     var def=grdCalcFinal(s,actNames,grades,baseW,specials);
     var defCls=gcl(def);
-    tds+='<td class="td-def ' + defCls + '" data-def-sid="' + s.id + '">' + (def!==null?def.toFixed(2):'0.00') + '</td>';
+    tds+='<td class="td-def ' + defCls + '" data-def-sid="' + s.id + '">' + (def!==null?def.toFixed(1):'0.0') + '</td>';
     return '<tr>' + tds + '</tr>';
   }).join('');
 
@@ -2929,7 +2954,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     return '<div class="mgrid">' +
       '<div class="mgrid-head">' +
       '<span class="mgrid-name">' + (i+1) + '. ' + s.name + '</span>' +
-      '<span class="mgrid-def" id="mgrid-def-' + s.id + '" style="color:' + defCol + '">' + (def!=null?def.toFixed(2):'0.00') + '</span>' +
+      '<span class="mgrid-def" id="mgrid-def-' + s.id + '" style="color:' + defCol + '">' + (def!=null?def.toFixed(1):'0.0') + '</span>' +
       '</div>' +
       '<div class="mgrid-body"><div class="mgrid-rows">' +
       '<div class="mgrid-section">Actividades (' + baseW.actividades + '%)</div>' +
@@ -2959,7 +2984,7 @@ function grdBuildStats(students,actNames,grades,baseW,specials){
   var fail=avgs.filter(function(x){ return x<3; }).length;
   var hi=Math.max.apply(null,avgs), lo=Math.min.apply(null,avgs);
   return '<div class="stats-row">' +
-    '<div class="stat"><span class="stat-n ' + gcl(mean) + '" data-stat="mean">' + mean.toFixed(2) + '</span><span class="stat-l">Promedio</span></div>' +
+    '<div class="stat"><span class="stat-n ' + gcl(mean) + '" data-stat="mean">' + mean.toFixed(1) + '</span><span class="stat-l">Promedio</span></div>' +
     '<div class="stat"><span class="stat-n" style="color:var(--ok)" data-stat="pass">' + pass + '</span><span class="stat-l">Aprobando</span></div>' +
     '<div class="stat"><span class="stat-n" style="color:var(--fail)" data-stat="fail">' + fail + '</span><span class="stat-l">En riesgo</span></div>' +
     '<div class="stat"><span class="stat-n ' + gcl(hi) + '" data-stat="hi">' + hi.toFixed(1) + '</span><span class="stat-l">Máx</span></div>' +
@@ -3008,7 +3033,7 @@ function grdUpdateStats(){
   var hi=Math.max.apply(null,avgs), lo=Math.min.apply(null,avgs);
   document.querySelectorAll('[data-stat]').forEach(function(el){
     var t=el.dataset.stat;
-    if(t==='mean'){el.textContent=mean.toFixed(2);el.className='stat-n '+gcl(mean);}
+    if(t==='mean'){el.textContent=mean.toFixed(1);el.className='stat-n '+gcl(mean);}
     else if(t==='pass'){el.textContent=pass;}
     else if(t==='fail'){el.textContent=fail;}
     else if(t==='hi'){el.textContent=hi.toFixed(1);el.className='stat-n '+gcl(hi);}
@@ -3024,12 +3049,12 @@ function grdUpdateDefCell(sid, data){
   if(!s)return;
   var def=grdCalcFinal(s,actNames,grades,baseW,specials);
   document.querySelectorAll('[data-def-sid="' + sid + '"]').forEach(function(el){
-    el.textContent=def!==null?def.toFixed(2):'0.00';
+    el.textContent=def!==null?def.toFixed(1):'0.0';
     el.className='td-def '+gcl(def);
   });
   var card=document.getElementById('mgrid-def-'+sid);
   if(card){
-    card.textContent=def!==null?def.toFixed(2):'0.00';
+    card.textContent=def!==null?def.toFixed(1):'0.0';
     card.style.color=def===null?'rgba(255,255,255,.7)':def>=3?'#4ade80':def>=2?'#fbbf24':'#f87171';
   }
   clearTimeout(window._statsTimer);
@@ -3384,7 +3409,7 @@ async function buildGrdExport(){
     var fi=grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null?grades['final']['_'][s.id]:'';
     var spv=specials.map(function(sp){ return grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null?grades['especial'][sp.id][s.id]:''; });
     var def=grdCalcFinal(s,actNames,grades,bw,specials);
-    txt+=(s.code||'')+'\t'+s.name+'\t'+av.join('\t')+'\t'+actAvg+'\t'+ae+'\t'+ce+'\t'+fi+'\t'+spv.join('\t')+'\t'+(def!=null?def.toFixed(2):'')+'\n';
+    txt+=(s.code||'')+'\t'+s.name+'\t'+av.join('\t')+'\t'+actAvg+'\t'+ae+'\t'+ce+'\t'+fi+'\t'+spv.join('\t')+'\t'+(def!=null?def.toFixed(1):'')+'\n';
   });
   document.getElementById('exportBox').textContent=txt;
 }
@@ -3427,7 +3452,7 @@ async function downloadCSV(){
       var fi=grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null?grades['final']['_'][s.id]:'';
       var spv=specials.map(function(sp){ return grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null?grades['especial'][sp.id][s.id]:''; });
       var def=grdCalcFinal(s,actNames,grades,bw,specials);
-      csv+=(s.code||'')+',"'+s.name+'",'+av.join(',')+','+actAvg+','+ae+','+ce+','+fi+','+spv.join(',')+(def!=null?','+def.toFixed(2):',')+'\n';
+      csv+=(s.code||'')+',"'+s.name+'",'+av.join(',')+','+actAvg+','+ae+','+ce+','+fi+','+spv.join(',')+(def!=null?','+def.toFixed(1):',')+'\n';
     });
     var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
@@ -3891,7 +3916,8 @@ function infRenderSelector() {
     '</div>' +
     '<div class="inf-sel-full"><label class="inf-lbl">Observaciones del docente (opcional)</label>' +
     '<input class="inf-input" id="inf-obs" type="text" placeholder="Ej: Presenta dificultades en cálculos estequiométricos…"></div>' +
-    '<button class="btn-inf" onclick="infGenerar()">📄 Generar informe</button>' +
+    '<button class="btn-inf" onclick="infGenerar()">📄 Generar informe individual</button>' +
+    '<button class="btn-inf-rep" onclick="infReprobados()">⚠ Lista de reprobados — todos los cursos</button>' +
     '</div>';
 }
 
@@ -4054,27 +4080,22 @@ function infRenderInforme(d) {
     return '<tr' + (esNR?' style="background:#fff5f5"':'') + '><td>' + (i+1) + '</td><td>' + infEsc(a.nombre) + '</td><td>' + chip + '</td><td style="font-size:.72rem">' + desc + '</td></tr>';
   }).join('');
   var promChip = d.promAct!==null
-    ? '<span class="inf-chip ' + infChipCls(d.promAct) + '">' + d.promAct.toFixed(2) + '</span>'
+    ? '<span class="inf-chip ' + infChipCls(d.promAct) + '">' + d.promAct.toFixed(1) + '</span>'
     : '<span class="inf-chip ic-nd">—</span>';
 
-  // Componentes
-  function compCard(lbl, nota, peso) {
-    var aporte = nota!==null ? (nota*peso/100).toFixed(2) : '—';
-    var cc = nota!==null ? infChipCls(nota) : 'ic-nd';
-    return '<div class="inf-comp-card">' +
-      '<div class="inf-cc-l">' + lbl + '</div>' +
-      '<div class="inf-cc-n ' + cc + '">' + (nota!==null?nota.toFixed(1):'—') + '</div>' +
-      '<div class="inf-cc-p">' + peso + '% del periodo</div>' +
-      '<div class="inf-cc-a ' + cc + '">Aporta: ' + aporte + '</div>' +
-      '</div>';
-  }
-  var compGrid = compCard('Actividades', d.promAct, d.baseW.actividades) +
-    compCard('Autoevaluación', d.autoeval, 5) +
-    compCard('Coevaluación', d.coeval, 5) +
-    compCard('Ev. Final', d.finalN, d.baseW.final);
-  d.specials.forEach(function(sp) {
-    compGrid += compCard(infEsc(sp.nombre), sp.nota, sp.peso);
-  });
+  // Resumen de calificaciones (tabla simple)
+  var compRows = [
+    ['Promedio actividades (' + d.baseW.actividades + '%)', d.promAct],
+    ['Autoevaluación (5%)', d.autoeval],
+    ['Coevaluación (5%)', d.coeval],
+    ['Evaluación final (' + d.baseW.final + '%)', d.finalN]
+  ];
+  d.specials.forEach(function(sp){ compRows.push([infEsc(sp.nombre) + ' (' + sp.peso + '%)', sp.nota]); });
+  var compTableRows = compRows.map(function(r){
+    var nota = r[1];
+    var chip = nota!==null ? '<span class="inf-chip ' + infChipCls(nota) + '">' + nota.toFixed(1) + '</span>' : '<span class="inf-chip ic-nd">—</span>';
+    return '<tr><td style="font-size:.8rem;padding:5px 8px">' + r[0] + '</td><td style="padding:5px 8px;text-align:center">' + chip + '</td></tr>';
+  }).join('');
 
   // Asistencia
   var asistHTML = '';
@@ -4082,7 +4103,7 @@ function infRenderInforme(d) {
     var pct = Math.round((d.asistencia.asistidas/d.asistencia.total)*100);
     var riesgo = pct < 80;
     asistHTML =
-      '<div class="inf-sec">3. Asistencia</div>' +
+      '<div class="inf-sec">2. Asistencia</div>' +
       '<div class="inf-asist">' +
       infAsistItem(d.asistencia.total, 'Clases', '#1a2e5a') +
       infAsistItem(d.asistencia.asistidas, 'Asistencias', '#166534') +
@@ -4093,12 +4114,12 @@ function infRenderInforme(d) {
       (riesgo?'<div style="font-size:.72rem;color:#991b1b;font-weight:700;margin-bottom:10px">⚠ Asistencia por debajo del 80% — riesgo de pérdida por inasistencia.</div>':'');
   } else {
     asistHTML =
-      '<div class="inf-sec">3. Asistencia</div>' +
+      '<div class="inf-sec">2. Asistencia</div>' +
       '<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px">No hay datos de asistencia disponibles para este curso en este periodo.</div>';
   }
 
-  // Análisis automático
-  var analisis = infAnalisis(d, actsValidas, nivel);
+  // Análisis resumido
+  var analisis = infAnalisisCorto(d, actsValidas, nivel);
 
   // Definitiva badge color
   var badgeBg = nivel.color;
@@ -4147,23 +4168,20 @@ function infRenderInforme(d) {
     '<td style="padding:6px 8px;font-size:.72rem">' + infDesc(d.promAct) + '</td>' +
     '</tr></tfoot></table>' +
 
-    // 3. Componentes
-    '<div class="inf-sec">2. Componentes de evaluación</div>' +
-    '<div class="inf-comp-grid">' + compGrid + '</div>' +
-    '<div class="inf-def-row">NOTA DEFINITIVA: <span class="inf-chip ' + infChipCls(d.definitiva) + '" style="font-size:.9rem;padding:3px 12px">' + (d.definitiva!==null?d.definitiva.toFixed(2):'—') + '</span></div>' +
+    // Resumen de notas + definitiva
+    '<table class="inf-tbl" style="margin-bottom:6px"><thead><tr><th>Componente</th><th style="text-align:center;width:80px">Nota</th></tr></thead>' +
+    '<tbody>' + compTableRows + '</tbody>' +
+    '<tfoot><tr style="background:#1a2e5a;color:white"><td style="padding:6px 8px;font-weight:800;font-size:.8rem">NOTA DEFINITIVA DEL PERIODO</td>' +
+    '<td style="padding:6px 8px;text-align:center"><span class="inf-chip ' + infChipCls(d.definitiva) + '" style="font-size:.9rem;padding:3px 12px">' + (d.definitiva!==null?d.definitiva.toFixed(1):'—') + '</span></td></tr></tfoot></table>' +
 
-    // 4. Asistencia
+    // 2. Asistencia
     asistHTML +
 
-    // 5. Análisis
-    '<div class="inf-sec">4. Análisis del proceso académico</div>' +
-    '<div class="inf-analisis">' + analisis + '</div>' +
+    // 3. Análisis
+    (analisis ? '<div class="inf-sec">3. Seguimiento académico</div><div class="inf-analisis">' + analisis + '</div>' : '') +
 
-    // Objetivo principal de mejora
-    infObjetivomejora(d, actsValidas, nivel) +
-
-    // 6. Observaciones
-    '<div class="inf-sec">5. Observaciones del docente</div>' +
+    // 4. Observaciones
+    '<div class="inf-sec">4. Observaciones del docente</div>' +
     '<div class="inf-obs-box">' + (d.obs ? infEsc(d.obs) : 'Sin observaciones registradas.') + '</div>' +
 
     // Compromisos para el siguiente periodo
@@ -4229,6 +4247,37 @@ function infTipoActividad(nombre) {
   if (n.indexOf('TALLER') !== -1) return 'taller';
   if (n.indexOf('EVALUACION') !== -1 || n.indexOf('EVALUACIÓN') !== -1) return 'evaluacion';
   return 'otra';
+}
+
+/* Análisis resumido para familias: solo conclusión + alertas clave */
+function infAnalisisCorto(d, actsValidas, nivel) {
+  var noRealizadas = actsValidas.filter(function(a){ return a.nota === 0; });
+  var frases = [];
+
+  // Conclusión por nivel
+  if (nivel.label === 'Superior')
+    frases.push('El/La estudiante alcanza <strong>Desempeño Superior</strong> en Química durante este periodo, demostrando dominio conceptual y compromiso con su proceso de aprendizaje. ¡Felicitaciones!');
+  else if (nivel.label === 'Alto')
+    frases.push('El/La estudiante alcanza <strong>Desempeño Alto</strong> en Química. Los resultados son satisfactorios; con un esfuerzo adicional en los temas con menor dominio puede alcanzar el nivel Superior.');
+  else if (nivel.label === 'Básico')
+    frases.push('El/La estudiante alcanza los <strong>desempeños mínimos</strong> del periodo en Química. Es importante reforzar el estudio en casa y participar activamente en clase para consolidar los aprendizajes.');
+  else
+    frases.push('El/La estudiante <strong>no ha alcanzado los desempeños mínimos</strong> del periodo en Química. Se requiere un plan de nivelación con seguimiento desde el hogar y apoyo oportuno del docente.');
+
+  // Alerta actividades no entregadas
+  if (noRealizadas.length > 0)
+    frases.push('⚠ <strong>' + noRealizadas.length + ' actividad' + (noRealizadas.length>1?'es':'') + ' sin entregar</strong> (nota 0.0): ' +
+      noRealizadas.map(function(a){ return '"' + infEsc(a.nombre) + '"'; }).join(', ') +
+      '. Esto afecta directamente la nota del periodo.');
+
+  // Alerta asistencia
+  if (d.asistencia && d.asistencia.total > 0) {
+    var pct = Math.round((d.asistencia.asistidas / d.asistencia.total) * 100);
+    if (pct < 80)
+      frases.push('⚠ <strong>Asistencia baja (' + pct + '%)</strong>: ' + d.asistencia.fallas + ' falla' + (d.asistencia.fallas!==1?'s':'') + ' sobre ' + d.asistencia.total + ' clases. La inasistencia reiterada impide la continuidad del aprendizaje.');
+  }
+
+  return frases.join('<br><br>');
 }
 
 function infAnalisis(d, actsValidas, nivel) {
@@ -4948,6 +4997,142 @@ async function executeTransfer() {
   toast('\u2705 ' + name + ' trasladado/a a ' + destCourse);
 }
 
+
+/* ═══ MÓDULO REPROBADOS ═══ */
+
+async function infReprobados() {
+  var period = parseInt(document.getElementById('inf-per').value);
+  document.getElementById('mainArea').innerHTML =
+    '<div class="spin-wrap"><div class="spin"></div>Cargando datos de todos los cursos…</div>';
+
+  var courseResults = await Promise.all(COURSES.map(async function(course) {
+    var cached = grdCache[course] && grdCache[course][period];
+    if (cached && cached.students) return { course: course, data: cached };
+    var data = await apiGrd({ action: 'getAll', course: course, period: period });
+    if (data && data.students) {
+      if (!grdCache[course]) grdCache[course] = {};
+      grdCache[course][period] = data;
+    }
+    return { course: course, data: (data && data.students) ? data : null };
+  }));
+
+  infRenderReprobados(period, courseResults);
+}
+
+function repComputeWeights(data) {
+  var weights = data.weights || {};
+  var specials = weights.especiales || [];
+  var base = weights.base;
+  if (base && base.actividades != null) {
+    return { actividades: base.actividades, autoeval: base.autoeval, coeval: base.coeval, final: base.final };
+  }
+  var pesoAct = null, pesoFin = null;
+  for (var i = specials.length - 1; i >= 0; i--) {
+    if (specials[i].pesoAct != null && specials[i].pesoFinal != null) {
+      pesoAct = specials[i].pesoAct; pesoFin = specials[i].pesoFinal; break;
+    }
+  }
+  if (pesoAct === null || pesoFin === null) {
+    var sp = Math.round(specials.reduce(function(s, e) { return s + e.weight; }, 0) * 10) / 10;
+    pesoAct = Math.round((60 - Math.min(sp, 60)) * 10) / 10;
+    pesoFin = Math.round((30 - Math.max(0, sp - 60)) * 10) / 10;
+  }
+  return { actividades: pesoAct, autoeval: 5, coeval: 5, final: pesoFin };
+}
+
+function infRenderReprobados(period, courseResults) {
+  var totalStudents = 0;
+  var courseBlocks = courseResults.map(function(r) {
+    if (!r.data || !r.data.students) return null;
+    var d = r.data;
+    var specials = (d.weights && d.weights.especiales) || [];
+    var bw = repComputeWeights(d);
+    var failing = [];
+    d.students.forEach(function(s) {
+      var def = grdCalcFinal(s, d.actNames, d.grades, bw, specials);
+      if (def !== null && def < 3.0) failing.push({ name: s.name, code: s.code || '', def: def });
+    });
+    totalStudents += d.students.length;
+    return { course: r.course, total: d.students.length, failing: failing };
+  }).filter(Boolean);
+
+  var totalFailing = courseBlocks.reduce(function(sum, b) { return sum + b.failing.length; }, 0);
+  var pct = totalStudents > 0 ? Math.round(totalFailing / totalStudents * 100) : 0;
+
+  var summaryHtml =
+    '<div class="rep-summary">' +
+    '<div class="rep-sum-card"><div class="rep-sum-n" style="color:#991b1b">' + totalFailing + '</div>' +
+    '<div class="rep-sum-l">Estudiantes reprobados</div></div>' +
+    '<div class="rep-sum-card"><div class="rep-sum-n" style="color:#1a2e5a">' + totalStudents + '</div>' +
+    '<div class="rep-sum-l">Total matriculados</div></div>' +
+    '<div class="rep-sum-card"><div class="rep-sum-n" style="color:#c8960c">' + pct + '%</div>' +
+    '<div class="rep-sum-l">Tasa de reprobación</div></div>' +
+    '</div>';
+
+  var blocksHtml = courseBlocks.map(function(b) {
+    if (b.failing.length === 0) return '';
+    var rows = b.failing
+      .slice().sort(function(a, z) { return a.name.localeCompare(z.name, 'es'); })
+      .map(function(s, i) {
+        return '<tr>' +
+          '<td>' + (i + 1) + '</td>' +
+          '<td>' + infEsc(s.name) + '</td>' +
+          '<td class="rep-def">' + s.def.toFixed(1) + '</td>' +
+          '<td><span class="inf-chip ' + infChipCls(s.def) + '">' + infNivel(s.def) + '</span></td>' +
+          '</tr>';
+      }).join('');
+    return '<div class="rep-course-block">' +
+      '<div class="rep-course-head">' +
+      '<span>Curso ' + b.course + ' <span style="font-weight:400;font-size:.8rem;color:var(--muted)">(' + b.total + ' estudiantes)</span></span>' +
+      '<span class="rep-course-badge">' + b.failing.length + ' reprobado' + (b.failing.length !== 1 ? 's' : '') + '</span>' +
+      '</div>' +
+      '<table class="rep-tbl"><thead><tr><th>#</th><th>Estudiante</th><th>Definitiva</th><th>Nivel</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>' +
+      '</div>';
+  }).join('');
+
+  if (!blocksHtml.trim()) {
+    blocksHtml = '<div class="rep-empty">✅ No hay estudiantes reprobados en el Periodo ' + period + '</div>';
+  }
+
+  window._repData = { period: period, courseBlocks: courseBlocks };
+
+  document.getElementById('mainArea').innerHTML =
+    '<div class="rep-wrap">' +
+    '<div class="inf-toolbar">' +
+    '<button class="btn-inf-back" onclick="infRenderSelector()">← Volver</button>' +
+    '<span style="flex:1;font-family:\'Syne\',sans-serif;font-weight:800;font-size:1rem;color:#991b1b">⚠ Reprobados — Periodo ' + period + '</span>' +
+    '<button class="btn-inf-print" onclick="infExportReprobadosCSV()">⬇ CSV</button>' +
+    '<button class="btn-inf-print" onclick="window.print()">🖨 Imprimir</button>' +
+    '</div>' +
+    summaryHtml +
+    blocksHtml +
+    '<div style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:14px">Generado: ' + new Date().toLocaleString('es-CO') + ' · Reprobación: nota definitiva &lt; 3.0</div>' +
+    '</div>';
+}
+
+function infExportReprobadosCSV() {
+  var d = window._repData;
+  if (!d) return;
+  var csv = '﻿';
+  csv += 'LISTA DE ESTUDIANTES REPROBADOS · Periodo ' + d.period + '\n';
+  csv += 'Generado: ' + new Date().toLocaleString('es-CO') + '\n';
+  csv += 'Colegio Rufino José Cuervo IED · Química\n\n';
+  csv += 'Curso,Estudiante,Definitiva,Nivel\n';
+  d.courseBlocks.forEach(function(b) {
+    b.failing.slice()
+      .sort(function(a, z) { return a.name.localeCompare(z.name, 'es'); })
+      .forEach(function(s) {
+        csv += b.course + ',"' + s.name.replace(/"/g, '""') + '",' + s.def.toFixed(1) + ',' + infNivel(s.def) + '\n';
+      });
+  });
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'reprobados_P' + d.period + '_' + today() + '.csv';
+  a.click();
+  toast('✓ CSV de reprobados descargado');
+}
 
 init();
 </script>
