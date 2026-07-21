@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HBMOL — Colegio Rufino José Cuervo IED</title>
+<!-- NOTA DE DESPLIEGUE: copia manifest.json, sw.js y hbmol.png (de la raíz
+     del repo) dentro de esta carpeta hbmol/ antes de publicar como PWA
+     independiente. Ver hbmol/README.md. -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HBMOL">
+<meta name="theme-color" content="#1a2e5a">
+<link rel="apple-touch-icon" href="hbmol.png">
+<link rel="icon" type="image/png" href="hbmol.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   VARIABLES — Azul marino + blanco + dorado
+   (heredado de GestiónQM; se agrega tema oscuro,
+   ver ANALISIS_Y_DISEÑO.md, sección "recomendadas")
+═══════════════════════════════════════════ */
+:root {
+  --bg:      #f4f6fb;
+  --surf:    #ffffff;
+  --card:    #f9fafd;
+  --bord:    #e2e8f2;
+  --bord2:   #c8d4e8;
+
+  --navy:    #1a2e5a;
+  --navy2:   #243870;
+  --gold:    #c8960c;
+  --gold-lt: #fef3d0;
+  --gold-md: #f5d06a;
+
+  --att:     #1a6b5a;
+  --att-lt:  #e8f5f1;
+  --grd:     #1a3d6b;
+  --grd-lt:  #e8f0fb;
+  --inf:     #7c3aed;
+  --adm:     #b91c1c;
+
+  --ok:      #16a34a;
+  --warn:    #d97706;
+  --fail:    #dc2626;
+  --text:    #1a2332;
+  --text2:   #3d4f6b;
+  --muted:   #7a8ba8;
+
+  --sw: 200px;
+  --r:  10px;
+  --shadow: 0 1px 4px rgba(26,46,90,.08), 0 4px 16px rgba(26,46,90,.06);
+  --shadow-sm: 0 1px 3px rgba(26,46,90,.08);
+}
+:root[data-theme="dark"] {
+  --bg:      #0f1420;
+  --surf:    #171e2e;
+  --card:    #1c2436;
+  --bord:    #2a3550;
+  --bord2:   #384467;
+  --navy:    #3d5aa8;
+  --navy2:   #4a68c0;
+  --gold:    #e0b23c;
+  --gold-lt: #3a3220;
+  --gold-md: #f5d06a;
+  --att-lt:  #10241f;
+  --grd-lt:  #101c30;
+  --text:    #e7ecf7;
+  --text2:   #b7c3de;
+  --muted:   #7f8db0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:      #0f1420;
+    --surf:    #171e2e;
+    --card:    #1c2436;
+    --bord:    #2a3550;
+    --bord2:   #384467;
+    --navy:    #3d5aa8;
+    --navy2:   #4a68c0;
+    --gold:    #e0b23c;
+    --gold-lt: #3a3220;
+    --gold-md: #f5d06a;
+    --att-lt:  #10241f;
+    --grd-lt:  #101c30;
+    --text:    #e7ecf7;
+    --text2:   #b7c3de;
+    --muted:   #7f8db0;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+}
+button, input, select { font-family: inherit; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--bord2); border-radius: 4px; }
+
+/* ═══ LOGIN ═══ */
+.login-page {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+  background: linear-gradient(135deg, #1a2e5a 0%, #243870 50%, #1a3d6b 100%);
+}
+.login-card { background: var(--surf); border-radius: 20px; padding: 40px 36px; width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,.25); text-align: center; }
+.login-emblem { width: 64px; height: 64px; border-radius: 16px; overflow:hidden; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; box-shadow: 0 4px 12px rgba(26,46,90,.3); background: var(--navy); }
+.login-emblem img { width:100%; height:100%; object-fit:cover; }
+.login-title { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--navy); margin-bottom: 4px; letter-spacing: -.5px; }
+.login-subtitle { font-size: .8rem; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+.login-label { display: block; text-align: left; font-size: .75rem; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+.login-input { width: 100%; border: 1.5px solid var(--bord); border-radius: 10px; padding: 12px 16px; font-size: .95rem; margin-bottom: 14px; background:var(--surf); color:var(--text); }
+.login-btn { width: 100%; background: var(--navy); color: white; border: none; border-radius: 10px; padding: 13px; font-size: .95rem; font-weight: 700; cursor: pointer; }
+.login-err { color: var(--fail); font-size: .8rem; margin-bottom: 10px; min-height: 1em; }
+.login-portal-link { display:block; margin-top:16px; font-size:.78rem; color: var(--navy2); cursor:pointer; text-decoration:underline; }
+
+/* ═══ APP SHELL ═══ */
+#appShell { display: none; height: 100vh; }
+.sidebar { width: var(--sw); background: var(--navy); color: white; display: flex; flex-direction: column; flex-shrink:0; }
+.sb-brand { padding: 18px 16px; display:flex; align-items:center; gap:10px; border-bottom: 1px solid rgba(255,255,255,.12); }
+.sb-brand img { width:32px; height:32px; border-radius:8px; }
+.sb-brand-txt { font-family:'Syne',sans-serif; font-weight:800; font-size:1.05rem; }
+.sb-brand-sub { font-size:.62rem; opacity:.7; }
+.sb-courses { flex:1; overflow-y:auto; padding: 10px 8px; }
+.sb-course { display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:8px; cursor:pointer; font-size:.85rem; margin-bottom:3px; opacity:.85; }
+.sb-course:hover { background: rgba(255,255,255,.08); }
+.sb-course.active { background: rgba(255,255,255,.16); opacity:1; font-weight:700; }
+.sb-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.sb-foot { padding:12px; border-top:1px solid rgba(255,255,255,.12); font-size:.7rem; opacity:.7; }
+.sb-foot button { background:none; border:1px solid rgba(255,255,255,.3); color:white; border-radius:6px; padding:6px 10px; font-size:.72rem; cursor:pointer; width:100%; margin-top:6px; }
+
+.main-col { flex:1; display:flex; flex-direction:column; min-width:0; }
+.topbar { background: var(--surf); border-bottom:1px solid var(--bord); padding:10px 18px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+#topbarCenter { display:flex; gap:8px; flex-wrap:wrap; }
+.mod-tab { border:none; background:var(--card); color:var(--text2); padding:9px 14px; border-radius:9px; font-size:.82rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; }
+.mod-tab.active.att { background: var(--att); color:white; }
+.mod-tab.active.grd { background: var(--grd); color:white; }
+.mod-tab.active.inf { background: var(--inf); color:white; }
+.mod-tab.active.adm { background: var(--adm); color:white; }
+.topbar-right { margin-left:auto; display:flex; gap:8px; align-items:center; }
+.icon-btn { border:1px solid var(--bord); background:var(--surf); color:var(--text2); width:34px; height:34px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+#mainArea { flex:1; overflow-y:auto; padding: 20px; }
+
+.offline-banner { display:none; background:var(--warn); color:white; text-align:center; padding:6px; font-size:.8rem; }
+
+.card { background:var(--surf); border:1px solid var(--bord); border-radius: var(--r); box-shadow: var(--shadow-sm); padding:16px; margin-bottom:14px; }
+.card h3 { font-family:'Syne',sans-serif; font-size:1rem; margin-bottom:10px; color:var(--navy); }
+.spin-wrap { display:flex; align-items:center; gap:10px; color:var(--muted); padding:30px; justify-content:center; }
+.spin { width:20px; height:20px; border:3px solid var(--bord); border-top-color:var(--navy); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--navy); color:white; padding:10px 18px; border-radius:20px; font-size:.85rem; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:999; opacity:0; transition:opacity .2s; pointer-events:none; }
+.toast.show { opacity:1; }
+
+table.simple-tbl { width:100%; border-collapse:collapse; font-size:.85rem; }
+table.simple-tbl th { background:var(--card); color:var(--text2); text-align:left; padding:8px 10px; font-size:.72rem; text-transform:uppercase; border-bottom:2px solid var(--bord); position:sticky; top:0; }
+table.simple-tbl td { padding:6px 10px; border-bottom:1px solid var(--bord); }
+table.simple-tbl input[type=number] { width:56px; border:1px solid var(--bord); border-radius:6px; padding:4px 6px; text-align:center; background:var(--surf); color:var(--text); }
+.btn { border:none; border-radius:8px; padding:9px 14px; font-size:.82rem; font-weight:700; cursor:pointer; }
+.btn-navy { background:var(--navy); color:white; }
+.btn-att { background:var(--att); color:white; }
+.btn-grd { background:var(--grd); color:white; }
+.btn-inf { background:var(--inf); color:white; }
+.btn-danger { background:var(--fail); color:white; }
+.btn-ghost { background:transparent; border:1.5px solid var(--bord2); color:var(--text2); }
+.chip { display:inline-block; border-radius:6px; padding:2px 8px; font-weight:800; font-size:.78rem; }
+.chip-sup{background:#dcfce7;color:#166534}.chip-alt{background:#dbeafe;color:#1e40af}.chip-bas{background:#fef9c3;color:#713f12}.chip-baj{background:#fee2e2;color:#991b1b}.chip-ne{background:#f1f5f9;color:#64748b}
+
+.att-grid { display:grid; grid-template-columns: 1fr repeat(4, 90px); gap:6px; align-items:center; }
+.att-btn { border:1.5px solid var(--bord); background:var(--surf); border-radius:8px; padding:7px; font-size:.75rem; font-weight:700; cursor:pointer; text-align:center; color:var(--text2); }
+.att-btn.sel-P { background:#dcfce7; border-color:#16a34a; color:#166534; }
+.att-btn.sel-A { background:#fee2e2; border-color:#dc2626; color:#991b1b; }
+.att-btn.sel-T { background:#fef3c7; border-color:#d97706; color:#92400e; }
+.att-btn.sel-E { background:#ede9fe; border-color:#7c3aed; color:#5b21b6; }
+
+.course-admin-row { display:flex; align-items:center; gap:10px; padding:10px; border:1px solid var(--bord); border-radius:8px; margin-bottom:8px; }
+.course-admin-row.inactive { opacity:.5; }
+.color-dot { width:16px; height:16px; border-radius:50%; flex-shrink:0; }
+
+/* ═══ INFORMES (individual y de grupo) ═══ */
+.inf-hoja { background:white; color:#1e293b; max-width:820px; margin:0 auto; padding:18px 22px; border-radius:10px; box-shadow:var(--shadow); }
+.inf-cab { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px; border-bottom:3px solid #1a2e5a; padding-bottom:10px; margin-bottom:10px; }
+.inf-cab img { height:44px; }
+.inf-cab-tit { font-size:1.05rem; font-weight:800; color:#1a2e5a; }
+.inf-cab-sub { font-size:.72rem; color:#64748b; }
+.inf-badge { border-radius:10px; padding:8px 12px; text-align:center; min-width:70px; }
+.inf-badge-n { font-size:1.3rem; font-weight:900; color:white; line-height:1; }
+.inf-badge-l { font-size:.62rem; color:rgba(255,255,255,.85); text-transform:uppercase; }
+.inf-ficha { display:grid; grid-template-columns:repeat(4,1fr); border:1.5px solid #e2e8f0; border-radius:8px; overflow:hidden; margin-bottom:8px; }
+.inf-fi { padding:6px 10px; border-right:1px solid #e2e8f0; }
+.inf-fi-l { font-size:.64rem; font-weight:700; color:#64748b; text-transform:uppercase; }
+.inf-fi-v { font-size:.82rem; font-weight:700; color:#1e293b; margin-top:2px; }
+.inf-sec { font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:#1a2e5a; border-bottom:2px solid #1a2e5a; padding-bottom:3px; margin:10px 0 6px; }
+.inf-tbl { width:100%; border-collapse:collapse; margin-bottom:8px; font-size:.78rem; }
+.inf-tbl th { background:#1a2e5a; color:white; padding:4px 6px; text-align:left; font-size:.68rem; }
+.inf-tbl td { padding:3px 6px; border-bottom:1px solid #e2e8f0; }
+.inf-tend { display:flex; gap:6px; align-items:flex-end; height:110px; padding:8px 0 0; }
+.inf-tend-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
+.inf-tend-bar { width:100%; border-radius:4px 4px 0 0; display:flex; align-items:flex-start; justify-content:center; color:white; font-weight:800; font-size:.68rem; padding-top:3px; }
+.inf-tend-nm { font-size:.6rem; color:#64748b; margin-top:3px; text-align:center; }
+.inf-analisis { background:#f8fafc; border-left:4px solid #1a2e5a; border-radius:0 6px 6px 0; padding:8px 12px; font-size:.76rem; line-height:1.55; margin-bottom:8px; }
+.inf-pie { text-align:center; font-size:.62rem; color:#94a3b8; margin-top:8px; padding-top:5px; border-top:1px solid #e2e8f0; }
+.inf-toolbar { display:flex; gap:8px; justify-content:flex-end; max-width:820px; margin:0 auto 10px; }
+
+@media print {
+  body * { visibility:hidden; }
+  .inf-hoja, .inf-hoja * { visibility:visible; }
+  .inf-hoja { position:absolute; left:0; top:0; width:100%; box-shadow:none; }
+  .inf-toolbar { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div class="login-page" id="loginScreen">
+  <div class="login-card">
+    <div class="login-emblem"><img src="hbmol.png" alt="HBMOL" onerror="this.parentElement.textContent='⚗️'"></div>
+    <div class="login-title">HBMOL</div>
+    <div class="login-subtitle">Gestión académica · Ciencias Naturales — Química<br>Colegio Rufino José Cuervo IED</div>
+    <label class="login-label">Contraseña docente</label>
+    <input type="password" id="pwdInput" class="login-input" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="login-err" id="loginErr"></div>
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <span class="login-portal-link" onclick="showPublicPortal()">¿Eres estudiante? Consulta tu nota aquí →</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PORTAL PÚBLICO (sin contraseña) ═══════════════ -->
+<div class="login-page" id="portalScreen" style="display:none">
+  <div class="login-card">
+    <div class="login-emblem"><img src="hbmol.png" alt="HBMOL" onerror="this.parentElement.textContent='⚗️'"></div>
+    <div class="login-title">Consulta tu nota</div>
+    <div class="login-subtitle">Escribe tu código de estudiante. No necesitas contraseña.</div>
+    <input type="text" id="portalCode" class="login-input" placeholder="Código de estudiante" onkeydown="if(event.key==='Enter')doPortalQuery()">
+    <div class="login-err" id="portalErr"></div>
+    <button class="login-btn" onclick="doPortalQuery()">Consultar</button>
+    <div id="portalResult"></div>
+    <span class="login-portal-link" onclick="showScreen('loginScreen')">← Volver al ingreso docente</span>
+  </div>
+</div>
+
+<!-- ═══════════════ APP SHELL ═══════════════ -->
+<div id="appShell">
+  <div class="sidebar">
+    <div class="sb-brand">
+      <img src="hbmol.png" onerror="this.style.display='none'">
+      <div><div class="sb-brand-txt">HBMOL</div><div class="sb-brand-sub">Rufino José Cuervo IED</div></div>
+    </div>
+    <div class="sb-courses" id="sbCourses"><div class="spin-wrap"><div class="spin"></div>Cargando cursos…</div></div>
+    <div class="sb-foot">
+      HBMOL · sucesor de GestiónQM
+      <button onclick="toggleTheme()">🌓 Modo oscuro/claro</button>
+      <button onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </div>
+  <div class="main-col">
+    <div class="offline-banner" id="offlineBanner">📴 Sin conexión — los cambios se guardan en cola y se sincronizan al reconectar</div>
+    <div class="topbar">
+      <div id="topbarCenter"></div>
+      <div class="topbar-right">
+        <span id="offlineQueueCount" style="font-size:.75rem;color:var(--muted)"></span>
+      </div>
+    </div>
+    <div id="mainArea"></div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   HBMOL — front-end
+   Heredado de GestiónQM (index.html): esquema de color, patrones de
+   informe imprimible, cola de sincronización offline, PWA.
+   NUEVO en HBMOL:
+     - Cursos ya NO son un arreglo fijo: se cargan de getCourses() y se
+       administran desde el panel "Cursos" (módulo adm).
+     - Módulo de Informes incluye informe de GRUPO además del individual.
+     - Modo oscuro.
+     - Portal público reforzado (mismo mecanismo queryStudent).
+   Pega aquí las URLs reales que obtengas al desplegar
+   hbmol/Code.Notas.gs y hbmol/Code.Asistencia.gs como Web Apps.
+═══════════════════════════════════════════════════════════════════ */
+
+var URL_ATT = 'PEGA_AQUI_LA_URL_DEL_WEBAPP_DE_ASISTENCIA';
+var URL_GRD = 'PEGA_AQUI_LA_URL_DEL_WEBAPP_DE_NOTAS';
+
+var PERIODS = [1,2,3];
+var BASE_LABELS = {actividades:'Actividades',autoeval:'Autoevaluación',coeval:'Coevaluación',final:'Ev. Final'};
+
+/* ═══ STATE ═══ */
+var SESSION_PWD = sessionStorage.getItem('hbmol_pwd') || '';
+var COURSES = [];              // [{course,color,active,activePeriod}] — cargado de getCourses()
+var activeModule = 'att';
+var activeCourse = localStorage.getItem('hbmol_course') || '';
+var activePeriod = +localStorage.getItem('hbmol_period') || 1;
+var attCache = {}, grdCache = {};
+var offlineQueue = (function(){ try { return JSON.parse(localStorage.getItem('hbmol_offline_queue') || '[]'); } catch(e){ return []; } })();
+
+window.addEventListener('online', function(){
+  document.getElementById('offlineBanner').style.display = 'none';
+  toast('✅ Red restaurada' + (offlineQueue.length ? ' — sincronizando ' + offlineQueue.length + ' cambio(s)…' : ''));
+  if (offlineQueue.length) flushOfflineQueue();
+});
+window.addEventListener('offline', function(){
+  document.getElementById('offlineBanner').style.display = 'block';
+  toast('📴 Sin conexión — los cambios se guardarán en cola');
+});
+
+function toast(msg) {
+  var t = document.getElementById('toastEl');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._to); t._to = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+
+/* ═══ TEMA ═══ */
+function toggleTheme() {
+  var root = document.documentElement;
+  var cur = root.getAttribute('data-theme');
+  var next = cur === 'dark' ? 'light' : (cur === 'light' ? null : 'dark');
+  if (next) root.setAttribute('data-theme', next); else root.removeAttribute('data-theme');
+  localStorage.setItem('hbmol_theme', next || '');
+}
+(function(){ var t = localStorage.getItem('hbmol_theme'); if (t) document.documentElement.setAttribute('data-theme', t); })();
+
+/* ═══ API — NOTAS ═══ */
+async function apiGrd(params) {
+  try {
+    var r = await fetch(URL_GRD + '?' + new URLSearchParams(Object.assign({}, params, {pwd: params.pwd || SESSION_PWD})), {method:'GET'});
+    return await r.json();
+  } catch(e) { return { error: 'network' }; }
+}
+async function apiGrdPost(body) {
+  body = Object.assign({}, body, {pwd: SESSION_PWD});
+  try {
+    var r = await fetch(URL_GRD, {method:'POST', body: JSON.stringify(body)});
+    return await r.json();
+  } catch(e) {
+    offlineQueue.push({type:'grd', body: body});
+    try { localStorage.setItem('hbmol_offline_queue', JSON.stringify(offlineQueue)); } catch(ex) {}
+    updateQueueCount();
+    return { ok:false, queued:true };
+  }
+}
+/* ═══ API — ASISTENCIA ═══ */
+async function apiAtt(params) {
+  try {
+    var r = await fetch(URL_ATT + '?' + new URLSearchParams(Object.assign({}, params, {pwd: SESSION_PWD})), {method:'GET'});
+    return await r.json();
+  } catch(e) { return { error: 'network' }; }
+}
+async function apiAttPost(body) {
+  body = Object.assign({}, body, {pwd: SESSION_PWD});
+  try {
+    var r = await fetch(URL_ATT, {method:'POST', body: JSON.stringify(body)});
+    return await r.json();
+  } catch(e) {
+    offlineQueue.push({type:'att', body: body});
+    try { localStorage.setItem('hbmol_offline_queue', JSON.stringify(offlineQueue)); } catch(ex) {}
+    updateQueueCount();
+    return { ok:false, queued:true };
+  }
+}
+function updateQueueCount() {
+  var el = document.getElementById('offlineQueueCount');
+  if (el) el.textContent = offlineQueue.length ? offlineQueue.length + ' cambio(s) pendiente(s)' : '';
+}
+async function flushOfflineQueue() {
+  var queue = offlineQueue.slice(); offlineQueue = [];
+  try { localStorage.removeItem('hbmol_offline_queue'); } catch(e) {}
+  var ok=0, fail=0;
+  for (var i=0;i<queue.length;i++) {
+    var item = queue[i];
+    try {
+      var res = item.type === 'grd' ? await apiGrdPost(item.body) : await apiAttPost(item.body);
+      if (res && !res.error) ok++; else { fail++; offlineQueue.push(item); }
+    } catch(e) { fail++; offlineQueue.push(item); }
+  }
+  if (offlineQueue.length) try { localStorage.setItem('hbmol_offline_queue', JSON.stringify(offlineQueue)); } catch(e) {}
+  updateQueueCount();
+  toast(ok + ' cambio(s) sincronizado(s)' + (fail ? ' · ' + fail + ' fallido(s)' : ''));
+}
+
+/* ═══ SCREENS ═══ */
+function showScreen(id) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('portalScreen').style.display = 'none';
+  document.getElementById('appShell').style.display = 'none';
+  if (id==='loginScreen') document.getElementById('loginScreen').style.display = 'flex';
+  if (id==='portalScreen') document.getElementById('portalScreen').style.display = 'flex';
+  if (id==='appShell') document.getElementById('appShell').style.display = 'flex';
+}
+function showPublicPortal() { showScreen('portalScreen'); }
+function init() { if (SESSION_PWD) launchApp(); else showScreen('loginScreen'); updateQueueCount(); }
+
+/* ═══ LOGIN ═══ */
+async function doLogin() {
+  var pwd = document.getElementById('pwdInput').value;
+  if (!pwd) return;
+  var errEl = document.getElementById('loginErr'); errEl.textContent = '';
+  var res = await apiGrd({action:'getConfig', pwd: pwd});
+  if (res && res.error === 'auth') { errEl.textContent = 'Contraseña incorrecta.'; return; }
+  if (res && res.error === 'network') { errEl.textContent = 'Sin conexión con el servidor. Intenta de nuevo.'; return; }
+  SESSION_PWD = pwd;
+  sessionStorage.setItem('hbmol_pwd', pwd);
+  launchApp();
+}
+function doLogout() { sessionStorage.removeItem('hbmol_pwd'); SESSION_PWD=''; location.reload(); }
+
+async function doPortalQuery() {
+  var code = document.getElementById('portalCode').value.trim();
+  var errEl = document.getElementById('portalErr'), resEl = document.getElementById('portalResult');
+  errEl.textContent = ''; resEl.innerHTML = '';
+  if (!code) return;
+  var data = await apiGrd({action:'queryStudent', code: code});
+  if (data.error === 'notfound') { errEl.textContent = 'Código no encontrado.'; return; }
+  if (data.error) { errEl.textContent = 'No se pudo consultar. Intenta de nuevo.'; return; }
+  var rows = data.components.map(function(c){
+    return '<tr><td style="text-align:left;padding:4px">' + c.label + ' (' + c.weight + '%)</td><td style="text-align:right;padding:4px;font-weight:800">' + (c.grade!=null?c.grade.toFixed(1):'—') + '</td></tr>';
+  }).join('');
+  resEl.innerHTML = '<div style="text-align:left;margin-top:14px;font-size:.85rem">' +
+    '<b>' + data.name + '</b> · Curso ' + data.course + ' · Periodo ' + data.period + '<br>' +
+    '<table style="width:100%;margin-top:8px">' + rows + '</table>' +
+    '<div style="margin-top:10px;text-align:center;font-size:1.3rem;font-weight:900;color:var(--navy)">Definitiva: ' + (data.avg!=null?data.avg.toFixed(2):'—') + '</div></div>';
+}
+
+/* ═══ LAUNCH ═══ */
+async function launchApp() {
+  showScreen('appShell');
+  await loadCourses();
+  renderSidebar();
+  openModule('att');
+}
+async function loadCourses() {
+  var res = await apiGrd({action:'getCourses'});
+  if (res && Array.isArray(res)) {
+    COURSES = res;
+  } else {
+    toast('No se pudieron cargar los cursos (revisa la URL del Web App de Notas)');
+    COURSES = [];
+  }
+  var active = COURSES.filter(function(c){ return c.active; });
+  if (!activeCourse || !active.find(function(c){ return c.course===activeCourse; })) {
+    activeCourse = active.length ? active[0].course : '';
+  }
+}
+function courseColor(course) {
+  var c = COURSES.find(function(x){ return x.course===course; });
+  return c ? c.color : '#1a3d6b';
+}
+function renderSidebar() {
+  var el = document.getElementById('sbCourses');
+  var active = COURSES.filter(function(c){ return c.active; });
+  if (!active.length) { el.innerHTML = '<div style="padding:14px;font-size:.78rem;opacity:.75">Sin cursos activos. Ve a "Cursos" para crear uno.</div>'; return; }
+  el.innerHTML = active.map(function(c){
+    return '<div class="sb-course' + (c.course===activeCourse?' active':'') + '" onclick="selectCourse(\'' + c.course + '\')">' +
+      '<span class="sb-dot" style="background:' + c.color + '"></span>' + c.course + '</div>';
+  }).join('');
+}
+function selectCourse(course) {
+  activeCourse = course; localStorage.setItem('hbmol_course', course);
+  var c = COURSES.find(function(x){ return x.course===course; });
+  activePeriod = c ? c.activePeriod : 1;
+  renderSidebar(); openModule(activeModule);
+}
+
+/* ═══ NAV / MÓDULOS ═══ */
+function openModule(mod) {
+  activeModule = mod;
+  var tb = document.getElementById('topbarCenter');
+  tb.innerHTML =
+    '<button class="mod-tab att' + (mod==='att'?' active':'') + '" onclick="openModule(\'att\')">📋 <span>Asistencia</span></button>' +
+    '<button class="mod-tab grd' + (mod==='grd'?' active':'') + '" onclick="openModule(\'grd\')">📝 <span>Notas</span></button>' +
+    '<button class="mod-tab inf' + (mod==='inf'?' active':'') + '" onclick="openModule(\'inf\')">📄 <span>Informes</span></button>' +
+    '<button class="mod-tab adm' + (mod==='adm'?' active':'') + '" onclick="openModule(\'adm\')">⚙️ <span>Cursos</span></button>';
+  if (mod==='att') attLoadView();
+  else if (mod==='grd') grdLoadView();
+  else if (mod==='inf') infLoadView();
+  else if (mod==='adm') admLoadView();
+}
+
+/* ════════════════════════════════════════════════════════
+   MÓDULO ASISTENCIA
+════════════════════════════════════════════════════════ */
+var attToday = new Date().toISOString().slice(0,10);
+async function attLoadView() {
+  var main = document.getElementById('mainArea');
+  if (!activeCourse) { main.innerHTML = '<div class="card">Selecciona o crea un curso primero.</div>'; return; }
+  main.innerHTML = '<div class="spin-wrap"><div class="spin"></div>Cargando asistencia de ' + activeCourse + '…</div>';
+  var data = await apiAtt({action:'getAttInit', course: activeCourse, date: attToday});
+  if (!data || data.error) { main.innerHTML = '<div class="card">No se pudo cargar (revisa la URL del Web App de Asistencia).</div>'; return; }
+  attCache[activeCourse] = data;
+  attRender();
+}
+function attRender() {
+  var data = attCache[activeCourse];
+  var main = document.getElementById('mainArea');
+  var estados = [['P','Presente'],['A','Ausente'],['T','Tarde'],['E','Excusa']];
+  var rows = (data.students||[]).map(function(s){
+    var cur = data.dayAtt[s.id] || '';
+    return '<div class="att-grid" style="margin-bottom:6px">' +
+      '<div>' + s.name + '</div>' +
+      estados.map(function(e){
+        return '<button class="att-btn' + (cur===e[0]?' sel-'+e[0]:'') + '" onclick="attMark(\'' + s.id + '\',\'' + e[0] + '\')">' + e[1] + '</button>';
+      }).join('') + '</div>';
+  }).join('');
+  main.innerHTML = '<div class="card">' +
+    '<h3>Asistencia · ' + activeCourse + '</h3>' +
+    '<input type="date" value="' + attToday + '" class="login-input" style="max-width:200px" onchange="attChangeDate(this.value)">' +
+    '<div style="margin-top:14px">' + (rows || '<i>Sin estudiantes en este curso.</i>') + '</div>' +
+    '</div>';
+}
+async function attChangeDate(d) { attToday = d; attLoadView(); }
+async function attMark(studentId, status) {
+  var data = attCache[activeCourse];
+  var cur = data.dayAtt[studentId];
+  var next = cur === status ? '' : status; // click de nuevo = des-marcar
+  data.dayAtt[studentId] = next;
+  attRender();
+  await apiAttPost({action:'markAttendance', course:activeCourse, date:attToday, studentId:studentId, status:next});
+}
+
+/* ════════════════════════════════════════════════════════
+   MÓDULO NOTAS
+════════════════════════════════════════════════════════ */
+async function grdLoadView() {
+  var main = document.getElementById('mainArea');
+  if (!activeCourse) { main.innerHTML = '<div class="card">Selecciona o crea un curso primero.</div>'; return; }
+  main.innerHTML = '<div class="spin-wrap"><div class="spin"></div>Cargando notas de ' + activeCourse + '…</div>';
+  var data = await apiGrd({action:'getAll', course: activeCourse, period: activePeriod});
+  if (!data || data.error) { main.innerHTML = '<div class="card">No se pudo cargar (revisa la URL del Web App de Notas).</div>'; return; }
+  if (!grdCache[activeCourse]) grdCache[activeCourse] = {};
+  grdCache[activeCourse][activePeriod] = data;
+  grdRender();
+}
+function grdRender() {
+  var data = grdCache[activeCourse][activePeriod];
+  var main = document.getElementById('mainArea');
+  var perOpts = PERIODS.map(function(p){ return '<option value="'+p+'"' + (p===activePeriod?' selected':'') + '>Periodo ' + p + '</option>'; }).join('');
+  var actCols = data.actNames.map(function(n,i){ return '<th>Act.' + (i+1) + '<br><small>' + n + '</small></th>'; }).join('');
+  var rows = (data.students||[]).map(function(s){
+    var actCells = data.actNames.map(function(n){
+      var v = data.grades['actividad'] && data.grades['actividad'][n] ? data.grades['actividad'][n][s.id] : '';
+      return '<td><input type="number" min="0" max="5" step="0.1" value="' + (v!=null&&v!==undefined?v:'') + '" onchange="grdSave(\'actividad\',\'' + n.replace(/'/g,"\\'") + '\',\'' + s.id + '\',this.value)"></td>';
+    }).join('');
+    function comp(key) {
+      var v = data.grades[key] && data.grades[key]['_'] ? data.grades[key]['_'][s.id] : '';
+      return '<td><input type="number" min="0" max="5" step="0.1" value="' + (v!=null&&v!==undefined?v:'') + '" onchange="grdSave(\'' + key + '\',\'_\',\'' + s.id + '\',this.value)"></td>';
+    }
+    return '<tr><td>' + s.name + '</td>' + actCells + comp('autoeval') + comp('coeval') + comp('final') + '</tr>';
+  }).join('');
+  main.innerHTML = '<div class="card">' +
+    '<h3>Notas · ' + activeCourse + '</h3>' +
+    '<select class="login-input" style="max-width:180px;display:inline-block" onchange="grdChangePeriod(this.value)">' + perOpts + '</select>' +
+    '<div style="overflow-x:auto;margin-top:12px"><table class="simple-tbl">' +
+    '<thead><tr><th>Estudiante</th>' + actCols + '<th>Autoeval (' + data.weights.autoeval + '%)</th><th>Coeval (' + data.weights.coeval + '%)</th><th>Final (' + data.weights.final + '%)</th></tr></thead>' +
+    '<tbody>' + (rows || '<tr><td colspan="99"><i>Sin estudiantes.</i></td></tr>') + '</tbody></table></div>' +
+    '<div style="margin-top:10px;font-size:.78rem;color:var(--muted)">Actividades: ' + data.weights.actividades + '% (promedio de las ' + data.actNames.length + ' actividades registradas)' + '</div>' +
+    '</div>';
+}
+async function grdChangePeriod(p) { activePeriod = +p; localStorage.setItem('hbmol_period', p); grdLoadView(); }
+async function grdSave(component, itemId, studentId, value) {
+  var res = await apiGrdPost({action:'saveGrade', course:activeCourse, period:activePeriod, component:component, itemId:itemId, studentId:studentId, grade:value});
+  if (res && res.error) toast('Error al guardar: ' + res.error); else toast('Guardado');
+}
+
+/* ════════════════════════════════════════════════════════
+   MÓDULO INFORMES (individual + de grupo)
+════════════════════════════════════════════════════════ */
+function infLoadView() {
+  var main = document.getElementById('mainArea');
+  if (!activeCourse) { main.innerHTML = '<div class="card">Selecciona o crea un curso primero.</div>'; return; }
+  var perOpts = PERIODS.map(function(p){ return '<option value="'+p+'"' + (p===activePeriod?' selected':'') + '>Periodo ' + p + '</option>'; }).join('');
+  main.innerHTML = '<div class="card">' +
+    '<h3>Informes · ' + activeCourse + '</h3>' +
+    '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px">' +
+      '<button class="btn btn-inf" onclick="infShowIndividual()">👤 Informe individual</button>' +
+      '<button class="btn btn-inf" style="background:#0369a1" onclick="infShowGrupo()">📊 Informe de grupo — curso ' + activeCourse + '</button>' +
+    '</div>' +
+    '<div id="infSubArea"></div>' +
+    '</div>';
+}
+async function infEnsureData() {
+  if (!grdCache[activeCourse] || !grdCache[activeCourse][activePeriod]) {
+    var data = await apiGrd({action:'getAll', course:activeCourse, period:activePeriod});
+    if (!grdCache[activeCourse]) grdCache[activeCourse] = {};
+    grdCache[activeCourse][activePeriod] = data;
+  }
+  return grdCache[activeCourse][activePeriod];
+}
+function infNivel(n) {
+  if (n===null||n===undefined) return {label:'Sin datos', color:'#64748b', bg:'#f1f5f9'};
+  if (n>=4.6) return {label:'Superior', color:'#166534', bg:'#dcfce7'};
+  if (n>=4.0) return {label:'Alto', color:'#1e40af', bg:'#dbeafe'};
+  if (n>=3.0) return {label:'Básico', color:'#713f12', bg:'#fef9c3'};
+  return {label:'Bajo', color:'#991b1b', bg:'#fee2e2'};
+}
+function infChipCls(n) {
+  if (n===null||n===undefined) return 'chip-ne';
+  if (n>=4.6) return 'chip-sup'; if (n>=4.0) return 'chip-alt'; if (n>=3.0) return 'chip-bas'; return 'chip-baj';
+}
+/* Calcula la definitiva de un estudiante con la misma fórmula del backend. */
+function infDefinitiva(data, studentId) {
+  var w = data.weights;
+  var acts = data.actNames.map(function(n){ return data.grades['actividad'] && data.grades['actividad'][n] ? data.grades['actividad'][n][studentId] : undefined; }).filter(function(v){ return v!=null; });
+  var actAvg = acts.length ? acts.reduce(function(a,b){return a+b;},0)/acts.length : null;
+  var ae = data.grades['autoeval'] && data.grades['autoeval']['_'] ? data.grades['autoeval']['_'][studentId] : null;
+  var ce = data.grades['coeval'] && data.grades['coeval']['_'] ? data.grades['coeval']['_'][studentId] : null;
+  var fi = data.grades['final'] && data.grades['final']['_'] ? data.grades['final']['_'][studentId] : null;
+  var especiales = w.especiales || [];
+  var totalPct = w.actividades+w.autoeval+w.coeval+w.final+especiales.reduce(function(s,e){return s+e.weight;},0);
+  var sum = (actAvg||0)*(w.actividades/100) + (ae||0)*(w.autoeval/100) + (ce||0)*(w.coeval/100) + (fi||0)*(w.final/100);
+  especiales.forEach(function(sp){ var v = data.grades['especial'] && data.grades['especial'][sp.id] ? data.grades['especial'][sp.id][studentId] : 0; sum += (v||0)*(sp.weight/100); });
+  return totalPct>0 ? Math.round(sum/(totalPct/100)*100)/100 : null;
+}
+
+async function infShowIndividual() {
+  var data = await infEnsureData();
+  var sub = document.getElementById('infSubArea');
+  var opts = data.students.map(function(s){ return '<option value="'+s.id+'">'+s.name+'</option>'; }).join('');
+  sub.innerHTML = '<select class="login-input" style="max-width:300px" id="infStuSel">' + opts + '</select> ' +
+    '<button class="btn btn-navy" onclick="infRenderIndividual()">Generar</button><div id="infOut" style="margin-top:14px"></div>';
+}
+function infRenderIndividual() {
+  var data = grdCache[activeCourse][activePeriod];
+  var studentId = document.getElementById('infStuSel').value;
+  var student = data.students.find(function(s){ return s.id===studentId; });
+  var def = infDefinitiva(data, studentId);
+  var nivel = infNivel(def);
+  var out = document.getElementById('infOut');
+  var actRows = data.actNames.map(function(n,i){
+    var v = data.grades['actividad'] && data.grades['actividad'][n] ? data.grades['actividad'][n][studentId] : null;
+    return '<tr><td>' + (i+1) + '</td><td>' + n + '</td><td><span class="chip ' + infChipCls(v) + '">' + (v!=null?v.toFixed(1):'—') + '</span></td></tr>';
+  }).join('');
+  out.innerHTML = '<div class="inf-toolbar"><button class="btn btn-navy" onclick="window.print()">🖨 Imprimir</button></div>' +
+    '<div class="inf-hoja">' +
+    '<div class="inf-cab"><img src="hbmol.png" onerror="this.style.display=\'none\'">' +
+    '<div><div class="inf-cab-tit">Informe académico individual</div><div class="inf-cab-sub">HBMOL · Colegio Rufino José Cuervo IED · Ciencias Naturales — Química</div></div>' +
+    '<div class="inf-badge" style="background:' + nivel.color + '"><div class="inf-badge-n">' + (def!=null?def.toFixed(1):'—') + '</div><div class="inf-badge-l">Definitiva</div></div></div>' +
+    '<div class="inf-ficha"><div class="inf-fi"><div class="inf-fi-l">Estudiante</div><div class="inf-fi-v">' + student.name + '</div></div>' +
+    '<div class="inf-fi"><div class="inf-fi-l">Curso</div><div class="inf-fi-v">' + activeCourse + '</div></div>' +
+    '<div class="inf-fi"><div class="inf-fi-l">Periodo</div><div class="inf-fi-v">' + activePeriod + '</div></div>' +
+    '<div class="inf-fi"><div class="inf-fi-l">Desempeño</div><div class="inf-fi-v" style="color:' + nivel.color + '">' + nivel.label + '</div></div></div>' +
+    '<div class="inf-sec">Actividades de clase (' + data.weights.actividades + '%)</div>' +
+    '<table class="inf-tbl"><thead><tr><th>#</th><th>Actividad</th><th>Nota</th></tr></thead><tbody>' + (actRows || '<tr><td colspan=3><i>Sin actividades</i></td></tr>') + '</tbody></table>' +
+    '<div class="inf-pie">Generado con HBMOL · Colegio Rufino José Cuervo IED · Ciencias Naturales — Química · Documento de uso interno.</div>' +
+    '</div>';
+}
+
+/* NUEVO respecto a GestiónQM: informe de grupo/curso completo. */
+async function infShowGrupo() {
+  var data = await infEnsureData();
+  var sub = document.getElementById('infSubArea');
+  sub.innerHTML = '<div id="infGrupoOut"><div class="spin-wrap"><div class="spin"></div>Calculando…</div></div>';
+  var defs = data.students.map(function(s){ return { student: s, def: infDefinitiva(data, s.id) }; });
+  defs.sort(function(a,b){ return (b.def||0) - (a.def||0); });
+  var validos = defs.filter(function(d){ return d.def!=null; });
+  var promCurso = validos.length ? validos.reduce(function(s,d){ return s+d.def; },0)/validos.length : null;
+  var niveles = {Superior:0, Alto:0, Básico:0, Bajo:0};
+  validos.forEach(function(d){ niveles[infNivel(d.def).label]++; });
+  var maxN = Math.max.apply(null, Object.values(niveles).concat([1]));
+  var barColors = {Superior:'#16a34a', Alto:'#1e40af', Básico:'#d97706', Bajo:'#dc2626'};
+  var barsHTML = Object.keys(niveles).map(function(k){
+    var h = Math.round((niveles[k]/maxN) * 90) + 10;
+    return '<div class="inf-tend-col"><div class="inf-tend-bar" style="height:' + h + 'px;background:' + barColors[k] + '">' + niveles[k] + '</div><div class="inf-tend-nm">' + k + '</div></div>';
+  }).join('');
+  var rankRows = defs.map(function(d,i){
+    var nivel = infNivel(d.def);
+    return '<tr><td>' + (i+1) + '</td><td>' + d.student.name + '</td><td><span class="chip ' + infChipCls(d.def) + '">' + (d.def!=null?d.def.toFixed(1):'—') + '</span></td><td style="color:' + nivel.color + '">' + nivel.label + '</td></tr>';
+  }).join('');
+  document.getElementById('infGrupoOut').innerHTML =
+    '<div class="inf-toolbar"><button class="btn btn-navy" onclick="window.print()">🖨 Imprimir</button></div>' +
+    '<div class="inf-hoja">' +
+    '<div class="inf-cab"><img src="hbmol.png" onerror="this.style.display=\'none\'">' +
+    '<div><div class="inf-cab-tit">Informe de grupo — curso ' + activeCourse + '</div><div class="inf-cab-sub">HBMOL · Periodo ' + activePeriod + ' · Ciencias Naturales — Química</div></div>' +
+    '<div class="inf-badge" style="background:#1a3d6b"><div class="inf-badge-n">' + (promCurso!=null?promCurso.toFixed(2):'—') + '</div><div class="inf-badge-l">Promedio curso</div></div></div>' +
+    '<div class="inf-sec">Distribución de desempeños (' + validos.length + ' de ' + defs.length + ' estudiantes con nota)</div>' +
+    '<div class="inf-tend">' + barsHTML + '</div>' +
+    '<div class="inf-sec">Ranking del curso</div>' +
+    '<table class="inf-tbl"><thead><tr><th>#</th><th>Estudiante</th><th>Definitiva</th><th>Desempeño</th></tr></thead><tbody>' + rankRows + '</tbody></table>' +
+    '<div class="inf-analisis">' + infAnalisisGrupo(promCurso, niveles, defs.length) + '</div>' +
+    '<div class="inf-pie">Generado con HBMOL · Colegio Rufino José Cuervo IED · Ciencias Naturales — Química · Documento de uso interno.</div>' +
+    '</div>';
+}
+function infAnalisisGrupo(prom, niveles, total) {
+  var bajos = niveles.Bajo || 0;
+  var frases = [];
+  if (prom!=null) frases.push('El promedio general del curso en este periodo es <strong>' + prom.toFixed(2) + '</strong>.');
+  if (bajos > 0) frases.push('<strong>' + bajos + ' de ' + total + ' estudiantes</strong> están en Desempeño Bajo — se recomienda priorizar seguimiento y, si aplica, activar alertas a acudientes (ver módulo de administración).');
+  else frases.push('Ningún estudiante está actualmente en Desempeño Bajo.');
+  return frases.join(' ');
+}
+
+/* ════════════════════════════════════════════════════════
+   MÓDULO ADMINISTRACIÓN DE CURSOS (nuevo en HBMOL)
+════════════════════════════════════════════════════════ */
+function admLoadView() {
+  var main = document.getElementById('mainArea');
+  var rows = COURSES.map(function(c){
+    return '<div class="course-admin-row' + (c.active?'':' inactive') + '">' +
+      '<span class="color-dot" style="background:' + c.color + '"></span>' +
+      '<b style="flex:1">' + c.course + '</b>' +
+      '<span style="font-size:.75rem;color:var(--muted)">' + (c.active?'Activo':'Inactivo') + ' · Periodo actual: ' + c.activePeriod + '</span>' +
+      (c.active
+        ? '<button class="btn btn-danger" onclick="admRemoveCourse(\'' + c.course + '\')">Desactivar</button>'
+        : '<button class="btn btn-att" onclick="admAddCourse(\'' + c.course + '\', null, true)">Reactivar</button>') +
+      '</div>';
+  }).join('');
+  main.innerHTML = '<div class="card">' +
+    '<h3>Gestión de cursos</h3>' +
+    '<p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Los cursos ya no viven en el código: se administran aquí. "Desactivar" NO borra estudiantes ni notas — solo lo oculta del panel principal (ver ANALISIS_Y_DISEÑO.md).</p>' +
+    (rows || '<i>Sin cursos aún.</i>') +
+    '<div style="margin-top:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+      '<input class="login-input" id="admNewCourse" placeholder="Código de curso (ej. 1005)" style="max-width:180px;margin:0">' +
+      '<input class="login-input" id="admNewColor" type="color" value="#1a3d6b" style="max-width:60px;margin:0;padding:4px">' +
+      '<button class="btn btn-navy" onclick="admAddCourseFromForm()">+ Crear curso</button>' +
+    '</div>' +
+    '</div>';
+}
+async function admAddCourseFromForm() {
+  var code = document.getElementById('admNewCourse').value.trim();
+  var color = document.getElementById('admNewColor').value;
+  if (!code) { toast('Escribe un código de curso'); return; }
+  await admAddCourse(code, color, false);
+}
+async function admAddCourse(code, color, isReactivate) {
+  var res = await apiGrdPost({action:'addCourse', course: code, color: color});
+  if (res && res.ok) {
+    toast(isReactivate ? 'Curso reactivado' : 'Curso creado');
+    await loadCourses(); renderSidebar(); admLoadView();
+  } else {
+    toast('Error: ' + (res && res.error || 'desconocido'));
+  }
+}
+async function admRemoveCourse(code) {
+  if (!confirm('¿Desactivar el curso ' + code + '? Los datos NO se borran.')) return;
+  var res = await apiGrdPost({action:'removeCourse', course: code});
+  if (res && res.ok) { toast('Curso desactivado'); await loadCourses(); renderSidebar(); admLoadView(); }
+  else toast('Error al desactivar');
+}
+
+init();
+</script>
+</body>
+</html>
