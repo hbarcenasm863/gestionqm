@@ -1832,6 +1832,7 @@ window.addEventListener('beforeunload', function() {
 var activeModule = 'dash';
 var activeCourse = localStorage.getItem('gqm_course') || COURSES[0];
 var activePeriod = +localStorage.getItem('gqm_period') || 1;
+var grdShowAcumulado = false;
 var lockedPeriods = (function(){
   try { return JSON.parse(localStorage.getItem('gqm_locks') || '{}'); } catch(e) { return {}; }
 })();
@@ -2739,7 +2740,7 @@ function grdTabKey(){
 function grdSetTab(t){grdActiveTab[activeCourse+'_'+activePeriod]=t;grdRenderMain();}
 
 async function grdLoadView(course,period){
-  activeCourse=course;activePeriod=period;
+  activeCourse=course;activePeriod=period;grdShowAcumulado=false;
   localStorage.setItem('gqm_course',course);localStorage.setItem('gqm_period',period);
   renderNav();
   document.getElementById('topbarCenter').innerHTML=
@@ -2748,7 +2749,7 @@ async function grdLoadView(course,period){
     '<button class="mod-tab inf" onclick="openModule(\'inf\')">📄 <span>Informes</span></button>' +
     '<div class="period-tabs">' + PERIODS.map(function(p){
       return '<button class="ptab ' + (p===period?'active':'') + '" onclick="grdLoadView(\'' + course + '\',' + p + ')">P' + p + '</button>';
-    }).join('') + '</div>' +
+    }).join('') + '<button class="ptab" onclick="grdLoadAcumulado(\'' + course + '\')">📊 Acumulado</button></div>' +
     '<button class="icon-btn" id="btnGrdSync" onclick="grdSincronizar()" title="Actualizar notas del servidor">🔄</button>' +
     '<button class="icon-btn" onclick="printPDF()" title="Generar PDF">🖨</button>' +
     '<button class="icon-btn" onclick="exportSistematizadora()" title="Exportar sistematizadora">📤</button>' +
@@ -3287,6 +3288,88 @@ async function grdSetActivePeriod(period){
   grdConfig[activeCourse]=period; grdRenderMain(); renderNav();
   await apiGrdPost({action:'setActivePeriod',course:activeCourse,period:period});
   toast('Curso ' + activeCourse + ' → estudiantes ven P' + period);
+}
+
+/* Acumulado — promedio de los periodos con notas registradas */
+async function grdLoadAcumulado(course){
+  activeCourse=course; grdShowAcumulado=true;
+  localStorage.setItem('gqm_course',course);
+  renderNav();
+  document.getElementById('topbarCenter').innerHTML=
+    '<button class="mod-tab att" onclick="openModule(\'att\')">📋 <span>Asistencia</span></button>' +
+    '<button class="mod-tab grd active" onclick="openModule(\'grd\')">📝 <span>Notas</span></button>' +
+    '<button class="mod-tab inf" onclick="openModule(\'inf\')">📄 <span>Informes</span></button>' +
+    '<div class="period-tabs">' + PERIODS.map(function(p){
+      return '<button class="ptab" onclick="grdLoadView(\'' + course + '\',' + p + ')">P' + p + '</button>';
+    }).join('') + '<button class="ptab active" onclick="grdLoadAcumulado(\'' + course + '\')">📊 Acumulado</button></div>';
+
+  document.getElementById('mainArea').innerHTML=
+    '<div class="spin-wrap"><div class="spin"></div>Calculando acumulado…</div>';
+
+  if(!grdCache[course])grdCache[course]={};
+  await Promise.all(PERIODS.map(async function(p){
+    if(!grdCache[course][p]){
+      var data=await apiGrd({action:'getAll',course:course,period:p});
+      if(data&&!data.error)grdCache[course][p]=data;
+    }
+  }));
+  if(activeCourse===course && grdShowAcumulado) grdRenderAcumulado();
+}
+
+function grdRenderAcumulado(){
+  var course=activeCourse;
+  var base=PERIODS.map(function(p){ return grdCache[course]&&grdCache[course][p]; }).find(function(d){ return d&&d.students; });
+  var students=(base&&base.students?base.students.slice():[]).sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
+
+  if(!students.length){
+    document.getElementById('mainArea').innerHTML=
+      '<div class="page-head"><div><div class="course-label">Curso ' + course + '</div>' +
+      '<div class="course-meta">Promedio acumulado</div></div></div>' +
+      '<div class="empty"><div class="empty-ico">📓</div>Sin estudiantes aún.</div>';
+    return;
+  }
+
+  var rows=students.map(function(s){
+    var porPeriodo=PERIODS.map(function(p){
+      var d=grdCache[course][p];
+      if(!d||!d.grades) return null;
+      var tieneNotas=Object.keys(d.grades).some(function(comp){
+        return Object.keys(d.grades[comp]).some(function(item){ return d.grades[comp][item][s.id]!=null; });
+      });
+      if(!tieneNotas) return null;
+      var specials=(d.weights&&d.weights.especiales)||[];
+      var w=repComputeWeights(d);
+      return grdCalcFinal(s, d.actNames||[], d.grades||{}, w, specials);
+    });
+    var conNota=porPeriodo.filter(function(v){ return v!==null; });
+    var acumulado=conNota.length?conNota.reduce(function(a,b){ return a+b; },0)/conNota.length:null;
+    return { name:s.name, code:s.code||'', porPeriodo:porPeriodo, acumulado:acumulado };
+  });
+
+  var thead='<th class="th-name">Estudiante</th>' + PERIODS.map(function(p){ return '<th style="text-align:center">P' + p + '</th>'; }).join('') +
+    '<th style="text-align:center">Acumulado</th><th style="text-align:center">Estado</th>';
+
+  var tbody=rows.map(function(r){
+    var cells=r.porPeriodo.map(function(v){
+      return '<td style="text-align:center">' + (v!==null?'<span class="inf-chip ' + infChipCls(v) + '">' + v.toFixed(1) + '</span>':'<span style="color:var(--muted);font-size:.72rem">—</span>') + '</td>';
+    }).join('');
+    var estadoTxt = r.acumulado===null?'—':(r.acumulado>=3.0?'Aprobando':'Reprobando');
+    var estadoColor = r.acumulado===null?'#64748b':(r.acumulado>=3.0?'#166534':'#991b1b');
+    return '<tr' + (r.acumulado!==null&&r.acumulado<3.0?' style="background:#fff5f5"':'') + '>' +
+      '<td class="td-name">' + infEsc(r.name) + '</td>' +
+      cells +
+      '<td style="text-align:center"><span class="inf-chip ' + (r.acumulado!==null?infChipCls(r.acumulado):'ic-ne') + '" style="font-size:.85rem">' + (r.acumulado!==null?r.acumulado.toFixed(1):'—') + '</span></td>' +
+      '<td style="text-align:center;font-weight:700;color:' + estadoColor + '">' + estadoTxt + '</td>' +
+      '</tr>';
+  }).join('');
+
+  document.getElementById('mainArea').innerHTML=
+    '<div class="page-head">' +
+    '<div><div class="course-label">Curso ' + course + '</div>' +
+    '<div class="course-meta">Promedio acumulado · ' + rows.length + ' estudiante' + (rows.length!==1?'s':'') + '</div></div>' +
+    '</div>' +
+    '<div style="font-size:.72rem;color:var(--muted);margin-bottom:10px">El acumulado promedia solo los periodos con notas registradas (así aún falten periodos por cursar). Aprobando ≥ 3.0.</div>' +
+    '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + thead + '</tr></thead><tbody>' + tbody + '</tbody></table></div>';
 }
 
 /* Students */
