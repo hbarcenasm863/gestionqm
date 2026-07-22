@@ -13,6 +13,7 @@
 <link rel="apple-touch-icon" href="hbmol.png">
 <link rel="icon" type="image/png" href="hbmol.png">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/charts/loader.js"></script>
 <style>
 /* ═══════════════════════════════════════════
    VARIABLES — Azul marino + blanco + dorado
@@ -1440,6 +1441,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
     <div class="topbar-center" id="topbarCenter"></div>
     <div class="topbar-right">
       <button class="icon-btn" onclick="showDash()" title="Inicio">⊞</button>
+      <button class="icon-btn" onclick="openCoursesModal()" title="Gestión de cursos">🏫</button>
       <button class="icon-btn" onclick="logout()" title="Cerrar sesión">🔒</button>
       <button class="hamburger" onclick="toggleMobMenu()" id="hambBtn">☰</button>
     </div>
@@ -1794,6 +1796,26 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
     </div>
   </div>
 </div>
+
+<!-- MODAL: GESTIÓN DE CURSOS -->
+<div class="overlay" id="coursesModal">
+  <div class="modal">
+    <div class="modal-title">🏫 Gestión de cursos</div>
+    <div id="coursesList" style="margin-bottom:14px"></div>
+    <div style="background:var(--card);border:1px solid var(--bord);border-radius:8px;padding:12px">
+      <div class="mlabel" style="margin-bottom:8px">Agregar curso nuevo</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input class="minput" id="newCourseCode" placeholder="Ej: 1201" style="max-width:110px">
+        <input type="color" id="newCourseColor" value="#1a3d6b" style="width:44px;height:38px;border:1.5px solid var(--bord);border-radius:8px;padding:2px;cursor:pointer">
+        <button class="btn btn-navy btn-sm" onclick="addCourseFromModal()">+ Agregar</button>
+      </div>
+      <div class="mhint" style="margin-top:8px">Un curso "eliminado" se desactiva — sus estudiantes y notas se conservan, pero deja de aparecer en la app. Se puede reactivar agregándolo de nuevo con el mismo código.</div>
+    </div>
+    <div class="mbtns">
+      <button class="btn btn-outline" onclick="closeModal('coursesModal')">Cerrar</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1803,11 +1825,28 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 var URL_ATT = 'https://script.google.com/macros/s/AKfycby3BcpmsVHfQaahXh83FLW6GQJysKQcH2z48aMB18DKr4BQcbUneBk28LY67erNoUcI/exec';
 var URL_GRD = 'https://script.google.com/macros/s/AKfycbyRAPjSWsis0BjDOWqvpiMZ7dE02Eu5o2H_16Xhxmnkc3EoTNTH0peJcJnG21Wx_DTl/exec';
 
-var COURSES = ['1004','1005','1006','1101','1102','1103','1104'];
-var COLORS  = {
+// Lista/colores por defecto — se usan antes del primer login (para que el
+// formulario de contraseña funcione) y como respaldo si el backend no
+// responde. En cuanto hay sesión, loadCourses() los reemplaza con los
+// datos reales de la hoja Config (ver acción getCourses en Code.Notas.gs).
+var COURSES_DEFAULT = ['1004','1005','1006','1101','1102','1103','1104'];
+var COLORS_DEFAULT  = {
   '1004':'#1a6b5a','1005':'#1a3d6b','1006':'#c8960c',
   '1101':'#7c3aed','1102':'#16a34a','1103':'#c2410c','1104':'#0369a1'
 };
+var COURSES = COURSES_DEFAULT.slice();
+var COLORS  = Object.assign({}, COLORS_DEFAULT);
+(function(){
+  try {
+    var cached = JSON.parse(localStorage.getItem('gqm_courses_cache') || 'null');
+    if (Array.isArray(cached) && cached.length) {
+      COURSES = cached.map(function(c){ return c.course; });
+      var col = {};
+      cached.forEach(function(c){ col[c.course] = c.color || '#1a3d6b'; });
+      COLORS = col;
+    }
+  } catch(e) {}
+})();
 var PERIODS = [1,2,3];
 var BASE_LABELS = {actividades:'Actividades',autoeval:'Autoevaluación',coeval:'Coevaluación',final:'Ev. Final'};
 var BASE_KEYS   = ['actividades','autoeval','coeval','final'];
@@ -1932,8 +1971,71 @@ function logout() {
 /* ═══ LAUNCH ═══ */
 async function launchApp() {
   showScreen('appShell');
+  await loadCourses();
   grdConfig = await apiGrd({ action:'getConfig' });
   showDash();
+}
+
+/* ═══ CURSOS DINÁMICOS ═══ */
+async function loadCourses() {
+  try {
+    var res = await apiGrd({ action:'getCourses' });
+    if (Array.isArray(res) && res.length) {
+      var active = res.filter(function(c){ return c.active; });
+      COURSES = active.map(function(c){ return c.course; });
+      var col = {};
+      active.forEach(function(c){ col[c.course] = c.color || '#1a3d6b'; });
+      COLORS = col;
+      try { localStorage.setItem('gqm_courses_cache', JSON.stringify(active)); } catch(e) {}
+      if (!COURSES.includes(activeCourse)) activeCourse = COURSES[0] || COURSES_DEFAULT[0];
+    }
+  } catch(e) { /* backend no disponible: seguimos con la lista cacheada/por defecto */ }
+}
+
+function openCoursesModal() {
+  renderCoursesModal();
+  openModal('coursesModal');
+}
+
+function renderCoursesModal() {
+  document.getElementById('coursesList').innerHTML = COURSES.length
+    ? COURSES.map(function(c){
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--bord);border-radius:8px;margin-bottom:6px">' +
+          '<span style="width:14px;height:14px;border-radius:50%;background:' + (COLORS[c]||'#1a3d6b') + ';display:inline-block;flex-shrink:0"></span>' +
+          '<span style="flex:1;font-weight:700;font-size:.86rem">' + c + '</span>' +
+          '<button class="btn btn-outline btn-sm" style="color:#991b1b;border-color:#fca5a5" onclick="removeCourseFromModal(\'' + c + '\')">Desactivar</button>' +
+          '</div>';
+      }).join('')
+    : '<div class="empty" style="padding:16px"><div class="empty-ico">🏫</div>Sin cursos activos.</div>';
+}
+
+async function addCourseFromModal() {
+  var codeEl = document.getElementById('newCourseCode');
+  var code = codeEl.value.trim();
+  var color = document.getElementById('newCourseColor').value;
+  if (!code) { toast('Escribe el código del curso'); return; }
+  if (COURSES.includes(code)) { toast('Ese curso ya está activo'); return; }
+  var res = await apiGrdPost({ action:'addCourse', course:code, color:color });
+  if (res && res.ok) {
+    codeEl.value = '';
+    await loadCourses();
+    renderCoursesModal(); renderNav();
+    toast('✓ Curso ' + code + (res.reactivated?' reactivado':' agregado'));
+  } else {
+    toast('No se pudo agregar el curso' + (res&&res.error?': '+res.error:''));
+  }
+}
+
+async function removeCourseFromModal(course) {
+  if (!confirm('¿Desactivar el curso ' + course + '? Los estudiantes y notas se conservan, solo deja de aparecer en la app.')) return;
+  var res = await apiGrdPost({ action:'removeCourse', course:course });
+  if (res && res.ok) {
+    await loadCourses();
+    renderCoursesModal(); renderNav();
+    toast('Curso ' + course + ' desactivado');
+  } else {
+    toast('No se pudo desactivar el curso');
+  }
 }
 
 /* ═══ DASHBOARD ═══ */
@@ -4001,6 +4103,8 @@ function infRenderSelector() {
     '<input class="inf-input" id="inf-obs" type="text" placeholder="Ej: Presenta dificultades en cálculos estequiométricos…"></div>' +
     '<button class="btn-inf" onclick="infGenerar()">📄 Generar informe individual</button>' +
     '<button class="btn-inf" style="background:#0369a1" onclick="infGenerarGrupo()">📊 Informe de grupo — curso ' + activeCourse + '</button>' +
+    '<button class="btn-inf" style="background:#7c3aed" onclick="infComparativas()">📈 Comparativas entre cursos</button>' +
+    '<button class="btn-inf" style="background:#c2410c" onclick="infBoletinesMasivos()">📦 Boletines PDF — curso ' + activeCourse + '</button>' +
     '<button class="btn-inf-rep" onclick="infReprobados()">⚠ Lista de reprobados — todos los cursos</button>' +
     '</div>';
 }
@@ -4015,6 +4119,14 @@ async function infGenerar() {
   document.getElementById('mainArea').innerHTML =
     '<div class="spin-wrap"><div class="spin"></div>Generando informe…</div>';
 
+  var data = await infBuildInformeData(stuId, period, obs);
+  if (!data) { toast('Estudiante no encontrado'); infRenderSelector(); return; }
+  infRenderInforme(data);
+}
+
+// Extraído de infGenerar() para poder reutilizarlo en la generación masiva
+// de boletines (infBoletinesMasivos) sin depender de los <select> del DOM.
+async function infBuildInformeData(stuId, period, obs) {
   // Asegurar datos del periodo solicitado en caché
   if (!grdCache[activeCourse] || !grdCache[activeCourse][period]) {
     var data = await apiGrd({action:'getAll', course:activeCourse, period:period});
@@ -4024,7 +4136,7 @@ async function infGenerar() {
 
   var d       = grdCache[activeCourse][period];
   var student = (d.students||[]).find(function(s){ return s.id===stuId; });
-  if (!student) { toast('Estudiante no encontrado'); infRenderSelector(); return; }
+  if (!student) return null;
 
   var specials = (d.weights&&d.weights.especiales)||[];
   var baseW    = computeWeights(specials);
@@ -4070,13 +4182,13 @@ async function infGenerar() {
     } catch(e) { /* sin asistencia */ }
   }
 
-  infRenderInforme({
+  return {
     student: student, course: activeCourse, period: period,
     acts: acts, promAct: promAct,
     autoeval: autoeval, coeval: coeval, finalN: finalN,
     specials: speciVals, baseW: baseW, definitiva: definitiva,
     asistencia: asistencia, obs: obs
-  });
+  };
 }
 
 function infGetAsistencia(nombre, course) {
@@ -5367,6 +5479,164 @@ function infRenderGrupo(d) {
 
     '<div class="inf-pie">Generado con HBMol · Colegio Rufino José Cuervo IED · Ciencias Naturales — Química · Documento de uso interno.</div>' +
     '</div>';
+}
+
+/* ════════════════════════════════════════════════════════
+   COMPARATIVAS ENTRE CURSOS (Google Charts)
+════════════════════════════════════════════════════════ */
+var _gchartsLoaded = false, _gchartsLoading = null;
+function ensureGoogleCharts() {
+  if (_gchartsLoaded) return Promise.resolve();
+  if (_gchartsLoading) return _gchartsLoading;
+  _gchartsLoading = new Promise(function(resolve){
+    google.charts.load('current', {packages:['corechart']});
+    google.charts.setOnLoadCallback(function(){ _gchartsLoaded = true; resolve(); });
+  });
+  return _gchartsLoading;
+}
+
+async function infComparativas() {
+  var period = parseInt(document.getElementById('inf-per').value);
+  document.getElementById('mainArea').innerHTML =
+    '<div class="spin-wrap"><div class="spin"></div>Cargando comparativas…</div>';
+
+  var courseResults = await Promise.all(COURSES.map(async function(course) {
+    var cached = grdCache[course] && grdCache[course][period];
+    var data = (cached && cached.students) ? cached : await apiGrd({ action:'getAll', course:course, period:period });
+    if (data && data.students) { if(!grdCache[course])grdCache[course]={}; grdCache[course][period]=data; }
+    return { course:course, data:(data&&data.students)?data:null };
+  }));
+
+  var rows = courseResults.filter(function(r){ return r.data; }).map(function(r){
+    var d = r.data;
+    var specials = (d.weights&&d.weights.especiales)||[];
+    var w = repComputeWeights(d);
+    var defs = d.students.map(function(s){ return grdCalcFinal(s, d.actNames||[], d.grades||{}, w, specials); }).filter(function(v){ return v!==null; });
+    var promedio = defs.length ? defs.reduce(function(a,b){ return a+b; },0)/defs.length : null;
+    var aprobados = defs.filter(function(v){ return v>=3.0; }).length;
+    var pctAprob = defs.length ? Math.round(aprobados/defs.length*100) : null;
+    return { course:r.course, promedio:promedio, pctAprob:pctAprob, total:d.students.length };
+  });
+
+  try { await ensureGoogleCharts(); } catch(e) { toast('No se pudo cargar Google Charts (revisa tu conexión)'); }
+  infRenderComparativas(period, rows);
+}
+
+function infRenderComparativas(period, rows) {
+  document.getElementById('mainArea').innerHTML =
+    '<div class="inf-toolbar">' +
+    '<button class="btn-inf-back" onclick="infRenderSelector()">← Volver</button>' +
+    '<span style="flex:1;font-family:\'Syne\',sans-serif;font-weight:800;font-size:1rem;color:#7c3aed">📈 Comparativas — Periodo ' + period + '</span>' +
+    '</div>' +
+    '<div class="inf-hoja">' +
+    '<div id="chartProm" style="width:100%;height:320px"></div>' +
+    '<div id="chartAprob" style="width:100%;height:320px;margin-top:20px"></div>' +
+    '<table class="tbl" style="margin-top:20px"><thead><tr><th>Curso</th><th style="text-align:center">Estudiantes</th><th style="text-align:center">Promedio</th><th style="text-align:center">% Aprobación</th></tr></thead>' +
+    '<tbody>' + rows.map(function(r){
+      return '<tr><td class="td-name">' + r.course + '</td><td style="text-align:center">' + r.total + '</td>' +
+        '<td style="text-align:center">' + (r.promedio!==null?r.promedio.toFixed(2):'—') + '</td>' +
+        '<td style="text-align:center">' + (r.pctAprob!==null?r.pctAprob+'%':'—') + '</td></tr>';
+    }).join('') + '</tbody></table>' +
+    '</div>';
+
+  if (typeof google === 'undefined' || !google.visualization) return;
+
+  var dataProm = new google.visualization.DataTable();
+  dataProm.addColumn('string','Curso'); dataProm.addColumn('number','Promedio');
+  dataProm.addRows(rows.map(function(r){ return [r.course, r.promedio||0]; }));
+  new google.visualization.ColumnChart(document.getElementById('chartProm')).draw(dataProm, {
+    title:'Promedio por curso — Periodo ' + period, legend:'none', colors:['#1a3d6b'],
+    vAxis:{minValue:0,maxValue:5}, chartArea:{width:'85%',height:'70%'}
+  });
+
+  var dataAprob = new google.visualization.DataTable();
+  dataAprob.addColumn('string','Curso'); dataAprob.addColumn('number','% Aprobación');
+  dataAprob.addRows(rows.map(function(r){ return [r.course, r.pctAprob||0]; }));
+  new google.visualization.ColumnChart(document.getElementById('chartAprob')).draw(dataAprob, {
+    title:'% Aprobación por curso — Periodo ' + period, legend:'none', colors:['#16a34a'],
+    vAxis:{minValue:0,maxValue:100}, chartArea:{width:'85%',height:'70%'}
+  });
+}
+
+/* ════════════════════════════════════════════════════════
+   BOLETINES MASIVOS EN PDF (todo el curso, en un .zip)
+════════════════════════════════════════════════════════ */
+var _libLoading = {};
+function ensureLib(src) {
+  if (_libLoading[src]) return _libLoading[src];
+  _libLoading[src] = new Promise(function(resolve, reject){
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = function(){ resolve(); };
+    s.onerror = function(){ reject(new Error('load_failed')); };
+    document.head.appendChild(s);
+  });
+  return _libLoading[src];
+}
+
+async function infBoletinesMasivos() {
+  var period = parseInt(document.getElementById('inf-per').value);
+  var course = activeCourse;
+
+  document.getElementById('mainArea').innerHTML =
+    '<div class="spin-wrap"><div class="spin"></div>Preparando boletines…</div>';
+
+  if (!grdCache[course] || !grdCache[course][period]) {
+    var data = await apiGrd({action:'getAll', course:course, period:period});
+    if (!grdCache[course]) grdCache[course] = {};
+    grdCache[course][period] = data;
+  }
+  var students = (grdCache[course][period] && grdCache[course][period].students) || [];
+  if (!students.length) { toast('No hay estudiantes en este curso'); infRenderSelector(); return; }
+
+  try {
+    await ensureLib('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+    await ensureLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+  } catch(e) {
+    toast('No se pudieron cargar las librerías de PDF (revisa tu conexión)');
+    infRenderSelector();
+    return;
+  }
+
+  var zip = new JSZip();
+  var sorted = students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
+  var generados = 0;
+
+  for (var i = 0; i < sorted.length; i++) {
+    var s = sorted[i];
+    document.getElementById('mainArea').innerHTML =
+      '<div class="spin-wrap"><div class="spin"></div>Generando boletín ' + (i+1) + ' de ' + sorted.length + ' — ' + infEsc(s.name) + '…</div>';
+
+    var data = await infBuildInformeData(s.id, period, '');
+    if (!data) continue;
+    infRenderInforme(data);
+    var hoja = document.querySelector('.inf-hoja');
+    if (!hoja) continue;
+
+    try {
+      var pdfBlob = await html2pdf().set({
+        margin: 8,
+        html2canvas: { scale: 2 },
+        jsPDF: { unit:'mm', format:'a4', orientation:'portrait' }
+      }).from(hoja).outputPdf('blob');
+      var safeName = s.name.replace(/[\\/:*?"<>|]/g, '_');
+      zip.file('Boletin_' + course + '_P' + period + '_' + safeName + '.pdf', pdfBlob);
+      generados++;
+    } catch(e) { /* si un boletín falla, seguimos con los demás */ }
+  }
+
+  if (!generados) { toast('No se pudo generar ningún boletín'); infRenderSelector(); return; }
+
+  document.getElementById('mainArea').innerHTML =
+    '<div class="spin-wrap"><div class="spin"></div>Empaquetando ZIP…</div>';
+
+  var zipBlob = await zip.generateAsync({ type:'blob' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(zipBlob);
+  a.download = 'Boletines_' + course + '_P' + period + '_' + today() + '.zip';
+  a.click();
+  toast('✓ ' + generados + ' boletines generados');
+  infRenderSelector();
 }
 
 init();
