@@ -1815,9 +1815,18 @@ var BASE_KEYS   = ['actividades','autoeval','coeval','final'];
 /* ═══ STATE ═══ */
 var SESSION_PWD = '';
 (function(){
-  var wasReloaded = !sessionStorage.getItem('gqm_tab_active');
+  // beforeunload también dispara en un F5 normal (no solo al cerrar/duplicar
+  // pestaña), así que 'gqm_tab_active' solo no distingue recarga de pestaña
+  // nueva. Usamos la Navigation Timing API para no forzar reingresar la
+  // contraseña en cada F5, conservando la sesión solo dentro de la misma pestaña.
+  var navType = '';
+  try {
+    var navEntries = performance.getEntriesByType && performance.getEntriesByType('navigation');
+    navType = (navEntries && navEntries.length) ? navEntries[0].type : '';
+  } catch(e) {}
+  var wasTabActive = !!sessionStorage.getItem('gqm_tab_active');
   var stored = sessionStorage.getItem('gqm_pwd');
-  if (stored && !wasReloaded) {
+  if (stored && (navType === 'reload' || wasTabActive)) {
     SESSION_PWD = stored;
   } else {
     sessionStorage.removeItem('gqm_pwd');
@@ -2281,7 +2290,7 @@ async function generarConsolidado() {
     var riskCls = r.fallas >= 5 ? 'style="background:#fef2f2"' : '';
     return '<tr ' + riskCls + '>' +
       '<td style="text-align:center;font-size:.72rem;color:var(--muted)">' + r.i + '</td>' +
-      '<td style="text-align:left;font-size:.82rem">' + r.name + '</td>' +
+      '<td style="text-align:left;font-size:.82rem">' + infEsc(r.name) + '</td>' +
       '<td style="text-align:center;font-weight:600">' + r.total + '</td>' +
       '<td style="text-align:center;color:var(--ok);font-weight:600">' + r.P + '</td>' +
       '<td style="text-align:center;color:var(--fail);font-weight:700">' + r.A + '</td>' +
@@ -2513,7 +2522,7 @@ function renderAttMain() {
     : sts.map(function(s,i){
         var st=att[s.id]||'';
         return '<tr>' +
-          '<td><span style="font-size:.65rem;color:var(--muted);margin-right:4px;font-family:\'DM Mono\',monospace">' + (i+1) + '</span>' + s.name + '</td>' +
+          '<td><span style="font-size:.65rem;color:var(--muted);margin-right:4px;font-family:\'DM Mono\',monospace">' + (i+1) + '</span>' + infEsc(s.name) + '</td>' +
           '<td><div class="sbts">' +
           '<button class="sbt ' + (st==='P'?'on-P':'') + '" onclick="attMark(\'' + s.id + '\',\'P\')" title="Presente">P</button>' +
           '<button class="sbt ' + (st==='A'?'on-A':'') + '" onclick="attMark(\'' + s.id + '\',\'A\')" title="Ausente">A</button>' +
@@ -2610,7 +2619,7 @@ function buildAttHistory(course,dates,students){
       var bgMap={P:'#dcfce7',A:'#fee2e2',T:'#fef3c7',J:'#ede9fe',E:'#e0f2fe'};
       return '<td class="h' + st + '" style="background:' + (bgMap[st]||'inherit') + ';font-weight:700">' + st + '</td>';
     }).join('');
-    return '<tr><td>' + s.name + '</td>' + cells + '</tr>';
+    return '<tr><td>' + infEsc(s.name) + '</td>' + cells + '</tr>';
   }).join('');
   return '<div class="history">' +
     '<div class="hist-head"><span class="hist-title">📅 Últimas ' + dates.length + ' sesiones — toca la fecha para editar</span></div>' +
@@ -2791,7 +2800,7 @@ function grdRenderMain(){
   var chips=BASE_KEYS.map(function(k){
     return '<div class="wp-chip"><span>' + BASE_LABELS[k] + '</span><span class="wp-pct">' + baseW[k] + '%</span></div>';
   }).join('') + specials.map(function(sp){
-    return '<div class="wp-chip special"><span>' + sp.name + '</span><span class="wp-pct">' + sp.weight + '%</span>' +
+    return '<div class="wp-chip special"><span>' + infEsc(sp.name) + '</span><span class="wp-pct">' + sp.weight + '%</span>' +
       '<button class="wp-del" onclick="grdRemoveSpecial(\'' + sp.id + '\')">×</button></div>';
   }).join('');
 
@@ -2848,31 +2857,31 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
 
   var thd='<th class="th-name">Estudiante</th>';
   actNames.forEach(function(n,i){
-    thd+='<th class="th-grade" title="' + n + '">' +
+    thd+='<th class="th-grade" title="' + infEsc(n) + '">' +
       '<div style="display:flex;align-items:center;justify-content:center;gap:2px;font-size:.62rem">Act.' + (i+1) +
-      '<button class="del-col-btn" onclick="grdDeleteActCol(\'' + n + '\')" title="Eliminar ' + n + '">×</button></div>' +
-      '<div style="font-size:.58rem;color:rgba(255,255,255,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:64px" title="' + n + '">' + n + '</div></th>';
+      '<button class="del-col-btn" onclick="grdDeleteActCol(\'' + jsAttrEsc(n) + '\')" title="Eliminar ' + infEsc(n) + '">×</button></div>' +
+      '<div style="font-size:.58rem;color:rgba(255,255,255,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:64px" title="' + infEsc(n) + '">' + infEsc(n) + '</div></th>';
   });
   thd+='<th class="th-grade th-eval" title="Autoevaluación 5%">Auto<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>';
   thd+='<th class="th-grade th-eval" title="Coevaluación 5%">Co<br>eval.<br><span style="font-size:.6rem;opacity:.7">5%</span></th>';
   thd+='<th class="th-grade" title="Evaluación final ' + baseW.final + '%">Ev.<br>Final<br><span style="font-size:.6rem;opacity:.7">' + baseW.final + '%</span></th>';
   specials.forEach(function(sp){
-    thd+='<th class="th-grade th-esp" title="' + sp.name + ' ' + sp.weight + '%">' + sp.name.substring(0,8) + '<br><span style="font-size:.6rem;opacity:.7">' + sp.weight + '%</span></th>';
+    thd+='<th class="th-grade th-esp" title="' + infEsc(sp.name) + ' ' + sp.weight + '%">' + infEsc(sp.name.substring(0,8)) + '<br><span style="font-size:.6rem;opacity:.7">' + sp.weight + '%</span></th>';
   });
   thd+='<th class="th-def">DEFINI<br>TIVA</th>';
 
   var rows=students.map(function(s,i){
-    var tds='<td class="td-name" title="' + s.name + '">' +
+    var tds='<td class="td-name" title="' + infEsc(s.name) + '">' +
       '<span class="stu-num">' + (i+1) + '</span>' +
-      '<span class="stu-name-txt" onclick="grdOpenEditStu(\'' + s.id + '\')" title="Editar · ' + s.name + '">' + s.name + '</span>' +
-      (s.code?'<span class="code-chip"> ' + s.code + '</span>':'<span class="no-code" title="Sin código">⚠</span>') +
+      '<span class="stu-name-txt" onclick="grdOpenEditStu(\'' + s.id + '\')" title="Editar · ' + infEsc(s.name) + '">' + infEsc(s.name) + '</span>' +
+      (s.code?'<span class="code-chip"> ' + infEsc(s.code) + '</span>':'<span class="no-code" title="Sin código">⚠</span>') +
       '</td>';
 
     actNames.forEach(function(n){
       var raw=grades['actividad']&&grades['actividad'][n]?grades['actividad'][n][s.id]:undefined;
       var val=raw!=null?raw:'';
       tds+='<td><input class="ginp ' + gcl(val) + '" type="number" min="0" max="5" step="0.1"' + ro + '' +
-        ' value="' + val + '" data-comp="actividad" data-item="' + n + '" data-sid="' + s.id + '" data-orig="' + val + '"' +
+        ' value="' + val + '" data-comp="actividad" data-item="' + infEsc(n) + '" data-sid="' + s.id + '" data-orig="' + val + '"' +
         ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
         ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
     });
@@ -2923,10 +2932,10 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
         comp==='autoeval'?'Autoeval (5%)':comp==='coeval'?'Coeval (5%)':
         comp==='final'?'Final ('+baseW.final+'%)':item;
       var dataItem = comp==='especial' ? item : (comp==='actividad' ? item : '_');
-      return '<div class="mgrid-label">' + lbl + '</div>' +
+      return '<div class="mgrid-label">' + infEsc(lbl) + '</div>' +
         '<div class="mgrid-input-cell"><input class="ginp ' + gcl(val) + '" type="number"' +
         ' min="0" max="5" step="0.1" value="' + (val!==''?val:'') + '"' +
-        ' data-comp="' + comp + '" data-item="' + dataItem + '"' +
+        ' data-comp="' + comp + '" data-item="' + infEsc(dataItem) + '"' +
         ' data-sid="' + s.id + '" data-orig="' + val + '"' +
         ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
         ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></div>';
@@ -2944,7 +2953,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
 
     var spInputs=specials.map(function(sp){
       var v=(grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null)?grades['especial'][sp.id][s.id]:'';
-      return '<div class="mgrid-label">' + (sp.name.length>20?sp.name.substring(0,20)+'…':sp.name) + ' (' + sp.weight + '%)</div>' +
+      return '<div class="mgrid-label">' + infEsc(sp.name.length>20?sp.name.substring(0,20)+'…':sp.name) + ' (' + sp.weight + '%)</div>' +
         '<div class="mgrid-input-cell"><input class="ginp ' + gcl(v) + '" type="number"' +
         ' min="0" max="5" step="0.1" value="' + v + '"' +
         ' data-comp="especial" data-item="' + sp.id + '" data-sid="' + s.id + '" data-orig="' + v + '"' +
@@ -2954,7 +2963,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
 
     return '<div class="mgrid">' +
       '<div class="mgrid-head">' +
-      '<span class="mgrid-name">' + (i+1) + '. ' + s.name + '</span>' +
+      '<span class="mgrid-name">' + (i+1) + '. ' + infEsc(s.name) + '</span>' +
       '<span class="mgrid-def" id="mgrid-def-' + s.id + '" style="color:' + defCol + '">' + (def!=null?def.toFixed(1):'0.0') + '</span>' +
       '</div>' +
       '<div class="mgrid-body"><div class="mgrid-rows">' +
@@ -3588,7 +3597,7 @@ function openWeightsEditor() {
     espPanel.style.display = '';
     espRows.innerHTML = specials.map(function(sp){
       return '<div style="display:grid;grid-template-columns:1fr 80px;gap:6px 12px;align-items:center;margin-bottom:6px">' +
-        '<label style="font-size:.82rem;color:var(--text2)">' + sp.name + '</label>' +
+        '<label style="font-size:.82rem;color:var(--text2)">' + infEsc(sp.name) + '</label>' +
         '<div style="display:flex;align-items:center;gap:4px">' +
         '<input class="minput" type="number" id="wEsp_' + sp.id + '" value="' + sp.weight + '" min="0" max="100" step="1"' +
         ' style="width:60px;text-align:center" oninput="checkWeightsTotal()">' +
@@ -3976,7 +3985,7 @@ function infRenderSelector() {
   var opts = infEstudiantes
     .slice()
     .sort(function(a,b){ return a.name.localeCompare(b.name,'es'); })
-    .map(function(s){ return '<option value="' + s.id + '">' + s.name + '</option>'; })
+    .map(function(s){ return '<option value="' + s.id + '">' + infEsc(s.name) + '</option>'; })
     .join('');
 
   var perOpts = [1,2,3].map(function(p){
@@ -4296,7 +4305,13 @@ function infAsistItem(val, lbl, color) {
 }
 function infEsc(s) {
   if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+// Escapa un valor para interpolarlo dentro de un string JS de comillas simples
+// que a su vez vive dentro de un atributo onclick="..." (doble escape: backslash/comilla
+// para el parser JS, comillas dobles/ángulos para el atributo HTML que lo envuelve).
+function jsAttrEsc(s) {
+  return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 function infNivel(n) {
   if (n===null||n===undefined) return {label:'Sin datos', color:'#64748b', bg:'#f1f5f9'};
@@ -4847,14 +4862,14 @@ function renderAttMatrix() {
       var cls = 'mc-' + (st || '');
       var lbl = st || '·';
       return '<td><span class="mat-cell ' + cls + '" ' +
-        'onclick="matCellClick(event,\'' + s.id + '\',\'' + s.name.replace(/'/g,'\\\'') + '\',\'' + d + '\')" ' +
-        'title="' + s.name + ' · ' + d + '">' + lbl + '</span></td>';
+        'onclick="matCellClick(event,\'' + s.id + '\',\'' + jsAttrEsc(s.name) + '\',\'' + d + '\')" ' +
+        'title="' + infEsc(s.name) + ' · ' + d + '">' + lbl + '</span></td>';
     }).join('');
     var riskCls = fallas >= 5 ? 'mt-risk' : fallas > 0 ? 'mt-ok' : '';
     return '<tr>' +
-      '<td class="mat-td-name" title="' + s.name + '">' +
+      '<td class="mat-td-name" title="' + infEsc(s.name) + '">' +
       '<span style="font-size:.62rem;color:var(--muted);margin-right:5px">' + (idx+1) + '</span>' +
-      s.name + '</td>' +
+      infEsc(s.name) + '</td>' +
       cells +
       '<td><span class="mat-total ' + riskCls + '">' + (fallas||'—') + '</span></td>' +
       '</tr>';
@@ -4888,9 +4903,9 @@ function buildMatMobile(c, dates, sts, data) {
       var cls = 'mc-' + (st||'');
       var lbl = st || '·';
       return '<div class="mat-mob-row">' +
-        '<span class="mat-mob-name">' + s.name + '</span>' +
+        '<span class="mat-mob-name">' + infEsc(s.name) + '</span>' +
         '<span class="mat-mob-cell ' + cls + '" ' +
-        'onclick="matCellClick(event,\'' + s.id + '\',\'' + s.name.replace(/'/g,'\\\'') + '\',\'' + d + '\')">' +
+        'onclick="matCellClick(event,\'' + s.id + '\',\'' + jsAttrEsc(s.name) + '\',\'' + d + '\')">' +
         lbl + '</span>' +
         '</div>';
     }).join('');
@@ -4924,7 +4939,7 @@ function matCellClick(event, stuId, stuName, date) {
   popup.className = 'mat-popup';
   popup.id = 'matPopup';
   popup.innerHTML =
-    '<div class="mat-popup-name">' + stuName + '</div>' +
+    '<div class="mat-popup-name">' + infEsc(stuName) + '</div>' +
     '<div class="mat-popup-date">📅 ' + date + ' · Estado actual: <strong>' + (cur||'Sin marcar') + '</strong></div>' +
     '<div class="mat-popup-btns">' +
     ['P','A','T','J','E'].map(function(st) {
