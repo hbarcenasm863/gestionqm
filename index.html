@@ -1835,6 +1835,7 @@ var SESSION_PWD = '';
 })();
 
 window.addEventListener('beforeunload', function() {
+  grdFlushPendingOnUnload();
   sessionStorage.removeItem('gqm_tab_active');
 });
 
@@ -3140,6 +3141,25 @@ async function grdFlushSave(key){
   delete pendingSaves[key];
   var res=await apiGrdPost(Object.assign({action:'saveGrade'},b));
   if(res.error) toast('⚠ Error al guardar nota');
+}
+
+// Si el profesor cierra/recarga la pestaña dentro de la ventana de 600ms del
+// debounce (grdDoSave), el setTimeout pendiente nunca llega a correr y esa
+// última nota se pierde en silencio. sendBeacon sigue entregándose aunque la
+// página ya se haya descargado, así que lo usamos como red de seguridad.
+function grdFlushPendingOnUnload(){
+  var keys = Object.keys(pendingSaves);
+  if (!keys.length || !navigator.sendBeacon) return;
+  keys.forEach(function(key){
+    clearTimeout(saveTimers[key]);
+    var b = pendingSaves[key];
+    delete pendingSaves[key];
+    if (!b) return;
+    try {
+      var payload = JSON.stringify(Object.assign({action:'saveGrade'}, b, {pwd:SESSION_PWD}));
+      navigator.sendBeacon(URL_GRD, payload);
+    } catch(e) {}
+  });
 }
 
 /* Activity columns */
