@@ -2350,7 +2350,7 @@ function exportarConsolidado() {
   var d = window._consData;
   var csv = '\uFEFF#,Estudiante,Total clases,Presente,Ausente,Tardanza,Justificado,Sin marcar,% Asistencia\n';
   d.rows.forEach(function(r) {
-    csv += r.i + ',"' + r.name + '",' + r.total + ',' + r.P + ',' + r.A + ',' + r.T + ',' + r.J + ',' + r.sin + ',' + r.pct + '%\n';
+    csv += r.i + ',' + csvField(r.name) + ',' + r.total + ',' + r.P + ',' + r.A + ',' + r.T + ',' + r.J + ',' + r.sin + ',' + r.pct + '%\n';
   });
   var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
   var a = document.createElement('a');
@@ -2445,7 +2445,7 @@ function descargarSist() {
   d.sorted.forEach(function(s) {
     var def = grdCalcFinal(s, d.actNames, d.grades, d.baseW, d.specials);
     var nota = def !== null ? def.toFixed(d.dec) : '0.' + new Array(d.dec+1).join('0');
-    csv += '"' + s.name + '",' + nota + '\n';
+    csv += csvField(s.name) + ',' + nota + '\n';
   });
   var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
   var a = document.createElement('a');
@@ -2708,7 +2708,7 @@ function buildAttExport(){
   txt+='Estudiante\t'+dates.join('\t')+'\n';
   data.students.forEach(function(s){
     var vals=dates.map(function(d){ return (data.attendance[c+'_'+d]||{})[s.id]||'-'; });
-    txt+=s.name+'\t'+vals.join('\t')+'\n';
+    txt+=csvNoFormula(s.name)+'\t'+vals.join('\t')+'\n';
   });
   document.getElementById('exportBox').textContent=txt;
 }
@@ -3532,9 +3532,9 @@ async function downloadCSV(){
     var ref=grdCache[course][period];
     var students=ref.students, weights=ref.weights, actNames=ref.actNames, grades=ref.grades;
     var specials=weights.especiales||[]; var bw=computeWeights(specials);
-    var csv='Código,Estudiante,'+actNames.map(function(n,i){ return '"Act.'+(i+1)+': '+n+'"'; }).join(',')+',';
+    var csv='Código,Estudiante,'+actNames.map(function(n,i){ return csvField('Act.'+(i+1)+': '+n); }).join(',')+',';
     csv+='"Prom.Act ('+bw.actividades+'%)","Autoeval (5%)","Coeval (5%)","Final ('+bw.final+'%)",';
-    csv+=specials.map(function(sp){ return '"'+sp.name+' ('+sp.weight+'%)"'; }).join(',')+',DEFINITIVA\n';
+    csv+=specials.map(function(sp){ return csvField(sp.name+' ('+sp.weight+'%)'); }).join(',')+',DEFINITIVA\n';
     students.forEach(function(s){
       var av=actNames.map(function(n){ return grades['actividad']&&grades['actividad'][n]&&grades['actividad'][n][s.id]!=null?grades['actividad'][n][s.id]:''; });
       var avf=av.filter(function(v){ return v!==''; });
@@ -3544,7 +3544,7 @@ async function downloadCSV(){
       var fi=grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null?grades['final']['_'][s.id]:'';
       var spv=specials.map(function(sp){ return grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null?grades['especial'][sp.id][s.id]:''; });
       var def=grdCalcFinal(s,actNames,grades,bw,specials);
-      csv+=(s.code||'')+',"'+s.name+'",'+av.join(',')+','+actAvg+','+ae+','+ce+','+fi+','+spv.join(',')+(def!=null?','+def.toFixed(1):',')+'\n';
+      csv+=csvField(s.code||'')+','+csvField(s.name)+','+av.join(',')+','+actAvg+','+ae+','+ce+','+fi+','+spv.join(',')+(def!=null?','+def.toFixed(1):',')+'\n';
     });
     var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
@@ -4312,6 +4312,16 @@ function infEsc(s) {
 // para el parser JS, comillas dobles/ángulos para el atributo HTML que lo envuelve).
 function jsAttrEsc(s) {
   return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+// Protege contra "CSV/formula injection": Excel/Sheets ejecutan una celda
+// que empieza con =,+,-,@ como fórmula si el archivo se abre directo.
+function csvNoFormula(v) {
+  var s = (v===null||v===undefined) ? '' : String(v);
+  return /^[=+\-@\t\r]/.test(s) ? "'" + s : s;
+}
+// Celda CSV completa: comillas dobladas + protección de fórmula de arriba.
+function csvField(v) {
+  return '"' + csvNoFormula(v).replace(/"/g,'""') + '"';
 }
 function infNivel(n) {
   if (n===null||n===undefined) return {label:'Sin datos', color:'#64748b', bg:'#f1f5f9'};
@@ -5222,7 +5232,7 @@ function infExportReprobadosCSV() {
     b.failing.slice()
       .sort(function(a, z) { return a.name.localeCompare(z.name, 'es'); })
       .forEach(function(s) {
-        csv += b.course + ',"' + s.name.replace(/"/g, '""') + '",' + s.def.toFixed(1) + ',' + infNivel(s.def).label + '\n';
+        csv += csvField(b.course) + ',' + csvField(s.name) + ',' + s.def.toFixed(1) + ',' + infNivel(s.def).label + '\n';
       });
   });
   var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
