@@ -747,11 +747,13 @@ body {
 .tbl tr:nth-child(even) td.td-eval { background: #e8f0fd !important; }
 .tbl tr:nth-child(even) td.td-esp  { background: #fef5d0 !important; }
 .tbl tr:nth-child(even) td.td-def  { background: #fde68a !important; }
+.tbl tr:nth-child(even) td.td-niv  { background: #f3e8ff !important; }
 .tbl tr:nth-child(even) td:first-child { background: #f8fafd; }
 .tbl tr:hover td { background: #f0f9ff !important; }
 .tbl tr:hover td.td-eval { background: #dbeafe !important; }
 .tbl tr:hover td.td-esp  { background: #fef08a !important; }
 .tbl tr:hover td.td-def  { background: #fde68a !important; }
+.tbl tr:hover td.td-niv  { background: #ede0fb !important; }
 .tbl tr:hover td:first-child { background: #f0f9ff !important; }
 
 /* Grade input */
@@ -2422,7 +2424,7 @@ async function generarSistematizadora() {
   var sorted   = students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
   var txt = '';
   sorted.forEach(function(s) {
-    var def = grdCalcFinal(s, actNames, grades, baseW, specials);
+    var def = grdCalcEffective(s, actNames, grades, baseW, specials);
     var nota = def !== null ? def.toFixed(dec) : '0.' + new Array(dec+1).join('0');
     txt += s.name + '\t' + nota + '\n';
   });
@@ -2444,7 +2446,7 @@ function descargarSist() {
   var d = window._sistData;
   var csv = '\uFEFFNombre,Definitiva\n';
   d.sorted.forEach(function(s) {
-    var def = grdCalcFinal(s, d.actNames, d.grades, d.baseW, d.specials);
+    var def = grdCalcEffective(s, d.actNames, d.grades, d.baseW, d.specials);
     var nota = def !== null ? def.toFixed(d.dec) : '0.' + new Array(d.dec+1).join('0');
     csv += csvField(s.name) + ',' + nota + '\n';
   });
@@ -2870,6 +2872,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     thd+='<th class="th-grade th-esp" title="' + infEsc(sp.name) + ' ' + sp.weight + '%">' + infEsc(sp.name.substring(0,8)) + '<br><span style="font-size:.6rem;opacity:.7">' + sp.weight + '%</span></th>';
   });
   thd+='<th class="th-def">DEFINI<br>TIVA</th>';
+  thd+='<th class="th-grade th-niv" title="Proceso posterior a la definitiva del periodo: si se diligencia, genera el nuevo resultado que se usa en Acumulado, informes y exportes">Nivela<br>ción</th>';
 
   var rows=students.map(function(s,i){
     var tds='<td class="td-name" title="' + infEsc(s.name) + '">' +
@@ -2920,6 +2923,18 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     var def=grdCalcFinal(s,actNames,grades,baseW,specials);
     var defCls=gcl(def);
     tds+='<td class="td-def ' + defCls + '" data-def-sid="' + s.id + '">' + (def!==null?def.toFixed(1):'0.0') + '</td>';
+
+    var niv=grades['nivelacion']&&grades['nivelacion']['_']?grades['nivelacion']['_'][s.id]:undefined;
+    var nivVal=niv!=null?niv:'';
+    var nivelado=nivVal!=='';
+    tds+='<td class="td-niv"><input class="ginp niv-inp ' + gcl(nivVal) + '" type="number" min="0" max="5" step="0.1"' + ro + '' +
+      ' value="' + nivVal + '" data-comp="nivelacion" data-item="_" data-sid="' + s.id + '" data-orig="' + nivVal + '"' +
+      ' title="Nota de nivelación — proceso posterior a la definitiva; genera el nuevo resultado del periodo"' +
+      ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
+      ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)">' +
+      '<span id="niv-mark-' + s.id + '" style="font-size:.6rem;display:' + (nivelado?'block':'none') + '"' +
+      ' title="Periodo nivelado — este es el nuevo resultado usado en Acumulado, informes y exportes">📘 nuevo resultado</span>' +
+      '</td>';
     return '<tr>' + tds + '</tr>';
   }).join('');
 
@@ -2931,7 +2946,8 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     function makeInp(comp,item,val){
       var lbl = comp==='actividad'?(item.length>20?item.substring(0,20)+'…':item):
         comp==='autoeval'?'Autoeval (5%)':comp==='coeval'?'Coeval (5%)':
-        comp==='final'?'Final ('+baseW.final+'%)':item;
+        comp==='final'?'Final ('+baseW.final+'%)':
+        comp==='nivelacion'?'Nivelación':item;
       var dataItem = comp==='especial' ? item : (comp==='actividad' ? item : '_');
       return '<div class="mgrid-label">' + infEsc(lbl) + '</div>' +
         '<div class="mgrid-input-cell"><input class="ginp ' + gcl(val) + '" type="number"' +
@@ -2951,6 +2967,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     var aeVal=(grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][s.id]!=null)?grades['autoeval']['_'][s.id]:'';
     var ceVal=(grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null)?grades['coeval']['_'][s.id]:'';
     var fiVal=(grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null)?grades['final']['_'][s.id]:'';
+    var mNivVal=(grades['nivelacion']&&grades['nivelacion']['_']&&grades['nivelacion']['_'][s.id]!=null)?grades['nivelacion']['_'][s.id]:'';
 
     var spInputs=specials.map(function(sp){
       var v=(grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null)?grades['especial'][sp.id][s.id]:'';
@@ -2975,6 +2992,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
       makeInp('autoeval','_',aeVal) +
       makeInp('coeval','_',ceVal) +
       makeInp('final','_',fiVal) +
+      makeInp('nivelacion','_',mNivVal) +
       '</div></div></div>';
   }).join('');
 
@@ -3003,6 +3021,14 @@ function grdBuildStats(students,actNames,grades,baseW,specials){
     '</div>';
 }
 
+function grdNivelacion(s,grades){
+  var niv=grades['nivelacion']&&grades['nivelacion']['_']?grades['nivelacion']['_'][s.id]:undefined;
+  return (niv!==undefined&&niv!==null)?niv:null;
+}
+// Definitiva "cruda": el cálculo por componentes, sin nivelación. Es la que
+// se sigue mostrando en la columna DEFINITIVA de la tabla de notas del
+// periodo (a propósito, para que el docente siempre vea ahí el cálculo
+// original, incluso después de diligenciar nivelación).
 function grdCalcFinal(s,actNames,grades,baseW,specials){
   var av=actNames.map(function(n){ return grades['actividad']&&grades['actividad'][n]?grades['actividad'][n][s.id]:undefined; }).filter(function(v){ return v!=null; });
   var actAvg=av.length?av.reduce(function(a,b){ return a+b; },0)/av.length:0;
@@ -3018,6 +3044,15 @@ function grdCalcFinal(s,actNames,grades,baseW,specials){
   });
   return Math.round(sum/(totalPct/100)*100)/100;
 }
+// Definitiva "efectiva": si el periodo se niveló, la nota de nivelación
+// reemplaza el cálculo por componentes — es el resultado que cuenta en todo
+// lo que no sea la tabla de edición del periodo (Acumulado, informes,
+// sistematizadora, exportes, reprobados).
+function grdCalcEffective(s,actNames,grades,baseW,specials){
+  var niv=grdNivelacion(s,grades);
+  if(niv!==null) return niv;
+  return grdCalcFinal(s,actNames,grades,baseW,specials);
+}
 
 function grdUpdateColor(inp){
   var v=parseFloat(inp.value);
@@ -3027,6 +3062,10 @@ function grdUpdateColor(inp){
   if(!d.grades[comp])d.grades[comp]={};
   if(!d.grades[comp][item])d.grades[comp][item]={};
   d.grades[comp][item][sid]=isNaN(v)?null:v;
+  if(comp==='nivelacion'){
+    var mark=document.getElementById('niv-mark-'+sid);
+    if(mark) mark.style.display=isNaN(v)?'none':'block';
+  }
   grdUpdateDefCell(sid, d);
 }
 
@@ -3103,7 +3142,7 @@ function getColCount(){
   var data=grdCache[activeCourse]&&grdCache[activeCourse][activePeriod];
   if(!data)return 1;
   var specials=data.weights&&data.weights.especiales?data.weights.especiales:[];
-  return data.actNames.length + 3 + specials.length;
+  return data.actNames.length + 4 + specials.length; // autoeval, coeval, final, nivelación
 }
 
 async function grdHandleChange(inp){
@@ -3368,7 +3407,7 @@ function grdRenderAcumulado(){
       if(!tieneNotas) return null;
       var specials=(d.weights&&d.weights.especiales)||[];
       var w=repComputeWeights(d);
-      return grdCalcFinal(s, d.actNames||[], d.grades||{}, w, specials);
+      return grdCalcEffective(s, d.actNames||[], d.grades||{}, w, specials);
     });
     var conNota=porPeriodo.filter(function(v){ return v!==null; });
     var acumulado=conNota.length?conNota.reduce(function(a,b){ return a+b; },0)/conNota.length:null;
@@ -3520,7 +3559,7 @@ async function buildGrdExport(){
     var ce=grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null?grades['coeval']['_'][s.id]:'';
     var fi=grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null?grades['final']['_'][s.id]:'';
     var spv=specials.map(function(sp){ return grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null?grades['especial'][sp.id][s.id]:''; });
-    var def=grdCalcFinal(s,actNames,grades,bw,specials);
+    var def=grdCalcEffective(s,actNames,grades,bw,specials);
     txt+=(s.code||'')+'\t'+s.name+'\t'+av.join('\t')+'\t'+actAvg+'\t'+ae+'\t'+ce+'\t'+fi+'\t'+spv.join('\t')+'\t'+(def!=null?def.toFixed(1):'')+'\n';
   });
   document.getElementById('exportBox').textContent=txt;
@@ -3563,7 +3602,7 @@ async function downloadCSV(){
       var ce=grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null?grades['coeval']['_'][s.id]:'';
       var fi=grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null?grades['final']['_'][s.id]:'';
       var spv=specials.map(function(sp){ return grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null?grades['especial'][sp.id][s.id]:''; });
-      var def=grdCalcFinal(s,actNames,grades,bw,specials);
+      var def=grdCalcEffective(s,actNames,grades,bw,specials);
       csv+=csvField(s.code||'')+','+csvField(s.name)+','+av.join(',')+','+actAvg+','+ae+','+ce+','+fi+','+spv.join(',')+(def!=null?','+def.toFixed(1):',')+'\n';
     });
     var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
@@ -4077,7 +4116,7 @@ async function infGenerar() {
     return {nombre:sp.name, nota:v, peso:sp.weight};
   });
 
-  var definitiva = grdCalcFinal(student, actNames, grades, baseW, specials);
+  var definitiva = grdCalcEffective(student, actNames, grades, baseW, specials);
 
   // Asistencia: cargar historial si no está disponible
   var asistencia = null;
@@ -5178,7 +5217,7 @@ function infRenderReprobados(period, courseResults) {
     var bw = repComputeWeights(d);
     var failing = [];
     d.students.forEach(function(s) {
-      var def = grdCalcFinal(s, d.actNames, d.grades, bw, specials);
+      var def = grdCalcEffective(s, d.actNames, d.grades, bw, specials);
       if (def !== null && def < 3.0) failing.push({ name: s.name, code: s.code || '', def: def });
     });
     totalStudents += d.students.length;
@@ -5304,7 +5343,7 @@ async function infGenerarGrupo() {
   }
 
   var rows = d.students.map(function(s) {
-    var definitiva = grdCalcFinal(s, actNames, grades, baseW, specials);
+    var definitiva = grdCalcEffective(s, actNames, grades, baseW, specials);
     var nivel = infNivel(definitiva);
     var asis  = infGetAsistencia(s.name, course);
     var pctAsis = (asis && asis.total > 0) ? Math.round((asis.asistidas/asis.total)*100) : null;
