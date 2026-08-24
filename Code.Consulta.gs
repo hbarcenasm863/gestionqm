@@ -529,14 +529,14 @@ function buildAnoBlock(definitivaAnual, periodos, nombre){
   ).join('');
   rows += '<tr style="background:#fef3d0;font-weight:700;border-top:2px solid #c9952a">'
     +'<td class="name-col" style="color:#92400e;font-weight:700">🏆 Definitiva Anual</td>'
-    +'<td><span class="nota" style="font-size:1rem;font-weight:800;color:'+defColor(def)+';background:'+defBg(def)+'">'+(def!==null?def.toFixed(2):'—')+'</span></td>'
+    +'<td><span class="nota" style="font-size:1rem;font-weight:800;color:'+defColor(def)+';background:'+defBg(def)+'">'+(def!==null?def.toFixed(1):'—')+'</span></td>'
     +'</tr>';
 
   return '<div id="pblk_0" style="display:none">'
     +'<div class="course-head" style="border-bottom-color:#c9952a">'
     +'<div class="course-num" style="color:#c9952a">🏆 Definitiva Anual</div>'
     +(def!==null?'<div class="definitiva-badge" style="color:'+defColor(def)+';border-color:'+defColor(def)+';background:'+defBg(def)+'">'
-      +def.toFixed(2)+' · '+nivel+'</div>':'')
+      +def.toFixed(1)+' · '+nivel+'</div>':'')
     +'</div>'
     +'<div class="table-wrap"><table>'
     +'<thead><tr>'
@@ -563,7 +563,7 @@ function buildBlock(p){
     +(nivelado?'<span class="niv-badge">📘 Periodo nivelado</span>':'')
     +'</div>'
     +'<div class="definitiva-badge" style="color:'+defColor(def)+';border-color:'+defColor(def)+';background:'+defBg(def)+'">'
-    +(def!==null?'Definitiva: '+def.toFixed(2):'Sin definitiva aún')
+    +(def!==null?'Definitiva: '+def.toFixed(1):'Sin definitiva aún')
     +'</div></div>';
 
   if(nivelado){
@@ -592,7 +592,7 @@ function buildBlock(p){
     trow+='<td><span class="nota '+nc(c.grade)+'">'+nf(c.grade)+'</span></td>';
   });
   trow+='<td style="background:#fef3d0"><span class="nota" style="font-size:.95rem;font-weight:700;color:'+defColor(def)+'">'
-    +(def!==null?def.toFixed(2):'—')+'</span></td>';
+    +(def!==null?def.toFixed(1):'—')+'</span></td>';
 
   html+='<div class="table-wrap"><table>'
     +'<thead><tr>'+thd+'</tr></thead>'
