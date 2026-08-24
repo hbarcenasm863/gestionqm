@@ -119,8 +119,12 @@ function consultarEstudiante(code) {
       grade: gmap['actividad__'+n] !== undefined ? gmap['actividad__'+n] : null
     }));
     const actVals = actItems.map(a=>a.grade).filter(g=>g!==null);
+    // Sin redondear — entra directo a la suma ponderada más abajo, igual
+    // que grdCalcFinal en index.html. Redondear este intermedio a 1 decimal
+    // antes de sumar es lo que hacía que la definitiva mostrada aquí no
+    // coincidiera con la que calcula la app del docente.
     const actAvg  = actVals.length
-      ? Math.round(actVals.reduce((a,b)=>a+b,0)/actVals.length*10)/10 : null;
+      ? actVals.reduce((a,b)=>a+b,0)/actVals.length : null;
 
     const componentes = [
       { key:'actividades', label:'Actividades de clase', weight:weights.actividades,

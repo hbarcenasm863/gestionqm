@@ -702,14 +702,20 @@ function generateFullCSV() {
           const actVals = actNames.map(n => { const v=grades['actividad']?.[n]?.[s.id]; return (v!==undefined&&v!==null)?v:''; });
           actVals.forEach(v => row.push(v));
           const filled = actVals.filter(v=>v!=='');
-          const actAvg = filled.length ? Math.round(filled.reduce((a,b)=>a+b,0)/filled.length*10)/10 : '';
+          // actAvgRaw (sin redondear) es lo que entra a la suma ponderada,
+          // igual que grdCalcFinal en index.html — actAvg (redondeado a 1
+          // decimal) es solo para la columna "Prom.Act" visible en el CSV.
+          // Redondear el intermedio ANTES de sumar es justo lo que hacía
+          // que este backup mostrara una definitiva distinta a la app.
+          const actAvgRaw = filled.length ? filled.reduce((a,b)=>a+b,0)/filled.length : 0;
+          const actAvg = filled.length ? Math.round(actAvgRaw*10)/10 : '';
           row.push(actAvg);
           const ae=grades['autoeval']?.['_']?.[s.id]??'', ce=grades['coeval']?.['_']?.[s.id]??'', fi=grades['final']?.['_']?.[s.id]??'';
           row.push(ae,ce,fi);
           specials.forEach(sp => row.push(grades['especial']?.[sp.id]?.[s.id]??''));
           const totPct=weights.actividades+5+5+weights.final+specials.reduce((s,e)=>s+e.weight,0);
           let sumW2=0;
-          sumW2+=(actAvg!==''?actAvg:0)*(weights.actividades/100);
+          sumW2+=(filled.length?actAvgRaw:0)*(weights.actividades/100);
           sumW2+=(ae!==''?ae:0)*(5/100); sumW2+=(ce!==''?ce:0)*(5/100); sumW2+=(fi!==''?fi:0)*(weights.final/100);
           specials.forEach((sp,idx)=>{ const v=row[3+actNames.length+4+idx]??''; sumW2+=(v!==''?v:0)*(sp.weight/100); });
           // Nivelación reemplaza la definitiva calculada, igual que en el
@@ -795,14 +801,18 @@ function rebuildCourseSheet(course, period) {
     const actVals = actNames.map(n => { const v=grades['actividad']?.[n]?.[s.id]; return (v!==undefined&&v!==null)?v:''; });
     actVals.forEach(v => row.push(v));
     const filled = actVals.filter(v=>v!=='');
-    const actAvg = filled.length ? Math.round(filled.reduce((a,b)=>a+b,0)/filled.length*10)/10 : '';
+    // Ver nota equivalente en generateFullCSV(): actAvgRaw sin redondear
+    // entra a la suma ponderada (igual que grdCalcFinal en index.html);
+    // actAvg redondeado es solo para la columna "Prom.Act" visible.
+    const actAvgRaw = filled.length ? filled.reduce((a,b)=>a+b,0)/filled.length : 0;
+    const actAvg = filled.length ? Math.round(actAvgRaw*10)/10 : '';
     row.push(actAvg);
     const ae=grades['autoeval']?.['_']?.[s.id]??'', ce=grades['coeval']?.['_']?.[s.id]??'', fi=grades['final']?.['_']?.[s.id]??'';
     row.push(ae,ce,fi);
     specials.forEach(sp => row.push(grades['especial']?.[sp.id]?.[s.id]??''));
     const totalPctR=weights.actividades+5+5+weights.final+specials.reduce((s,e)=>s+e.weight,0);
     let sumWR=0;
-    sumWR+=(actAvg!==''?actAvg:0)*(weights.actividades/100);
+    sumWR+=(filled.length?actAvgRaw:0)*(weights.actividades/100);
     sumWR+=(ae!==''?ae:0)*(5/100); sumWR+=(ce!==''?ce:0)*(5/100); sumWR+=(fi!==''?fi:0)*(weights.final/100);
     specials.forEach((sp,idx)=>{ const v=row[3+actNames.length+4+idx]??''; sumWR+=(v!==''?v:0)*(sp.weight/100); });
     const definitiva=totalPctR>0?Math.round(sumWR/(totalPctR/100)*10)/10:0;
@@ -860,11 +870,14 @@ function queryStudent(code) {
   const grades=getGrades(course,period), actNames=getActivityNames(course,period);
   const actGrades=actNames.map(n=>(grades['actividad']?.[n]?.[studentId]??null));
   const validActs=actGrades.filter(g=>g!==null);
-  const actAvg=validActs.length>0?Math.round((validActs.reduce((a,b)=>a+b,0)/validActs.length)*10)/10:null;
+  // actAvgRaw entra sin redondear a la suma ponderada (igual que grdCalcFinal
+  // en index.html); actAvg redondeado es solo para el texto "detail".
+  const actAvgRaw=validActs.length>0?validActs.reduce((a,b)=>a+b,0)/validActs.length:null;
+  const actAvg=actAvgRaw!==null?Math.round(actAvgRaw*10)/10:null;
   const components=[
     { key:'actividades', label:'Actividades de clase', weight:weights.actividades,
       detail: actNames.length>0?`${validActs.length} de ${actNames.length} notas · promedio ${actAvg!==null?actAvg.toFixed(1):'—'}`:'Sin actividades aún',
-      grade: actAvg },
+      grade: actAvgRaw },
     { key:'autoeval', label:'Autoevaluación', weight:weights.autoeval, grade: grades['autoeval']?.['_']?.[studentId]??null },
     { key:'coeval',   label:'Coevaluación',   weight:weights.coeval,   grade: grades['coeval']?.['_']?.[studentId]??null },
     { key:'final',    label:'Evaluación final', weight:weights.final,  grade: grades['final']?.['_']?.[studentId]??null },
