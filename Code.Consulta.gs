@@ -389,6 +389,15 @@ tbody tr:hover td{background:#f7faf9}
 </div>
 
 <script>
+// ✅ NUEVO: este portal es público y sin contraseña — cualquier visitante
+// puede consultar cualquier código. Nombre de estudiante/acudiente y el
+// código buscado se insertaban antes en innerHTML sin escapar (XSS
+// almacenado/reflejado alcanzable sin autenticación). Todo texto que venga
+// de datos (nombre, nombre de actividad, código buscado) debe pasar por acá.
+function esc(s){
+  if(s===null||s===undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 // ✅ CORREGIDO: null/undefined = sin nota (gris), 0 real = rojo
 function nc(n){
   if(n===null||n===undefined) return 'nd';
@@ -492,8 +501,8 @@ function render(d){
     '<div class="result-wrap">'
     +'<div class="result-header">'
     +'<div class="found-label">✅ Resultados encontrados</div>'
-    +'<div class="student-name">'+nombre+'</div>'
-    +'<div class="student-meta">Código: <strong>'+code+'</strong> · Curso: <strong>'+curso+'</strong></div>'
+    +'<div class="student-name">'+esc(nombre)+'</div>'
+    +'<div class="student-meta">Código: <strong>'+esc(code)+'</strong> · Curso: <strong>'+esc(curso)+'</strong></div>'
     +'</div>'
     +'<div class="course-block">'
     +tabsHtml
@@ -575,16 +584,16 @@ function buildBlock(p){
 
   let thd='<th class="left">Estudiante</th>';
   (actComp?.actItems||[]).forEach((a)=>{
-    thd+='<th title="'+a.name+'">'
-      +'<div style="font-size:.65rem;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+a.name+'</div>'
+    thd+='<th title="'+esc(a.name)+'">'
+      +'<div style="font-size:.65rem;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(a.name)+'</div>'
       +'</th>';
   });
   otherComps.forEach(c=>{
-    thd+='<th>'+c.label+'<br><span style="font-weight:400;font-size:.65rem">'+c.weight+'%</span></th>';
+    thd+='<th>'+esc(c.label)+'<br><span style="font-weight:400;font-size:.65rem">'+c.weight+'%</span></th>';
   });
   thd+='<th style="background:#1a3d6b;color:#f5d06a">DEFINITIVA</th>';
 
-  let trow='<td class="name-col">'+p.nombre+'</td>';
+  let trow='<td class="name-col">'+esc(p.nombre)+'</td>';
   (actComp?.actItems||[]).forEach(a=>{
     trow+='<td><span class="nota '+nc(a.grade)+'">'+nf(a.grade)+'</span></td>';
   });

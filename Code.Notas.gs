@@ -666,6 +666,15 @@ function getAll(course, period) {
 // ════════════════════════════════════════════════════════════════
 // BACKUP
 // ════════════════════════════════════════════════════════════════
+// Celda CSV segura: comillas dobladas (una comilla suelta en un nombre
+// rompía la estructura de columnas del backup) + protección contra
+// "CSV/formula injection" — Excel/Sheets ejecutan como fórmula una celda
+// que empieza con =,+,-,@ si el archivo se abre directo.
+function csvField(v) {
+  let s = (v === null || v === undefined) ? '' : String(v);
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return '"' + s.replace(/"/g, '""') + '"';
+}
 function generateFullCSV() {
   const lines = [];
   const ts = new Date().toLocaleString('es-CO');
@@ -684,7 +693,7 @@ function generateFullCSV() {
       headers.push(`Prom.Act (${weights.actividades}%)`, 'Autoeval (5%)', 'Coeval (5%)', `Final (${weights.final}%)`);
       specials.forEach(sp => headers.push(`${sp.name} (${sp.weight}%)`));
       headers.push('DEFINITIVA');
-      lines.push(headers.map(h => `"${h}"`).join(','));
+      lines.push(headers.map(h => csvField(h)).join(','));
       if (students.length === 0) {
         lines.push('"(sin estudiantes)"');
       } else {
@@ -703,9 +712,14 @@ function generateFullCSV() {
           sumW2+=(actAvg!==''?actAvg:0)*(weights.actividades/100);
           sumW2+=(ae!==''?ae:0)*(5/100); sumW2+=(ce!==''?ce:0)*(5/100); sumW2+=(fi!==''?fi:0)*(weights.final/100);
           specials.forEach((sp,idx)=>{ const v=row[3+actNames.length+4+idx]??''; sumW2+=(v!==''?v:0)*(sp.weight/100); });
-          const def=totPct>0?Math.round(sumW2/(totPct/100)*100)/100:0;
+          // Nivelación reemplaza la definitiva calculada, igual que en el
+          // resto de la app — este backup es el registro oficial, debe
+          // coincidir con lo que ven Acumulado/informes/Consulta·QM.
+          const nivelacionGrade = grades['nivelacion']?.['_']?.[s.id] ?? null;
+          const def = nivelacionGrade !== null ? nivelacionGrade
+            : (totPct>0?Math.round(sumW2/(totPct/100)*10)/10:0);
           row.push(def);
-          lines.push(row.map(v=>`"${v}"`).join(','));
+          lines.push(row.map(v => csvField(v)).join(','));
         });
       }
       lines.push(''); _invalidate(SH_GRADES);
@@ -791,7 +805,7 @@ function rebuildCourseSheet(course, period) {
     sumWR+=(actAvg!==''?actAvg:0)*(weights.actividades/100);
     sumWR+=(ae!==''?ae:0)*(5/100); sumWR+=(ce!==''?ce:0)*(5/100); sumWR+=(fi!==''?fi:0)*(weights.final/100);
     specials.forEach((sp,idx)=>{ const v=row[3+actNames.length+4+idx]??''; sumWR+=(v!==''?v:0)*(sp.weight/100); });
-    const definitiva=totalPctR>0?Math.round(sumWR/(totalPctR/100)*100)/100:0;
+    const definitiva=totalPctR>0?Math.round(sumWR/(totalPctR/100)*10)/10:0;
     row.push(definitiva);
     return row;
   });
@@ -858,6 +872,14 @@ function queryStudent(code) {
   weights.especiales.forEach(sp=>{ components.push({ key:'especial_'+sp.id, label:sp.name, weight:sp.weight, grade: grades['especial']?.[sp.id]?.[studentId]??null }); });
   const totalPct=components.reduce((s,c)=>s+c.weight,0);
   let sumW=0; components.forEach(c=>{ sumW+=(c.grade!==null?c.grade:0)*(c.weight/100); });
-  const avg=totalPct>0?Math.round(sumW/(totalPct/100)*100)/100:null;
-  return { ok:true, name, course, period, components, avg, totalPct, actCount:actNames.length };
+  let avg=totalPct>0?Math.round(sumW/(totalPct/100)*10)/10:null;
+  // Nivelación: mismo mecanismo genérico de saveGrade (component:'nivelacion',
+  // itemId:'_') que usa Code.Consulta.gs — si el docente la diligenció, la
+  // definitiva pública se fija en 3.0. Sin esto, este endpoint (que también
+  // es público, vía doGet?action=queryStudent) mostraría la nota reprobada
+  // original mientras Consulta·QM ya muestra 3.0 para el mismo estudiante.
+  const nivelacionGrade = grades['nivelacion']?.['_']?.[studentId] ?? null;
+  const nivelado = nivelacionGrade !== null;
+  if (nivelado) avg = 3.0;
+  return { ok:true, name, course, period, components, avg, totalPct, actCount:actNames.length, nivelado };
 }
