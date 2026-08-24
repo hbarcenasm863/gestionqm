@@ -2522,7 +2522,11 @@ async function generarSistematizadora() {
   var ref = grdCache[course][period];
   var students = ref.students, weights = ref.weights, actNames = ref.actNames, grades = ref.grades;
   var specials = weights.especiales || [];
-  var baseW    = computeWeights(specials);
+  // ✅ FIX: computeWeights(specials) lee grdCache[activeCourse][activePeriod]
+  // por dentro — si el docente exporta un curso/periodo distinto al que
+  // tiene abierto en pantalla, usaba los pesos equivocados. repComputeWeights
+  // recibe el objeto correcto explícitamente, sin depender de esas globales.
+  var baseW    = repComputeWeights(ref);
   var sorted   = students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
   var txt = '';
   sorted.forEach(function(s) {
@@ -3647,7 +3651,7 @@ async function buildGrdExport(){
   var ref=grdCache[course][period];
   var students=ref.students, weights=ref.weights, actNames=ref.actNames, grades=ref.grades;
   var specials=weights.especiales||[];
-  var bw=computeWeights(specials);
+  var bw=repComputeWeights(ref); // ✅ FIX: ver nota en generarSistematizadora()
   var txt='NOTAS · Curso ' + course + ' · Periodo ' + period + '\nGenerado: ' + new Date().toLocaleString('es-CO') + '\n\n';
   txt+='Código\tEstudiante\t'+actNames.map(function(n,i){ return 'Act.'+(i+1)+':'+n; }).join('\t');
   txt+='\tProm.Act('+bw.actividades+'%)\tAutoeval(5%)\tCoeval(5%)\tFinal('+bw.final+'%)';
@@ -3692,7 +3696,7 @@ async function downloadCSV(){
     var period=+document.getElementById('expPeriod').value;
     var ref=grdCache[course][period];
     var students=ref.students, weights=ref.weights, actNames=ref.actNames, grades=ref.grades;
-    var specials=weights.especiales||[]; var bw=computeWeights(specials);
+    var specials=weights.especiales||[]; var bw=repComputeWeights(ref); // ✅ FIX: ver nota en generarSistematizadora()
     var csv='Código,Estudiante,'+actNames.map(function(n,i){ return csvField('Act.'+(i+1)+': '+n); }).join(',')+',';
     csv+='"Prom.Act ('+bw.actividades+'%)","Autoeval (5%)","Coeval (5%)","Final ('+bw.final+'%)",';
     csv+=specials.map(function(sp){ return csvField(sp.name+' ('+sp.weight+'%)'); }).join(',')+',DEFINITIVA\n';
@@ -4207,7 +4211,7 @@ async function infBuildInformeData(stuId, period, obs) {
   if (!student) return null;
 
   var specials = (d.weights&&d.weights.especiales)||[];
-  var baseW    = computeWeights(specials);
+  var baseW    = repComputeWeights(d); // ✅ FIX: ver nota en generarSistematizadora() — period aquí puede no ser activePeriod
   var actNames = d.actNames||[];
   var grades   = d.grades||{};
 

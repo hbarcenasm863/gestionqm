@@ -684,7 +684,11 @@ function generateFullCSV() {
     PERIODS.forEach(period => {
       const students = getStudents(course);
       const specials = getSpecials(course, period);
-      const weights  = computeWeights(specials);
+      // ✅ FIX: faltaba pasar baseW — sin esto, un curso/periodo con pesos
+      // personalizados (Guardar pesos) exportaba con el split 60/30 por
+      // defecto en vez del real, igual que hacía getAll() correctamente.
+      const baseW    = getWeights(course, period);
+      const weights  = computeWeights(specials, baseW);
       const grades   = getGrades(course, period);
       const actNames = getActivityNames(course, period);
       lines.push(`"=== CURSO ${course} · PERIODO ${period} ==="`);
@@ -715,12 +719,15 @@ function generateFullCSV() {
           specials.forEach(sp => row.push(grades['especial']?.[sp.id]?.[s.id]??''));
           const totPct=weights.actividades+5+5+weights.final+specials.reduce((s,e)=>s+e.weight,0);
           let sumW2=0;
-          sumW2+=(filled.length?actAvgRaw:0)*(weights.actividades/100);
+          sumW2+=actAvgRaw*(weights.actividades/100);
           sumW2+=(ae!==''?ae:0)*(5/100); sumW2+=(ce!==''?ce:0)*(5/100); sumW2+=(fi!==''?fi:0)*(weights.final/100);
           specials.forEach((sp,idx)=>{ const v=row[3+actNames.length+4+idx]??''; sumW2+=(v!==''?v:0)*(sp.weight/100); });
-          // Nivelación reemplaza la definitiva calculada, igual que en el
-          // resto de la app — este backup es el registro oficial, debe
-          // coincidir con lo que ven Acumulado/informes/Consulta·QM.
+          // Nivelación reemplaza la definitiva calculada, igual que en
+          // Acumulado/informes/sistematizadora de index.html — este backup
+          // es el registro "oficial" del docente. OJO: NO coincide con lo
+          // que ve el estudiante en Consulta·QM/queryStudent, que por
+          // política institucional siempre muestra 3.0 en vez del valor
+          // real de nivelación — son dos audiencias distintas a propósito.
           const nivelacionGrade = grades['nivelacion']?.['_']?.[s.id] ?? null;
           const def = nivelacionGrade !== null ? nivelacionGrade
             : (totPct>0?Math.round(sumW2/(totPct/100)*10)/10:0);
@@ -786,7 +793,9 @@ function rebuildCourseSheet(course, period) {
 
   const students = getStudents(course);
   const specials = getSpecials(course, period);
-  const weights  = computeWeights(specials);
+  // ✅ FIX: mismo bug que generateFullCSV() — faltaba baseW.
+  const baseW    = getWeights(course, period);
+  const weights  = computeWeights(specials, baseW);
   const grades   = getGrades(course, period);
   const actNames = getActivityNames(course, period);
 
@@ -812,10 +821,18 @@ function rebuildCourseSheet(course, period) {
     specials.forEach(sp => row.push(grades['especial']?.[sp.id]?.[s.id]??''));
     const totalPctR=weights.actividades+5+5+weights.final+specials.reduce((s,e)=>s+e.weight,0);
     let sumWR=0;
-    sumWR+=(filled.length?actAvgRaw:0)*(weights.actividades/100);
+    sumWR+=actAvgRaw*(weights.actividades/100);
     sumWR+=(ae!==''?ae:0)*(5/100); sumWR+=(ce!==''?ce:0)*(5/100); sumWR+=(fi!==''?fi:0)*(weights.final/100);
     specials.forEach((sp,idx)=>{ const v=row[3+actNames.length+4+idx]??''; sumWR+=(v!==''?v:0)*(sp.weight/100); });
-    const definitiva=totalPctR>0?Math.round(sumWR/(totalPctR/100)*10)/10:0;
+    // Nivelación reemplaza la definitiva calculada — esta hoja legible es
+    // el registro que queda visible dentro del propio Google Sheet, así
+    // que se trata como registro "oficial" igual que generateFullCSV(),
+    // no como la tabla de edición en vivo de index.html (esa sí se deja
+    // sin nivelación a propósito, para que el docente vea el cálculo
+    // original mientras edita).
+    const nivelacionGrade = grades['nivelacion']?.['_']?.[s.id] ?? null;
+    const definitiva = nivelacionGrade !== null ? nivelacionGrade
+      : (totalPctR>0?Math.round(sumWR/(totalPctR/100)*10)/10:0);
     row.push(definitiva);
     return row;
   });
@@ -866,25 +883,39 @@ function queryStudent(code) {
   if (!match) return { error:'notfound' };
   const course=match[0], studentId=match[1], name=match[2];
   const config=getConfig(), period=config[course]||1;
-  const specials=getSpecials(course,period), weights=computeWeights(specials);
+  // ✅ FIX: faltaba baseW — mismo bug que generateFullCSV/rebuildCourseSheet;
+  // un curso/periodo con pesos personalizados (Guardar pesos) mostraba acá
+  // el split 60/30 por defecto en vez del real que ya usa getAll().
+  const specials=getSpecials(course,period);
+  const baseW=getWeights(course,period);
+  const weights=computeWeights(specials,baseW);
   const grades=getGrades(course,period), actNames=getActivityNames(course,period);
   const actGrades=actNames.map(n=>(grades['actividad']?.[n]?.[studentId]??null));
   const validActs=actGrades.filter(g=>g!==null);
-  // actAvgRaw entra sin redondear a la suma ponderada (igual que grdCalcFinal
-  // en index.html); actAvg redondeado es solo para el texto "detail".
+  // actAvgRaw (sin redondear) es lo único que debe entrar a la suma ponderada
+  // de abajo, igual que grdCalcFinal en index.html. actAvg (redondeado) es
+  // para el texto "detail" y para el campo "grade" que se devuelve — este
+  // endpoint es una API pública, cualquier consumidor que lea grade directo
+  // espera un número limpio de 1 decimal como los demás componentes, no la
+  // cola de flotantes de actAvgRaw. Por eso el resumen usa actAvgRaw
+  // explícitamente en vez de leer components[0].grade.
   const actAvgRaw=validActs.length>0?validActs.reduce((a,b)=>a+b,0)/validActs.length:null;
   const actAvg=actAvgRaw!==null?Math.round(actAvgRaw*10)/10:null;
   const components=[
     { key:'actividades', label:'Actividades de clase', weight:weights.actividades,
       detail: actNames.length>0?`${validActs.length} de ${actNames.length} notas · promedio ${actAvg!==null?actAvg.toFixed(1):'—'}`:'Sin actividades aún',
-      grade: actAvgRaw },
+      grade: actAvg },
     { key:'autoeval', label:'Autoevaluación', weight:weights.autoeval, grade: grades['autoeval']?.['_']?.[studentId]??null },
     { key:'coeval',   label:'Coevaluación',   weight:weights.coeval,   grade: grades['coeval']?.['_']?.[studentId]??null },
     { key:'final',    label:'Evaluación final', weight:weights.final,  grade: grades['final']?.['_']?.[studentId]??null },
   ];
   weights.especiales.forEach(sp=>{ components.push({ key:'especial_'+sp.id, label:sp.name, weight:sp.weight, grade: grades['especial']?.[sp.id]?.[studentId]??null }); });
   const totalPct=components.reduce((s,c)=>s+c.weight,0);
-  let sumW=0; components.forEach(c=>{ sumW+=(c.grade!==null?c.grade:0)*(c.weight/100); });
+  let sumW=0;
+  components.forEach(c=>{
+    const g = c.key==='actividades' ? actAvgRaw : c.grade;
+    sumW+=(g!==null?g:0)*(c.weight/100);
+  });
   let avg=totalPct>0?Math.round(sumW/(totalPct/100)*10)/10:null;
   // Nivelación: mismo mecanismo genérico de saveGrade (component:'nivelacion',
   // itemId:'_') que usa Code.Consulta.gs — si el docente la diligenció, la
