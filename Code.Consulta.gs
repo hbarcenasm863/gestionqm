@@ -141,7 +141,7 @@ function consultarEstudiante(code) {
     let sumW = 0;
     // ✅ CORREGIDO: el 0 real sí cuenta para la definitiva
     componentes.forEach(c => { sumW += (c.grade !== null ? c.grade : 0) * (c.weight / 100); });
-    let definitiva = totalPct>0 ? Math.round(sumW/(totalPct/100)*100)/100 : null;
+    let definitiva = totalPct>0 ? Math.round(sumW/(totalPct/100)*10)/10 : null;
 
     // ✅ NUEVO: nivelación — mismo mecanismo genérico de saveGrade que usa el
     // resto de la app (component:'nivelacion', itemId:'_'), sin sheet nueva.
@@ -164,7 +164,7 @@ function consultarEstudiante(code) {
     .filter(p => p.definitiva !== null)
     .map(p => p.definitiva);
   const definitivaAnual = definitivasAno.length > 0
-    ? Math.round(definitivasAno.reduce((a,b)=>a+b,0) / definitivasAno.length * 100) / 100
+    ? Math.round(definitivasAno.reduce((a,b)=>a+b,0) / definitivasAno.length * 10) / 10
     : null;
 
   return { ok:true, nombre, course:curso, activePeriod, code, periodos:periodosData, definitivaAnual };

@@ -3008,7 +3008,7 @@ function grdBuildStats(students,actNames,grades,baseW,specials){
   if(!students.length)return'';
   var avgs=students.map(function(s){ return grdCalcFinal(s,actNames,grades,baseW,specials); }).filter(function(x){ return x!==null; });
   if(!avgs.length)return'';
-  var mean=Math.round(avgs.reduce(function(a,b){ return a+b; },0)/avgs.length*100)/100;
+  var mean=Math.round(avgs.reduce(function(a,b){ return a+b; },0)/avgs.length*10)/10;
   var pass=avgs.filter(function(x){ return x>=3; }).length;
   var fail=avgs.filter(function(x){ return x<3; }).length;
   var hi=Math.max.apply(null,avgs), lo=Math.min.apply(null,avgs);
@@ -3042,7 +3042,7 @@ function grdCalcFinal(s,actNames,grades,baseW,specials){
   specials.forEach(function(sp){
     sum+=((grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null)?grades['especial'][sp.id][s.id]:0)*(sp.weight/100);
   });
-  return Math.round(sum/(totalPct/100)*100)/100;
+  return Math.round(sum/(totalPct/100)*10)/10;
 }
 // Definitiva "efectiva": si el periodo se niveló, la nota de nivelación
 // reemplaza el cálculo por componentes — es el resultado que cuenta en todo
@@ -3077,7 +3077,7 @@ function grdUpdateStats(){
   var baseW=computeWeights(specials);
   var avgs=students.map(function(s){ return grdCalcFinal(s,actNames,grades,baseW,specials); }).filter(function(x){ return x!==null; });
   if(!avgs.length)return;
-  var mean=Math.round(avgs.reduce(function(a,b){ return a+b; },0)/avgs.length*100)/100;
+  var mean=Math.round(avgs.reduce(function(a,b){ return a+b; },0)/avgs.length*10)/10;
   var pass=avgs.filter(function(x){ return x>=3; }).length;
   var fail=avgs.filter(function(x){ return x<3; }).length;
   var hi=Math.max.apply(null,avgs), lo=Math.min.apply(null,avgs);
@@ -3410,7 +3410,7 @@ function grdRenderAcumulado(){
       return grdCalcEffective(s, d.actNames||[], d.grades||{}, w, specials);
     });
     var conNota=porPeriodo.filter(function(v){ return v!==null; });
-    var acumulado=conNota.length?conNota.reduce(function(a,b){ return a+b; },0)/conNota.length:null;
+    var acumulado=conNota.length?Math.round(conNota.reduce(function(a,b){ return a+b; },0)/conNota.length*10)/10:null;
     return { name:s.name, code:s.code||'', porPeriodo:porPeriodo, acumulado:acumulado };
   });
 
@@ -5359,7 +5359,7 @@ function infRenderGrupo(d) {
   var total = rows.length;
 
   var withData   = rows.filter(function(r){ return r.definitiva !== null; });
-  var promedio   = withData.length ? withData.reduce(function(s,r){ return s+r.definitiva; },0)/withData.length : null;
+  var promedio   = withData.length ? Math.round(withData.reduce(function(s,r){ return s+r.definitiva; },0)/withData.length*10)/10 : null;
   var aprobados  = withData.filter(function(r){ return r.definitiva >= 3.0; }).length;
   var reprobados = withData.filter(function(r){ return r.definitiva < 3.0; }).length;
   var pctAprob   = withData.length ? Math.round(aprobados/withData.length*100) : 0;
