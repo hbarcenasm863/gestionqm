@@ -381,38 +381,55 @@ function getStudents(course) {
              .map(r=>({ id:r[1], name:r[2], code:r[3]||'' }));
 }
 
+// LockService: addStudent/addStudents/updateStudent primero LEEN todas las
+// filas para chequear código duplicado y luego ESCRIBEN — sin un lock, dos
+// requests casi simultáneos (dos pestañas, o una alta manual mientras corre
+// una importación masiva) pueden leer el mismo estado "sin duplicado" antes
+// de que el otro escriba, y ambos terminan creando el mismo código dos veces.
 function addStudent(course, name, code) {
-  const sh = getSS().getSheetByName(SH_STUDENTS);
-  if (code) {
-    const { rows } = sheetRows(SH_STUDENTS);
-    const dup = rows.find(r => r[4]==true && r[3].toString().trim().toLowerCase()==code.toString().trim().toLowerCase());
-    if (dup) return { ok:false, error:'duplicate_code', existing: dup[2] };
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sh = getSS().getSheetByName(SH_STUDENTS);
+    if (code) {
+      const { rows } = sheetRows(SH_STUDENTS);
+      const dup = rows.find(r => r[4]==true && r[3].toString().trim().toLowerCase()==code.toString().trim().toLowerCase());
+      if (dup) return { ok:false, error:'duplicate_code', existing: dup[2] };
+    }
+    const id = uid();
+    sh.appendRow([course, id, name.trim(), (code||'').trim(), true]);
+    _invalidate(SH_STUDENTS);
+    writeLog('addStudent', course, name.trim() + (code?' · código ' + code:''));
+    return { ok:true, id, name:name.trim(), code:(code||'').trim() };
+  } finally {
+    lock.releaseLock();
   }
-  const id = uid();
-  sh.appendRow([course, id, name.trim(), (code||'').trim(), true]);
-  _invalidate(SH_STUDENTS);
-  writeLog('addStudent', course, name.trim() + (code?' · código ' + code:''));
-  return { ok:true, id, name:name.trim(), code:(code||'').trim() };
 }
 
 function addStudents(course, students) {
-  const sh = getSS().getSheetByName(SH_STUDENTS);
-  const { rows } = sheetRows(SH_STUDENTS);
-  const existingCodes = new Set(rows.filter(r=>r[4]==true&&r[3]).map(r=>r[3].toString().trim().toLowerCase()));
-  const added=[], skipped=[];
-  students.forEach(s => {
-    const name=(s.name||'').trim(), code=(s.code||'').trim();
-    if (!name) return;
-    if (code && existingCodes.has(code.toLowerCase())) { skipped.push(name+' (código duplicado)'); return; }
-    const id=uid();
-    sh.appendRow([course, id, name, code, true]);
-    if (code) existingCodes.add(code.toLowerCase());
-    added.push({ id, name, code });
-    Utilities.sleep(5);
-  });
-  _invalidate(SH_STUDENTS);
-  writeLog('addStudents', course, added.length + ' estudiante(s) importado(s)');
-  return { ok:true, added, skipped };
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sh = getSS().getSheetByName(SH_STUDENTS);
+    const { rows } = sheetRows(SH_STUDENTS);
+    const existingCodes = new Set(rows.filter(r=>r[4]==true&&r[3]).map(r=>r[3].toString().trim().toLowerCase()));
+    const added=[], skipped=[];
+    students.forEach(s => {
+      const name=(s.name||'').trim(), code=(s.code||'').trim();
+      if (!name) return;
+      if (code && existingCodes.has(code.toLowerCase())) { skipped.push(name+' (código duplicado)'); return; }
+      const id=uid();
+      sh.appendRow([course, id, name, code, true]);
+      if (code) existingCodes.add(code.toLowerCase());
+      added.push({ id, name, code });
+      Utilities.sleep(5);
+    });
+    _invalidate(SH_STUDENTS);
+    writeLog('addStudents', course, added.length + ' estudiante(s) importado(s)');
+    return { ok:true, added, skipped };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function removeStudent(course, studentId) {
@@ -428,21 +445,27 @@ function removeStudent(course, studentId) {
 }
 
 function updateStudent(course, studentId, name, code) {
-  if (code) {
-    const { rows } = sheetRows(SH_STUDENTS);
-    const dup = rows.find(r => r[4]==true && r[1]!=studentId && r[3].toString().trim().toLowerCase()==code.toString().trim().toLowerCase());
-    if (dup) return { ok:false, error:'duplicate_code', existing: dup[2] };
-  }
-  const { sh, rows } = sheetRows(SH_STUDENTS);
-  for (let i=0;i<rows.length;i++) {
-    if (rows[i][0]==course&&rows[i][1]==studentId) {
-      sh.getRange(i+2,3,1,2).setValues([[name.trim(),(code||'').trim()]]);
-      _invalidate(SH_STUDENTS);
-      writeLog('updateStudent', course, 'Estudiante actualizado: ' + name.trim());
-      return { ok:true };
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    if (code) {
+      const { rows } = sheetRows(SH_STUDENTS);
+      const dup = rows.find(r => r[4]==true && r[1]!=studentId && r[3].toString().trim().toLowerCase()==code.toString().trim().toLowerCase());
+      if (dup) return { ok:false, error:'duplicate_code', existing: dup[2] };
     }
+    const { sh, rows } = sheetRows(SH_STUDENTS);
+    for (let i=0;i<rows.length;i++) {
+      if (rows[i][0]==course&&rows[i][1]==studentId) {
+        sh.getRange(i+2,3,1,2).setValues([[name.trim(),(code||'').trim()]]);
+        _invalidate(SH_STUDENTS);
+        writeLog('updateStudent', course, 'Estudiante actualizado: ' + name.trim());
+        return { ok:true };
+      }
+    }
+    return { ok:false };
+  } finally {
+    lock.releaseLock();
   }
-  return { ok:false };
 }
 
 // ════════════════════════════════════════════════════════════════

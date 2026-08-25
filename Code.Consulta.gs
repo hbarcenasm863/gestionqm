@@ -13,7 +13,11 @@
 
 const SPREADSHEET_ID_QRY = '1FzUF-Rnu_6RB3exJXbtTS3QHyMGz-59vhomP3EXSyGE';
 
-const _CURSOS = ['1004','1005','1006','1101','1102','1103','1104'];
+// Respaldo solo por si la hoja Config no existe todavía (instalación nueva).
+// En uso normal, los cursos válidos se leen en vivo de Config (ver
+// _getCursosActivos) para no quedar desactualizados frente a Code.Notas.gs,
+// que administra cursos dinámicamente (addCourse/removeCourse).
+const _CURSOS_SEED = ['1004','1005','1006','1101','1102','1103','1104'];
 
 const _SH_STU  = 'Estudiantes';
 const _SH_GRD  = 'Notas';
@@ -25,6 +29,20 @@ function doGet(e) {
     .createHtmlOutput(buildHTML())
     .setTitle('Consulta de Notas · Química')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+// Cursos activos según la hoja Config (misma hoja que administra
+// Code.Notas.gs con addCourse/removeCourse) — así un curso nuevo queda
+// consultable de inmediato y uno desactivado deja de estarlo, sin tener
+// que editar este archivo a mano.
+function _getCursosActivos(ss) {
+  const cfgSh = ss.getSheetByName(_SH_CFG);
+  if (!cfgSh) return _CURSOS_SEED;
+  const rows = cfgSh.getDataRange().getValues().slice(1);
+  const cursos = rows
+    .filter(r => r[0] !== '' && r[3] !== false)
+    .map(r => String(r[0]).trim());
+  return cursos.length ? cursos : _CURSOS_SEED;
 }
 
 function _calcPesos(specials) {
@@ -54,11 +72,12 @@ function consultarEstudiante(code) {
   const stuSh = ss.getSheetByName(_SH_STU);
   if (!stuSh) return { error: 'config' };
   const stuRows = stuSh.getDataRange().getValues().slice(1);
+  const cursosActivos = _getCursosActivos(ss);
 
   // ✅ FIX: busca en TODOS los cursos válidos, no en el derivado del código.
   // Esto permite que estudiantes trasladados conserven su código original.
   const match = stuRows.find(r =>
-    _CURSOS.includes(r[0].toString()) &&
+    cursosActivos.includes(r[0].toString().trim()) &&
     r[4] == true &&
     r[3].toString().trim().toLowerCase() === code.toLowerCase()
   );
