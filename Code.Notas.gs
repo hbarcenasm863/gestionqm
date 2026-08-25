@@ -196,12 +196,24 @@ function writeLog(action, course, detail) {
 function getCourses() {
   ensureConfigColumns();
   const { rows } = sheetRows(SH_CONFIG);
-  return rows.map(r => ({
-    course: String(r[0]),
-    periodoActivo: +r[1] || 1,
-    color: r[2] || '#1a3d6b',
-    active: r[3] !== false
-  }));
+  // Deduplica por curso (p.ej. si la hoja Config quedó con filas repetidas
+  // por una edición manual): se conserva el orden de primera aparición,
+  // pero con los datos de la ÚLTIMA fila de cada curso, que es la más
+  // probable de reflejar el estado actual.
+  const order = [];
+  const byCourse = {};
+  rows.forEach(r => {
+    const course = String(r[0]).trim();
+    if (!course) return;
+    if (!byCourse[course]) order.push(course);
+    byCourse[course] = {
+      course: course,
+      periodoActivo: +r[1] || 1,
+      color: r[2] || '#1a3d6b',
+      active: r[3] !== false
+    };
+  });
+  return order.map(c => byCourse[c]);
 }
 function getActiveCourseCodes() {
   return getCourses().filter(c => c.active).map(c => c.course);

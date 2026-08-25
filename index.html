@@ -1842,6 +1842,12 @@ var COLORS  = Object.assign({}, COLORS_DEFAULT);
   try {
     var cached = JSON.parse(localStorage.getItem('gqm_courses_cache') || 'null');
     if (Array.isArray(cached) && cached.length) {
+      var seenCached = {};
+      cached = cached.filter(function(c){
+        if (seenCached[c.course]) return false;
+        seenCached[c.course] = true;
+        return true;
+      });
       COURSES = cached.map(function(c){ return c.course; });
       var col = {};
       cached.forEach(function(c){ col[c.course] = c.color || '#1a3d6b'; });
@@ -1994,6 +2000,12 @@ async function loadCourses() {
     var res = await apiGrd({ action:'getCourses' });
     if (Array.isArray(res) && res.length) {
       var active = res.filter(function(c){ return c.active; });
+      var seenCourses = {};
+      active = active.filter(function(c){
+        if (seenCourses[c.course]) return false;
+        seenCourses[c.course] = true;
+        return true;
+      });
       COURSES = active.map(function(c){ return c.course; });
       var col = {};
       active.forEach(function(c){ col[c.course] = c.color || '#1a3d6b'; });
