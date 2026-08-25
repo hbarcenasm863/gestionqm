@@ -1,10 +1,15 @@
-const CACHE = 'hbmol-v1';
+const CACHE = 'hbmol-v2';
 const ASSETS = [
   '/gestionqm/',
   '/gestionqm/index.html',
   '/gestionqm/manifest.json',
   '/gestionqm/hbmol.png'
 ];
+
+// Tiempo máximo que se espera a la red antes de usar el caché como
+// respaldo. Suficiente para wifi lenta de colegio, pero no tanto como
+// para que la app se sienta congelada si no hay internet.
+const NETWORK_TIMEOUT_MS = 3000;
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -22,18 +27,39 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
+// Red primero, con respaldo de caché: así la PWA instalada (celular o
+// computador) siempre trae la última versión publicada cuando hay
+// internet, y solo usa lo cacheado si la red falla o tarda demasiado.
 self.addEventListener('fetch', e => {
   if (!e.request.url.startsWith(self.location.origin)) return;
+  if (e.request.method !== 'GET') return;
+
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (e.request.url.includes('index.html') || e.request.url.endsWith('/gestionqm/')) {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return res;
-      }).catch(() => caches.match('/gestionqm/index.html'));
+    new Promise(resolve => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        caches.match(e.request).then(cached => {
+          resolve(cached || caches.match('/gestionqm/index.html'));
+        });
+      }, NETWORK_TIMEOUT_MS);
+
+      fetch(e.request).then(res => {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(res);
+      }).catch(() => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        caches.match(e.request).then(cached => {
+          resolve(cached || caches.match('/gestionqm/index.html'));
+        });
+      });
     })
   );
 });
