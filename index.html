@@ -5382,6 +5382,20 @@ function repComputeWeights(data) {
   return { actividades: pesoAct, autoeval: 5, coeval: 5, final: pesoFin };
 }
 
+// Un curso/periodo sin ninguna nota registrada da definitiva 0.0 para
+// todos sus estudiantes (grdCalcEffective nunca devuelve null mientras haya
+// pesos configurados, que siempre los hay) — eso los haría aparecer como
+// "reprobados" aunque en realidad nadie los ha calificado todavía.
+function repHasAnyGrades(d) {
+  var g = d.grades || {};
+  for (var comp in g) {
+    for (var item in g[comp]) {
+      if (Object.keys(g[comp][item]).length > 0) return true;
+    }
+  }
+  return false;
+}
+
 function infRenderReprobados(period, courseResults) {
   var totalStudents = 0;
   var courseBlocks = courseResults.map(function(r) {
@@ -5395,7 +5409,7 @@ function infRenderReprobados(period, courseResults) {
       if (def !== null && def < 3.0) failing.push({ name: s.name, code: s.code || '', def: def });
     });
     totalStudents += d.students.length;
-    return { course: r.course, total: d.students.length, failing: failing };
+    return { course: r.course, total: d.students.length, failing: failing, sinNotas: d.students.length > 0 && !repHasAnyGrades(d) };
   }).filter(Boolean);
 
   var totalFailing = courseBlocks.reduce(function(sum, b) { return sum + b.failing.length; }, 0);
@@ -5428,6 +5442,7 @@ function infRenderReprobados(period, courseResults) {
       '<span>Curso ' + b.course + ' <span style="font-weight:400;font-size:.8rem;color:var(--muted)">(' + b.total + ' estudiantes)</span></span>' +
       '<span class="rep-course-badge">' + b.failing.length + ' reprobado' + (b.failing.length !== 1 ? 's' : '') + '</span>' +
       '</div>' +
+      (b.sinNotas ? '<div style="margin:8px 16px;padding:9px 12px;background:#fef9c3;border:1px solid var(--gold-md);border-radius:8px;font-size:.76rem;color:#713f12">⚠ Este curso aún no tiene ninguna nota registrada en el Periodo ' + period + ' — las definitivas en 0.0 de abajo no reflejan desempeño real todavía.</div>' : '') +
       '<table class="rep-tbl"><thead><tr><th>#</th><th>Estudiante</th><th>Definitiva</th><th>Nivel</th></tr></thead>' +
       '<tbody>' + rows + '</tbody></table>' +
       '</div>';

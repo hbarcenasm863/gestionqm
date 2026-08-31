@@ -291,18 +291,29 @@ function getAllAttendance(course) {
   return result;
 }
 
+// LockService: sin esto, dos marcaciones casi simultáneas para el mismo
+// curso/fecha/estudiante (dos pestañas, dos docentes) pueden leer el mismo
+// estado "sin fila todavía" antes de que la otra escriba, y ambas terminan
+// haciendo appendRow — dos filas duplicadas para el mismo estudiante ese
+// día, igual al riesgo que ya se blindó en Code.Notas.gs para estudiantes.
 function markAttendance(course, date, studentId, status) {
   date = normDate(date);
-  const { sh, rows } = sheetRows(SH_ATT_ATTENDANCE);
-  for (let i = 0; i < rows.length; i++) {
-    if (rows[i][0]==course && normDate(rows[i][1])==date && rows[i][2]==studentId) {
-      if (!status) sh.deleteRow(i+2);
-      else sh.getRange(i+2, 4).setValue(status);
-      return { ok: true };
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const { sh, rows } = sheetRows(SH_ATT_ATTENDANCE);
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i][0]==course && normDate(rows[i][1])==date && rows[i][2]==studentId) {
+        if (!status) sh.deleteRow(i+2);
+        else sh.getRange(i+2, 4).setValue(status);
+        return { ok: true };
+      }
     }
+    if (status) sh.appendRow([course, date, studentId, status]);
+    return { ok: true };
+  } finally {
+    lock.releaseLock();
   }
-  if (status) sh.appendRow([course, date, studentId, status]);
-  return { ok: true };
 }
 
 function markAll(course, date, records) {

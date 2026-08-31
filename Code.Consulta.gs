@@ -475,7 +475,6 @@ function buscar(){
         document.getElementById('resultado').innerHTML = '';
         const msgs = {
           notfound: 'Código no encontrado. Verifica el número o consulta con tu docente.',
-          curso_invalido: 'El código no corresponde a un curso válido (1004–1006, 1101–1104).',
           empty: 'Ingresa tu código.',
           config: 'Error de configuración. Contacta al docente.'
         };

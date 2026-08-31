@@ -305,7 +305,6 @@ function doPost(e) {
     if (b.action === 'saveWeights')       return json(saveWeightsFn(b.course, +b.period, +b.pesoAct, +b.pesoAuto, +b.pesoCoeval, +b.pesoFinal, b.especiales));
     if (b.action === 'removeSpecial')     return json(removeSpecial(b.course, b.period, b.specialId));
     if (b.action === 'setActivePeriod')   return json(setActivePeriod(b.course, b.period));
-    if (b.action === 'addActivity')       return json(addActivity(b.course, b.period, b.studentId, b.grade));
     if (b.action === 'removeActivity')    return json(removeActivity(b.course, b.period, b.itemId));
     if (b.action === 'addCourse')         return json(addCourse(b.course, b.color));
     if (b.action === 'removeCourse')      return json(removeCourse(b.course));
@@ -318,14 +317,21 @@ function doPost(e) {
 // ════════════════════════════════════════════════════════════════
 function scheduleRebuild(course, period) {
   const key = 'rebuild_' + course + '_' + period;
+  const props = PropertiesService.getScriptProperties();
   try {
-    const props = PropertiesService.getScriptProperties();
     const existing = props.getProperty(key);
     if (existing) return;
     props.setProperty(key, '1');
     ScriptApp.newTrigger('runPendingRebuilds')
       .timeBased().after(60 * 1000).create();
   } catch(e) {
+    // Si falla la creación del trigger (p.ej. cuota de triggers agotada), la
+    // bandera ya quedó puesta arriba pero nunca se va a limpiar sola —
+    // ningún trigger va a correr runPendingRebuilds() para borrarla. Sin
+    // este catch, cada guardado de nota siguiente para este curso/periodo
+    // vería la bandera y no reintentaría nada, dejando la hoja bonita
+    // congelada hasta borrar la propiedad a mano.
+    try { props.deleteProperty(key); } catch(e2) {}
     rebuildCourseSheet(course, period);
   }
 }
@@ -375,10 +381,31 @@ function setActivePeriod(course, period) {
 // ════════════════════════════════════════════════════════════════
 // STUDENTS
 // ════════════════════════════════════════════════════════════════
+
+// Trim que también quita espacios "invisibles" (NBSP y afines) que
+// String.trim() no elimina — una línea pegada desde Excel/Word que se ve
+// vacía pero trae uno de estos caracteres pasaba el chequeo !name y
+// quedaba como estudiante "activo" sin nombre visible en la tabla de notas.
+function cleanName(s) {
+  return String(s == null ? '' : s).replace(/^[\s\u00A0\u200B\uFEFF]+|[\s\u00A0\u200B\uFEFF]+$/g, '');
+}
+
 function getStudents(course) {
-  const { rows } = sheetRows(SH_STUDENTS);
-  return rows.filter(r=>r[0]==course&&r[4]==true)
-             .map(r=>({ id:r[1], name:r[2], code:r[3]||'' }));
+  const { sh, rows } = sheetRows(SH_STUDENTS);
+  const result = [];
+  rows.forEach((r, i) => {
+    if (r[0] != course || r[4] != true) return;
+    const name = cleanName(r[2]);
+    if (!name) {
+      // Fila fantasma (activa pero sin nombre real): se autodesactiva al
+      // detectarla para que deje de "existir" en vez de seguir apareciendo
+      // en cada lectura futura.
+      try { sh.getRange(i + 2, 5).setValue(false); _invalidate(SH_STUDENTS); } catch (e) {}
+      return;
+    }
+    result.push({ id: r[1], name, code: r[3] || '' });
+  });
+  return result;
 }
 
 // LockService: addStudent/addStudents/updateStudent primero LEEN todas las
@@ -387,6 +414,8 @@ function getStudents(course) {
 // una importación masiva) pueden leer el mismo estado "sin duplicado" antes
 // de que el otro escriba, y ambos terminan creando el mismo código dos veces.
 function addStudent(course, name, code) {
+  name = cleanName(name);
+  if (!name) return { ok:false, error:'invalid_name' };
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
@@ -397,10 +426,10 @@ function addStudent(course, name, code) {
       if (dup) return { ok:false, error:'duplicate_code', existing: dup[2] };
     }
     const id = uid();
-    sh.appendRow([course, id, name.trim(), (code||'').trim(), true]);
+    sh.appendRow([course, id, name, (code||'').trim(), true]);
     _invalidate(SH_STUDENTS);
-    writeLog('addStudent', course, name.trim() + (code?' · código ' + code:''));
-    return { ok:true, id, name:name.trim(), code:(code||'').trim() };
+    writeLog('addStudent', course, name + (code?' · código ' + code:''));
+    return { ok:true, id, name, code:(code||'').trim() };
   } finally {
     lock.releaseLock();
   }
@@ -415,7 +444,7 @@ function addStudents(course, students) {
     const existingCodes = new Set(rows.filter(r=>r[4]==true&&r[3]).map(r=>r[3].toString().trim().toLowerCase()));
     const added=[], skipped=[];
     students.forEach(s => {
-      const name=(s.name||'').trim(), code=(s.code||'').trim();
+      const name=cleanName(s.name), code=(s.code||'').trim();
       if (!name) return;
       if (code && existingCodes.has(code.toLowerCase())) { skipped.push(name+' (código duplicado)'); return; }
       const id=uid();
@@ -445,6 +474,8 @@ function removeStudent(course, studentId) {
 }
 
 function updateStudent(course, studentId, name, code) {
+  name = cleanName(name);
+  if (!name) return { ok:false, error:'invalid_name' };
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
@@ -456,9 +487,9 @@ function updateStudent(course, studentId, name, code) {
     const { sh, rows } = sheetRows(SH_STUDENTS);
     for (let i=0;i<rows.length;i++) {
       if (rows[i][0]==course&&rows[i][1]==studentId) {
-        sh.getRange(i+2,3,1,2).setValues([[name.trim(),(code||'').trim()]]);
+        sh.getRange(i+2,3,1,2).setValues([[name,(code||'').trim()]]);
         _invalidate(SH_STUDENTS);
-        writeLog('updateStudent', course, 'Estudiante actualizado: ' + name.trim());
+        writeLog('updateStudent', course, 'Estudiante actualizado: ' + name);
         return { ok:true };
       }
     }
@@ -613,10 +644,6 @@ function removeSpecial(course, period, specialId) {
 // ════════════════════════════════════════════════════════════════
 // ACTIVITIES
 // ════════════════════════════════════════════════════════════════
-function addActivity(course, period, studentId, grade) {
-  return { ok:true };
-}
-
 function removeActivity(course, period, itemId) {
   const { sh, rows } = sheetRows(SH_GRADES);
   for (let i=rows.length-1;i>=0;i--) {

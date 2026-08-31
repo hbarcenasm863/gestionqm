@@ -46,8 +46,14 @@ self.addEventListener('fetch', e => {
       }, NETWORK_TIMEOUT_MS);
 
       fetch(e.request).then(res => {
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
+        // Solo se cachean respuestas exitosas — un 404/500 pasajero (p.ej.
+        // durante un redeploy) no debe reemplazar el último contenido bueno
+        // conocido, o quedaría sirviéndose como "respaldo offline" hasta la
+        // próxima vez que la red responda bien.
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
         if (settled) return;
         settled = true;
         clearTimeout(timer);
