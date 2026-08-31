@@ -125,6 +125,7 @@ function doPost(e) {
     if (b.action === 'addStudent')      return jsonOut(addStudent(b.course, b.name));
     if (b.action === 'addStudents')     return jsonOut(addStudents(b.course, b.names));
     if (b.action === 'removeStudent')   return jsonOut(removeStudent(b.course, b.studentId));
+    if (b.action === 'updateStudent')   return jsonOut(updateStudent(b.course, b.studentId, b.name));
     if (b.action === 'markAttendance')  return jsonOut(markAttendance(b.course, b.date, b.studentId, b.status));
     if (b.action === 'markAll')         return jsonOut(markAll(b.course, b.date, b.records));
     return jsonOut({ error: 'unknown' });
@@ -179,11 +180,22 @@ function cleanName(s) {
 }
 
 function getStudents(course) {
-  const { rows } = sheetRows(SH_ATT_STUDENTS);
+  const { sh, rows } = sheetRows(SH_ATT_STUDENTS);
   const courseStr = String(course).trim();
-  return rows
-    .filter(r => String(r[0]).trim() === courseStr && r[3] == true && cleanName(r[2]))
-    .map(r => ({ id: r[1], name: cleanName(r[2]) }));
+  const result = [];
+  rows.forEach((r, i) => {
+    if (String(r[0]).trim() !== courseStr || r[3] != true) return;
+    const name = cleanName(r[2]);
+    if (!name) {
+      // Fila fantasma (activa pero sin nombre real): se autodesactiva al
+      // detectarla para que deje de "existir" en vez de seguir apareciendo
+      // en cada lectura futura.
+      try { sh.getRange(i + 2, 4).setValue(false); } catch (e) {}
+      return;
+    }
+    result.push({ id: r[1], name });
+  });
+  return result;
 }
 
 function addStudent(course, name) {
@@ -217,6 +229,20 @@ function removeStudent(course, studentId) {
       sh.getRange(i+2, 4).setValue(false);
       writeLog('removeStudent', course, 'Estudiante ' + rows[i][2] + ' retirado');
       return { ok: true };
+    }
+  }
+  return { ok: false };
+}
+
+function updateStudent(course, studentId, name) {
+  name = cleanName(name);
+  if (!name) return { ok: false, error: 'Nombre vacío' };
+  const { sh, rows } = sheetRows(SH_ATT_STUDENTS);
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i][0] == course && rows[i][1] == studentId) {
+      sh.getRange(i+2, 3).setValue(name);
+      writeLog('updateStudent', course, 'Estudiante renombrado: ' + rows[i][2] + ' → ' + name);
+      return { ok: true, name };
     }
   }
   return { ok: false };

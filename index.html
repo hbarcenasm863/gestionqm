@@ -2658,7 +2658,10 @@ function renderAttMain() {
           '<button class="sbt ' + (st==='J'?'on-J':'') + '" onclick="attMark(\'' + s.id + '\',\'J\')" title="Justificado">J</button>' +
           '<button class="sbt ' + (st==='E'?'on-E':'') + '" onclick="attMark(\'' + s.id + '\',\'E\')" title="Evasión">E</button>' +
           '</div></td>' +
-          '<td><button onclick="attRemoveStu(\'' + s.id + '\')" ' +
+          '<td><button onclick="attRenameStu(\'' + s.id + '\')" title="Editar nombre" ' +
+          'style="background:none;border:none;color:var(--bord2);cursor:pointer;font-size:.8rem;padding:0 3px;transition:color .12s" ' +
+          'onmouseover="this.style.color=\'var(--accent,#2563eb)\'" onmouseout="this.style.color=\'var(--bord2)\'">✎</button>' +
+          '<button onclick="attRemoveStu(\'' + s.id + '\')" title="Quitar" ' +
           'style="background:none;border:none;color:var(--bord2);cursor:pointer;font-size:.95rem;padding:0 3px;transition:color .12s" ' +
           'onmouseover="this.style.color=\'var(--fail)\'" onmouseout="this.style.color=\'var(--bord2)\'">×</button></td>' +
           '</tr>';
@@ -2710,7 +2713,7 @@ function renderAttMain() {
     ' onchange="syncMobDate(this.value)"></div>' +
     '</div>' +
     '<div class="tbl-wrap"><table class="tbl">' +
-    '<thead><tr><th>Estudiante</th><th style="width:150px">Estado</th><th style="width:36px"></th></tr></thead>' +
+    '<thead><tr><th>Estudiante</th><th style="width:150px">Estado</th><th style="width:56px"></th></tr></thead>' +
     '<tbody>' + rows + '</tbody>' +
     '</table></div>' +
     '<div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">' +
@@ -2791,6 +2794,21 @@ async function attRemoveStu(id){
   renderAttMain(); renderNav();
   await apiAttPost({action:'removeStudent',course:activeCourse,studentId:id});
   toast(s.name + ' retirado');
+}
+
+async function attRenameStu(id){
+  var s=attCache[activeCourse].students.find(function(x){ return x.id===id; });
+  if(!s) return;
+  var name=prompt('Nuevo nombre para "' + s.name + '":', s.name);
+  if(name===null) return;
+  name=name.replace(/^[\s\u00A0\u200B\uFEFF]+|[\s\u00A0\u200B\uFEFF]+$/g,'');
+  if(!name){ toast('El nombre no puede quedar vacío'); return; }
+  if(name===s.name) return;
+  var prev=s.name;
+  s.name=name; renderAttMain(); renderNav();
+  var res=await apiAttPost({action:'updateStudent',course:activeCourse,studentId:id,name:name});
+  if(res.ok){ toast('Renombrado a "' + name + '"'); }
+  else { s.name=prev; renderAttMain(); renderNav(); toast('No se pudo renombrar'); }
 }
 
 function openAttBulk(){
