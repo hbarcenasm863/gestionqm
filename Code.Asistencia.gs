@@ -170,27 +170,37 @@ function normDate(d) {
   return '';
 }
 
+// Trim que también quita espacios "invisibles" (NBSP y afines) que
+// String.trim() no elimina — una línea pegada desde Excel/Word que se ve
+// vacía pero trae uno de estos caracteres pasaba el chequeo !name y
+// quedaba como estudiante "activo" sin nombre visible en la lista.
+function cleanName(s) {
+  return String(s == null ? '' : s).replace(/^[\s\u00A0\u200B\uFEFF]+|[\s\u00A0\u200B\uFEFF]+$/g, '');
+}
+
 function getStudents(course) {
   const { rows } = sheetRows(SH_ATT_STUDENTS);
   const courseStr = String(course).trim();
   return rows
-    .filter(r => String(r[0]).trim() === courseStr && r[3] == true)
-    .map(r => ({ id: r[1], name: r[2] }));
+    .filter(r => String(r[0]).trim() === courseStr && r[3] == true && cleanName(r[2]))
+    .map(r => ({ id: r[1], name: cleanName(r[2]) }));
 }
 
 function addStudent(course, name) {
+  name = cleanName(name);
+  if (!name) return { ok: false, error: 'Nombre vacío' };
   const sh = getSS_ATT().getSheetByName(SH_ATT_STUDENTS);
   const id = uid();
-  sh.appendRow([course, id, name.trim(), true]);
-  writeLog('addStudent', course, name.trim());
-  return { ok: true, id, name: name.trim() };
+  sh.appendRow([course, id, name, true]);
+  writeLog('addStudent', course, name);
+  return { ok: true, id, name };
 }
 
 function addStudents(course, names) {
   const sh = getSS_ATT().getSheetByName(SH_ATT_STUDENTS);
   const added = [];
   names.forEach(name => {
-    name = name.trim(); if (!name) return;
+    name = cleanName(name); if (!name) return;
     const id = uid();
     sh.appendRow([course, id, name, true]);
     added.push({ id, name });

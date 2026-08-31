@@ -2308,6 +2308,13 @@ async function loadHistDate(date) {
 function today() { return new Date().toISOString().split('T')[0]; }
 function getDate() { return document.getElementById('dateInput') ? document.getElementById('dateInput').value : today(); }
 function attKey(c,d){ return c + '_' + d; }
+// Descarta estudiantes sin nombre visible (celda vacía o solo espacios
+// invisibles NBSP/zero-width) — no deben contarse ni aparecer en la lista.
+function attValidStudents(arr){
+  return (Array.isArray(arr)?arr:[]).filter(function(s){
+    return s && s.name && String(s.name).replace(/[\s\u00A0\u200B\uFEFF]/g,'') !== '';
+  });
+}
 function getAtt(c,d){ return (attCache[c]&&attCache[c].attendance&&attCache[c].attendance[attKey(c,d)]) ? attCache[c].attendance[attKey(c,d)] : {}; }
 
 /* ═══ CONSOLIDADO ASISTENCIA ═══ */
@@ -2359,7 +2366,7 @@ async function generarConsolidado() {
   }
 
   // Cargar historial completo y marcarlo en caché
-  attCache[course] = {students: stuFresh, attendance: {}, historialCargado: true};
+  attCache[course] = {students: attValidStudents(stuFresh), attendance: {}, historialCargado: true};
   Object.keys(attFresh).forEach(function(rawDate) {
     var clean = normAttDate(rawDate);
     if (clean) {
@@ -2595,13 +2602,13 @@ async function loadAttCourse(course) {
   try {
     var res = await apiAtt({action:'getAttInit', course:course, date:today()});
     if (res && Array.isArray(res.students)) {
-      attCache[course] = {students:res.students, attendance:{}, historialCargado:false};
+      attCache[course] = {students:attValidStudents(res.students), attendance:{}, historialCargado:false};
       attCache[course].attendance[course+'_'+today()] = res.dayAtt||{};
     } else { throw new Error('bad'); }
   } catch(e) {
     try {
       var stu = await apiAtt({action:'getStudents', course:course});
-      attCache[course] = {students:Array.isArray(stu)?stu:[], attendance:{}, historialCargado:false};
+      attCache[course] = {students:attValidStudents(stu), attendance:{}, historialCargado:false};
       attCache[course].attendance[course+'_'+today()] = {};
     } catch(e2) {
       document.getElementById('mainArea').innerHTML =
@@ -5231,7 +5238,7 @@ async function attSincronizar() {
       if (clean) attendance[c + '_' + clean] = attFresh[rawDate]; // siempre sobrescribe
     });
 
-    attCache[c] = {students: stuFresh, attendance: attendance, historialCargado: true, _fechasCargadas: {}};
+    attCache[c] = {students: attValidStudents(stuFresh), attendance: attendance, historialCargado: true, _fechasCargadas: {}};
 
     var total = Object.keys(attFresh).length;
     var claves = Object.keys(attendance).filter(function(k){ return k.indexOf(c+'_')===0; }).length;
@@ -5481,7 +5488,7 @@ async function infGenerarGrupo() {
       var stuFresh = await apiAtt({action:'getStudents', course:course});
       if (attFresh && !attFresh.error) {
         if (!attCache[course]) attCache[course] = {students:[], attendance:{}, historialCargado:false};
-        if (Array.isArray(stuFresh)) attCache[course].students = stuFresh;
+        if (Array.isArray(stuFresh)) attCache[course].students = attValidStudents(stuFresh);
         Object.keys(attFresh).forEach(function(rawDate) {
           var clean = normAttDate(rawDate);
           if (clean) attCache[course].attendance[course + '_' + clean] = attFresh[rawDate];
