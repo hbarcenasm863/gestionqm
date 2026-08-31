@@ -142,11 +142,21 @@ function uid() {
   return 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 }
 
+// 'NE' (No Entregó) es un valor especial: se guarda tal cual (no como número)
+// para poder mostrarlo distinto de un 0 real en toda la app, pero cuenta como
+// 0 en cualquier promedio/suma ponderada — ver gnum().
 function validGrade(v) {
   if (v === null || v === '') return null;
+  if (typeof v === 'string' && v.trim().toUpperCase() === 'NE') return 'NE';
   const n = Math.round(parseFloat(v) * 10) / 10;
   if (isNaN(n) || n < 0 || n > 5) return false;
   return n;
+}
+// Convierte un valor de nota (número o 'NE') al número que debe entrar a una
+// suma ponderada. 'NE' cuenta como 0, igual que decidió el docente para esta
+// versión — no se excluye del promedio, se penaliza como una entrega en 0.
+function gnum(v) {
+  return v === 'NE' ? 0 : v;
 }
 
 function computeWeights(specials, baseWeights) {
@@ -695,7 +705,7 @@ function getGrades(course, period) {
     if (sid === '__col__') return;
     if (!result[comp]) result[comp]={};
     if (!result[comp][item]) result[comp][item]={};
-    result[comp][item][sid] = +nota;
+    result[comp][item][sid] = (String(nota).trim().toUpperCase() === 'NE') ? 'NE' : +nota;
   });
   return result;
 }
@@ -773,7 +783,10 @@ function generateFullCSV() {
           // decimal) es solo para la columna "Prom.Act" visible en el CSV.
           // Redondear el intermedio ANTES de sumar es justo lo que hacía
           // que este backup mostrara una definitiva distinta a la app.
-          const actAvgRaw = filled.length ? filled.reduce((a,b)=>a+b,0)/filled.length : 0;
+          // gnum(): 'NE' (No Entregó) cuenta como 0 en la suma, igual que en
+          // grdCalcFinal de index.html — pero la celda visible de arriba
+          // (actVals/ae/ce/fi/especiales) conserva el texto "NE" tal cual.
+          const actAvgRaw = filled.length ? filled.reduce((a,b)=>a+gnum(b),0)/filled.length : 0;
           const actAvg = filled.length ? Math.round(actAvgRaw*10)/10 : '';
           row.push(actAvg);
           const ae=grades['autoeval']?.['_']?.[s.id]??'', ce=grades['coeval']?.['_']?.[s.id]??'', fi=grades['final']?.['_']?.[s.id]??'';
@@ -782,8 +795,8 @@ function generateFullCSV() {
           const totPct=weights.actividades+5+5+weights.final+specials.reduce((s,e)=>s+e.weight,0);
           let sumW2=0;
           sumW2+=actAvgRaw*(weights.actividades/100);
-          sumW2+=(ae!==''?ae:0)*(5/100); sumW2+=(ce!==''?ce:0)*(5/100); sumW2+=(fi!==''?fi:0)*(weights.final/100);
-          specials.forEach((sp,idx)=>{ const v=row[3+actNames.length+4+idx]??''; sumW2+=(v!==''?v:0)*(sp.weight/100); });
+          sumW2+=(ae!==''?gnum(ae):0)*(5/100); sumW2+=(ce!==''?gnum(ce):0)*(5/100); sumW2+=(fi!==''?gnum(fi):0)*(weights.final/100);
+          specials.forEach((sp,idx)=>{ const v=row[3+actNames.length+4+idx]??''; sumW2+=(v!==''?gnum(v):0)*(sp.weight/100); });
           // Nivelación reemplaza la definitiva calculada, igual que en
           // Acumulado/informes/sistematizadora de index.html — este backup
           // es el registro "oficial" del docente. OJO: NO coincide con lo
@@ -875,7 +888,9 @@ function rebuildCourseSheet(course, period) {
     // Ver nota equivalente en generateFullCSV(): actAvgRaw sin redondear
     // entra a la suma ponderada (igual que grdCalcFinal en index.html);
     // actAvg redondeado es solo para la columna "Prom.Act" visible.
-    const actAvgRaw = filled.length ? filled.reduce((a,b)=>a+b,0)/filled.length : 0;
+    // gnum(): 'NE' (No Entregó) cuenta como 0 en la suma — la celda visible
+    // de arriba conserva el texto "NE" tal cual.
+    const actAvgRaw = filled.length ? filled.reduce((a,b)=>a+gnum(b),0)/filled.length : 0;
     const actAvg = filled.length ? Math.round(actAvgRaw*10)/10 : '';
     row.push(actAvg);
     const ae=grades['autoeval']?.['_']?.[s.id]??'', ce=grades['coeval']?.['_']?.[s.id]??'', fi=grades['final']?.['_']?.[s.id]??'';
@@ -884,8 +899,8 @@ function rebuildCourseSheet(course, period) {
     const totalPctR=weights.actividades+5+5+weights.final+specials.reduce((s,e)=>s+e.weight,0);
     let sumWR=0;
     sumWR+=actAvgRaw*(weights.actividades/100);
-    sumWR+=(ae!==''?ae:0)*(5/100); sumWR+=(ce!==''?ce:0)*(5/100); sumWR+=(fi!==''?fi:0)*(weights.final/100);
-    specials.forEach((sp,idx)=>{ const v=row[3+actNames.length+4+idx]??''; sumWR+=(v!==''?v:0)*(sp.weight/100); });
+    sumWR+=(ae!==''?gnum(ae):0)*(5/100); sumWR+=(ce!==''?gnum(ce):0)*(5/100); sumWR+=(fi!==''?gnum(fi):0)*(weights.final/100);
+    specials.forEach((sp,idx)=>{ const v=row[3+actNames.length+4+idx]??''; sumWR+=(v!==''?gnum(v):0)*(sp.weight/100); });
     // Nivelación reemplaza la definitiva calculada — esta hoja legible es
     // el registro que queda visible dentro del propio Google Sheet, así
     // que se trata como registro "oficial" igual que generateFullCSV(),
@@ -961,7 +976,7 @@ function queryStudent(code) {
   // espera un número limpio de 1 decimal como los demás componentes, no la
   // cola de flotantes de actAvgRaw. Por eso el resumen usa actAvgRaw
   // explícitamente en vez de leer components[0].grade.
-  const actAvgRaw=validActs.length>0?validActs.reduce((a,b)=>a+b,0)/validActs.length:null;
+  const actAvgRaw=validActs.length>0?validActs.reduce((a,b)=>a+gnum(b),0)/validActs.length:null;
   const actAvg=actAvgRaw!==null?Math.round(actAvgRaw*10)/10:null;
   const components=[
     { key:'actividades', label:'Actividades de clase', weight:weights.actividades,
@@ -976,7 +991,7 @@ function queryStudent(code) {
   let sumW=0;
   components.forEach(c=>{
     const g = c.key==='actividades' ? actAvgRaw : c.grade;
-    sumW+=(g!==null?g:0)*(c.weight/100);
+    sumW+=(g!==null?gnum(g):0)*(c.weight/100);
   });
   let avg=totalPct>0?Math.round(sumW/(totalPct/100)*10)/10:null;
   // Nivelación: mismo mecanismo genérico de saveGrade (component:'nivelacion',

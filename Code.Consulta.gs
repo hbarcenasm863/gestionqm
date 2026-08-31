@@ -45,6 +45,12 @@ function _getCursosActivos(ss) {
   return cursos.length ? cursos : _CURSOS_SEED;
 }
 
+// 'NE' (No Entregó) cuenta como 0 en cualquier suma ponderada — ver nota en
+// consultarEstudiante(). Mismo helper que gnum() en Code.Notas.gs/index.html.
+function _gnum(v) {
+  return v === 'NE' ? 0 : v;
+}
+
 function _calcPesos(specials) {
   let pesoAct = null, pesoFin = null;
   for (let i = specials.length-1; i >= 0; i--) {
@@ -124,12 +130,15 @@ function consultarEstudiante(code) {
     });
 
     // ✅ CORREGIDO: distingue celda vacía de nota 0
+    // 'NE' (No Entregó) se conserva tal cual (no como número) para poder
+    // mostrarlo distinto de un 0 real — cuenta como 0 en la suma ponderada
+    // de abajo vía _gnum(), igual que en index.html/Code.Notas.gs.
     const gmap = {};
     grdRows.filter(r => String(r[4])===studentId)
            .forEach(r => {
              const val = r[5];
              if (val !== '' && val !== null && val !== undefined) {
-               gmap[r[2]+'__'+r[3]] = +val;
+               gmap[r[2]+'__'+r[3]] = (String(val).trim().toUpperCase()==='NE') ? 'NE' : +val;
              }
            });
 
@@ -143,7 +152,7 @@ function consultarEstudiante(code) {
     // antes de sumar es lo que hacía que la definitiva mostrada aquí no
     // coincidiera con la que calcula la app del docente.
     const actAvg  = actVals.length
-      ? actVals.reduce((a,b)=>a+b,0)/actVals.length : null;
+      ? actVals.reduce((a,b)=>a+_gnum(b),0)/actVals.length : null;
 
     const componentes = [
       { key:'actividades', label:'Actividades de clase', weight:weights.actividades,
@@ -163,7 +172,7 @@ function consultarEstudiante(code) {
     const totalPct = componentes.reduce((s,c)=>s+c.weight, 0);
     let sumW = 0;
     // ✅ CORREGIDO: el 0 real sí cuenta para la definitiva
-    componentes.forEach(c => { sumW += (c.grade !== null ? c.grade : 0) * (c.weight / 100); });
+    componentes.forEach(c => { sumW += (c.grade !== null ? _gnum(c.grade) : 0) * (c.weight / 100); });
     let definitiva = totalPct>0 ? Math.round(sumW/(totalPct/100)*10)/10 : null;
 
     // ✅ NUEVO: nivelación — mismo mecanismo genérico de saveGrade que usa el
@@ -345,6 +354,7 @@ tbody tr:hover td{background:#f7faf9}
 .nota.md{background:#fef9c3;color:#92400e}
 .nota.fl{background:#fee2e2;color:#b91c1c}
 .nota.nd{background:#f1f5f9;color:#94a3b8;font-weight:400;font-style:italic;font-size:.76rem}
+.nota.ne{background:#fef2f2;color:#991b1b;font-size:.76rem}
 .escala-leyenda{
   display:flex;gap:8px;flex-wrap:wrap;
   padding:8px 16px 12px;font-size:.68rem;
@@ -422,15 +432,19 @@ function esc(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 // ✅ CORREGIDO: null/undefined = sin nota (gris), 0 real = rojo
+// 'NE' = No Entregó — se distingue de un 0 real con su propia clase/leyenda.
 function nc(n){
   if(n===null||n===undefined) return 'nd';
+  if(n==='NE') return 'ne';
   if(n>=4.6) return 'hi';
   if(n>=4.0) return 'ok';
   if(n>=3.0) return 'md';
   return 'fl';
 }
 function nf(n){
-  return (n!==null && n!==undefined) ? n.toFixed(1) : '—';
+  if(n===null||n===undefined) return '—';
+  if(n==='NE') return 'NE';
+  return n.toFixed(1);
 }
 function nivelLabel(n){
   if(n===null||n===undefined) return '';
@@ -617,10 +631,10 @@ function buildBlock(p){
 
   let trow='<td class="name-col">'+esc(p.nombre)+'</td>';
   (actComp?.actItems||[]).forEach(a=>{
-    trow+='<td><span class="nota '+nc(a.grade)+'">'+nf(a.grade)+'</span></td>';
+    trow+='<td><span class="nota '+nc(a.grade)+'"'+(a.grade==='NE'?' title="No entregado — cuenta como 0.0 en la definitiva"':'')+'>'+nf(a.grade)+'</span></td>';
   });
   otherComps.forEach(c=>{
-    trow+='<td><span class="nota '+nc(c.grade)+'">'+nf(c.grade)+'</span></td>';
+    trow+='<td><span class="nota '+nc(c.grade)+'"'+(c.grade==='NE'?' title="No entregado — cuenta como 0.0 en la definitiva"':'')+'>'+nf(c.grade)+'</span></td>';
   });
   trow+='<td style="background:#fef3d0"><span class="nota" style="font-size:.95rem;font-weight:700;color:'+defColor(def)+'">'
     +(def!==null?def.toFixed(1):'—')+'</span></td>';
@@ -630,11 +644,13 @@ function buildBlock(p){
     +'<tbody><tr>'+trow+'</tr></tbody>'
     +'</table></div>';
 
+  const tieneNE = (actComp?.actItems||[]).some(a=>a.grade==='NE') || otherComps.some(c=>c.grade==='NE');
   html+='<div class="escala-leyenda">'
     +'<span class="esc-item" style="background:#dcfce7;color:#15803d">Superior 4.6–5.0</span>'
     +'<span class="esc-item" style="background:#dbeafe;color:#1e40af">Alto 4.0–4.5</span>'
     +'<span class="esc-item" style="background:#fef9c3;color:#92400e">Básico 3.0–3.9</span>'
     +'<span class="esc-item" style="background:#fee2e2;color:#b91c1c">Bajo 0.0–2.9</span>'
+    +(tieneNE?'<span class="esc-item" style="background:#fef2f2;color:#991b1b">NE No entregado (cuenta 0.0)</span>':'')
     +'</div>';
 
   if(totalPct<100 && !nivelado){

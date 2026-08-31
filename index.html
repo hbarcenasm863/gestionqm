@@ -770,7 +770,8 @@ body {
 .g-ok{color:var(--n-alt);font-weight:700}   /* Alto     4.0-4.5 */
 .g-md{color:var(--n-bas);font-weight:600}   /* Básico   3.0-3.9 */
 .g-lo{color:var(--n-baj);font-weight:700}   /* Bajo     0.1-2.9 */
-.g-fl{color:var(--n-ne)}                    /* N/E (0) */
+.g-fl{color:var(--n-baj);font-weight:700}   /* 0 real (Bajo) */
+.g-ne{color:var(--n-ne);font-style:italic}  /* NE — no entregó */
 .prom-cell { font-family: 'DM Mono', monospace; font-size: .82rem; font-weight: 700; background: var(--gold-lt) !important; }
 .code-chip { font-family: 'DM Mono', monospace; font-size: .68rem; color: var(--muted); }
 .no-code { color: var(--warn); font-size: .68rem; }
@@ -1276,7 +1277,8 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   body:not(.printing-informe) .g-ok { color: #1e40af !important; }  /* Alto     */
   body:not(.printing-informe) .g-md { color: #92400e !important; }  /* Básico   */
   body:not(.printing-informe) .g-lo { color: #991b1b !important; }  /* Bajo     */
-  body:not(.printing-informe) .g-fl { color: #64748b !important; }  /* N/E      */
+  body:not(.printing-informe) .g-fl { color: #991b1b !important; }  /* 0 real   */
+  body:not(.printing-informe) .g-ne { color: #64748b !important; }  /* NE       */
   body:not(.printing-informe) .print-header { display: block !important; }
   body:not(.printing-informe) .print-footer { display: block !important; }
   body:not(.printing-informe) .page-head { margin-bottom: 8pt !important; }
@@ -2880,10 +2882,14 @@ function computeWeights(specials){
   }
   return{actividades:pesoAct,autoeval:pesoAuto,coeval:pesoCo,final:pesoFin};
 }
+// 'NE' (No Entregó) cuenta como 0 en cualquier promedio/suma ponderada, pero
+// se muestra distinto de un 0 real en toda la app — ver gcl()/grdCalcFinal.
+function gnum(v){ return v==='NE'?0:v; }
 function gcl(n){
+  if(n==='NE')return'g-ne';
   if(n===''||n===null||n===undefined||isNaN(parseFloat(n)))return'';
   n=parseFloat(n);
-  if(n===0)return'g-fl';                          // N/E sin entregar
+  if(n===0)return'g-fl';                          // 0 real muy bajo
   if(n>=4.6)return'g-hi';if(n>=4.0)return'g-ok'; // Superior / Alto
   if(n>=3.0)return'g-md';return'g-lo';            // Básico / Bajo
 }
@@ -3027,7 +3033,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     actNames.forEach(function(n){
       var raw=grades['actividad']&&grades['actividad'][n]?grades['actividad'][n][s.id]:undefined;
       var val=raw!=null?raw:'';
-      tds+='<td><input class="ginp ' + gcl(val) + '" type="number" min="0" max="5" step="0.1"' + ro + '' +
+      tds+='<td><input class="ginp ' + gcl(val) + '" type="text" inputmode="decimal" maxlength="4" title="Nota 0.0–5.0, o NE si no entregó"' + ro + '' +
         ' value="' + val + '" data-comp="actividad" data-item="' + infEsc(n) + '" data-sid="' + s.id + '" data-orig="' + val + '"' +
         ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
         ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
@@ -3035,21 +3041,21 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
 
     var ae=grades['autoeval']&&grades['autoeval']['_']?grades['autoeval']['_'][s.id]:undefined;
     var aeVal=ae!=null?ae:'';
-    tds+='<td class="td-eval"><input class="ginp ' + gcl(aeVal) + '" type="number" min="0" max="5" step="0.1"' + ro + '' +
+    tds+='<td class="td-eval"><input class="ginp ' + gcl(aeVal) + '" type="text" inputmode="decimal" maxlength="4" title="Nota 0.0–5.0, o NE si no entregó"' + ro + '' +
       ' value="' + aeVal + '" data-comp="autoeval" data-item="_" data-sid="' + s.id + '" data-orig="' + aeVal + '"' +
       ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
       ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
 
     var ce=grades['coeval']&&grades['coeval']['_']?grades['coeval']['_'][s.id]:undefined;
     var ceVal=ce!=null?ce:'';
-    tds+='<td class="td-eval"><input class="ginp ' + gcl(ceVal) + '" type="number" min="0" max="5" step="0.1"' + ro + '' +
+    tds+='<td class="td-eval"><input class="ginp ' + gcl(ceVal) + '" type="text" inputmode="decimal" maxlength="4" title="Nota 0.0–5.0, o NE si no entregó"' + ro + '' +
       ' value="' + ceVal + '" data-comp="coeval" data-item="_" data-sid="' + s.id + '" data-orig="' + ceVal + '"' +
       ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
       ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
 
     var fi=grades['final']&&grades['final']['_']?grades['final']['_'][s.id]:undefined;
     var fiVal=fi!=null?fi:'';
-    tds+='<td class="td-eval"><input class="ginp ' + gcl(fiVal) + '" type="number" min="0" max="5" step="0.1"' + ro + '' +
+    tds+='<td class="td-eval"><input class="ginp ' + gcl(fiVal) + '" type="text" inputmode="decimal" maxlength="4" title="Nota 0.0–5.0, o NE si no entregó"' + ro + '' +
       ' value="' + fiVal + '" data-comp="final" data-item="_" data-sid="' + s.id + '" data-orig="' + fiVal + '"' +
       ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
       ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
@@ -3057,7 +3063,7 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     specials.forEach(function(sp){
       var sg=grades['especial']&&grades['especial'][sp.id]?grades['especial'][sp.id][s.id]:undefined;
       var sgVal=sg!=null?sg:'';
-      tds+='<td class="td-esp"><input class="ginp ' + gcl(sgVal) + '" type="number" min="0" max="5" step="0.1"' + ro + '' +
+      tds+='<td class="td-esp"><input class="ginp ' + gcl(sgVal) + '" type="text" inputmode="decimal" maxlength="4" title="Nota 0.0–5.0, o NE si no entregó"' + ro + '' +
         ' value="' + sgVal + '" data-comp="especial" data-item="' + sp.id + '" data-sid="' + s.id + '" data-orig="' + sgVal + '"' +
         ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
         ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></td>';
@@ -3092,9 +3098,12 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
         comp==='final'?'Final ('+baseW.final+'%)':
         comp==='nivelacion'?'Nivelación':item;
       var dataItem = comp==='especial' ? item : (comp==='actividad' ? item : '_');
+      // Nivelación se queda numérica-solamente — NE no aplica a una nota de
+      // proceso remedial, solo a entregas (actividades/autoeval/coeval/final/especial).
+      var neAttrs = comp==='nivelacion' ? ' type="number" min="0" max="5" step="0.1"' : ' type="text" inputmode="decimal" maxlength="4" title="Nota 0.0–5.0, o NE si no entregó"';
       return '<div class="mgrid-label">' + infEsc(lbl) + '</div>' +
-        '<div class="mgrid-input-cell"><input class="ginp ' + gcl(val) + '" type="number"' +
-        ' min="0" max="5" step="0.1" value="' + (val!==''?val:'') + '"' +
+        '<div class="mgrid-input-cell"><input class="ginp ' + gcl(val) + '"' + neAttrs +
+        ' value="' + (val!==''?val:'') + '"' +
         ' data-comp="' + comp + '" data-item="' + infEsc(dataItem) + '"' +
         ' data-sid="' + s.id + '" data-orig="' + val + '"' +
         ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
@@ -3115,8 +3124,8 @@ function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
     var spInputs=specials.map(function(sp){
       var v=(grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null)?grades['especial'][sp.id][s.id]:'';
       return '<div class="mgrid-label">' + infEsc(sp.name.length>20?sp.name.substring(0,20)+'…':sp.name) + ' (' + sp.weight + '%)</div>' +
-        '<div class="mgrid-input-cell"><input class="ginp ' + gcl(v) + '" type="number"' +
-        ' min="0" max="5" step="0.1" value="' + v + '"' +
+        '<div class="mgrid-input-cell"><input class="ginp ' + gcl(v) + '" type="text" inputmode="decimal" maxlength="4" title="Nota 0.0–5.0, o NE si no entregó"' +
+        ' value="' + v + '"' +
         ' data-comp="especial" data-item="' + sp.id + '" data-sid="' + s.id + '" data-orig="' + v + '"' +
         ' onchange="grdHandleChange(this)" oninput="grdUpdateColor(this)"' +
         ' onfocus="grdOnFocus(this)" onkeydown="grdNavKey(event,this)"></div>';
@@ -3178,17 +3187,19 @@ function grdNivelacion(s,grades){
 // periodo (a propósito, para que el docente siempre vea ahí el cálculo
 // original, incluso después de diligenciar nivelación).
 function grdCalcFinal(s,actNames,grades,baseW,specials){
+  // 'NE' (No Entregó) cuenta como 0 en la suma vía gnum() — se muestra
+  // distinto de un 0 real en la celda, pero pesa igual en la definitiva.
   var av=actNames.map(function(n){ return grades['actividad']&&grades['actividad'][n]?grades['actividad'][n][s.id]:undefined; }).filter(function(v){ return v!=null; });
-  var actAvg=av.length?av.reduce(function(a,b){ return a+b; },0)/av.length:0;
+  var actAvg=av.length?av.reduce(function(a,b){ return a+gnum(b); },0)/av.length:0;
   var totalPct=baseW.actividades+5+5+baseW.final+specials.reduce(function(s,e){ return s+e.weight; },0);
   if(totalPct===0)return null;
   var sum=0;
   sum+=actAvg*(baseW.actividades/100);
-  sum+=((grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][s.id]!=null)?grades['autoeval']['_'][s.id]:0)*(5/100);
-  sum+=((grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null)?grades['coeval']['_'][s.id]:0)*(5/100);
-  sum+=((grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null)?grades['final']['_'][s.id]:0)*(baseW.final/100);
+  sum+=((grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][s.id]!=null)?gnum(grades['autoeval']['_'][s.id]):0)*(5/100);
+  sum+=((grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null)?gnum(grades['coeval']['_'][s.id]):0)*(5/100);
+  sum+=((grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null)?gnum(grades['final']['_'][s.id]):0)*(baseW.final/100);
   specials.forEach(function(sp){
-    sum+=((grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null)?grades['especial'][sp.id][s.id]:0)*(sp.weight/100);
+    sum+=((grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null)?gnum(grades['especial'][sp.id][s.id]):0)*(sp.weight/100);
   });
   return Math.round(sum/(totalPct/100)*10)/10;
 }
@@ -3203,13 +3214,15 @@ function grdCalcEffective(s,actNames,grades,baseW,specials){
 }
 
 function grdUpdateColor(inp){
-  var v=parseFloat(inp.value);
-  inp.className='ginp '+(isNaN(v)?'':gcl(v));
+  var raw=inp.value.trim();
+  var isNE=raw.toUpperCase()==='NE';
+  var v=isNE?'NE':parseFloat(raw);
+  inp.className='ginp '+(isNE?gcl('NE'):(isNaN(v)?'':gcl(v)));
   var comp=inp.dataset.comp, item=inp.dataset.item, sid=inp.dataset.sid;
   var d=grdCache[activeCourse][activePeriod];
   if(!d.grades[comp])d.grades[comp]={};
   if(!d.grades[comp][item])d.grades[comp][item]={};
-  d.grades[comp][item][sid]=isNaN(v)?null:v;
+  d.grades[comp][item][sid]=isNE?'NE':(isNaN(v)?null:v);
   if(comp==='nivelacion'){
     var mark=document.getElementById('niv-mark-'+sid);
     if(mark) mark.style.display=isNaN(v)?'none':'block';
@@ -3302,21 +3315,26 @@ async function grdHandleChange(inp){
   }
   var orig=inp.dataset.orig||'';
   var newVal=inp.value.trim();
-  if(newVal!==''){
+  // 'NE' (No Entregó) es válido en cualquier campo salvo nivelación —no
+  // aplica a una nota de proceso remedial, solo a entregas reales.
+  var isNE=newVal.toUpperCase()==='NE' && inp.dataset.comp!=='nivelacion';
+  if(isNE) newVal='NE';
+  if(newVal!==''&&!isNE){
     var nCheck=parseFloat(newVal);
     if(isNaN(nCheck)||nCheck<0||nCheck>5){
       inp.value=orig; grdUpdateColor(inp);
-      toast('⚠ La nota debe estar entre 0.0 y 5.0');
+      toast('⚠ La nota debe estar entre 0.0 y 5.0, o NE si no entregó');
       return;
     }
   }
   if(orig!==''&&newVal!==''&&newVal!==orig){
-    var origN=parseFloat(orig).toFixed(1);
-    var newN=parseFloat(newVal).toFixed(1);
+    var origN=orig==='NE'?'NE':parseFloat(orig).toFixed(1);
+    var newN=newVal==='NE'?'NE':parseFloat(newVal).toFixed(1);
     if(!confirm('¿Cambiar nota de ' + origN + ' a ' + newN + '?')){
       inp.value=orig; grdUpdateColor(inp); return;
     }
   }
+  inp.value=newVal;
   inp.dataset.orig=newVal;
   grdUpdateColor(inp);
   grdDoSave(inp);
@@ -3324,7 +3342,8 @@ async function grdHandleChange(inp){
 
 function grdDoSave(inp){
   var comp=inp.dataset.comp, item=inp.dataset.item, sid=inp.dataset.sid;
-  var v=inp.value.trim()===''?null:Math.round(parseFloat(inp.value)*10)/10;
+  var raw=inp.value.trim();
+  var v=raw===''?null:(raw.toUpperCase()==='NE'&&comp!=='nivelacion'?'NE':Math.round(parseFloat(raw)*10)/10);
   var key=activeCourse+'_'+activePeriod+'_'+comp+'_'+item+'_'+sid;
   pendingSaves[key]={course:activeCourse,period:activePeriod,component:comp,itemId:item,studentId:sid,grade:v};
   clearTimeout(saveTimers[key]);
@@ -3710,7 +3729,7 @@ async function buildGrdExport(){
   students.forEach(function(s){
     var av=actNames.map(function(n){ return grades['actividad']&&grades['actividad'][n]&&grades['actividad'][n][s.id]!=null?grades['actividad'][n][s.id]:''; });
     var avf=av.filter(function(v){ return v!==''; });
-    var actAvg=avf.length?Math.round(avf.reduce(function(a,b){ return a+b; },0)/avf.length*10)/10:'';
+    var actAvg=avf.length?Math.round(avf.reduce(function(a,b){ return a+gnum(b); },0)/avf.length*10)/10:'';
     var ae=grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][s.id]!=null?grades['autoeval']['_'][s.id]:'';
     var ce=grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null?grades['coeval']['_'][s.id]:'';
     var fi=grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null?grades['final']['_'][s.id]:'';
@@ -3753,7 +3772,7 @@ async function downloadCSV(){
     students.forEach(function(s){
       var av=actNames.map(function(n){ return grades['actividad']&&grades['actividad'][n]&&grades['actividad'][n][s.id]!=null?grades['actividad'][n][s.id]:''; });
       var avf=av.filter(function(v){ return v!==''; });
-      var actAvg=avf.length?Math.round(avf.reduce(function(a,b){ return a+b; },0)/avf.length*10)/10:'';
+      var actAvg=avf.length?Math.round(avf.reduce(function(a,b){ return a+gnum(b); },0)/avf.length*10)/10:'';
       var ae=grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][s.id]!=null?grades['autoeval']['_'][s.id]:'';
       var ce=grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null?grades['coeval']['_'][s.id]:'';
       var fi=grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null?grades['final']['_'][s.id]:'';
@@ -4271,14 +4290,19 @@ async function infBuildInformeData(stuId, period, obs) {
     return {nombre:n, nota:(nota!=null?nota:null)};
   });
   var actVals = acts.filter(function(a){ return a.nota!==null; }).map(function(a){ return a.nota; });
-  var promAct = actVals.length ? actVals.reduce(function(s,v){ return s+v; },0)/actVals.length : null;
+  var promAct = actVals.length ? actVals.reduce(function(s,v){ return s+gnum(v); },0)/actVals.length : null;
 
-  var autoeval = (grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][stuId]!=null) ? grades['autoeval']['_'][stuId] : null;
-  var coeval   = (grades['coeval']  &&grades['coeval']  ['_']&&grades['coeval']  ['_'][stuId]!=null) ? grades['coeval']  ['_'][stuId] : null;
-  var finalN   = (grades['final']   &&grades['final']   ['_']&&grades['final']   ['_'][stuId]!=null) ? grades['final']   ['_'][stuId] : null;
+  // gnum(): si el docente marcó NE en autoeval/coeval/final/especial, el
+  // boletín lo trata como 0 (igual que en la definitiva) — el texto "NE" en
+  // sí solo se distingue en la tabla de actividades de abajo y en la tabla
+  // de edición/Consulta·QM, para no arriesgar el motor de análisis textual
+  // que hace aritmética con estos valores (diferencias, tendencias, etc.).
+  var autoeval = (grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][stuId]!=null) ? gnum(grades['autoeval']['_'][stuId]) : null;
+  var coeval   = (grades['coeval']  &&grades['coeval']  ['_']&&grades['coeval']  ['_'][stuId]!=null) ? gnum(grades['coeval']  ['_'][stuId]) : null;
+  var finalN   = (grades['final']   &&grades['final']   ['_']&&grades['final']   ['_'][stuId]!=null) ? gnum(grades['final']   ['_'][stuId]) : null;
 
   var speciVals = specials.map(function(sp) {
-    var v = grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][stuId]!=null ? grades['especial'][sp.id][stuId] : null;
+    var v = grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][stuId]!=null ? gnum(grades['especial'][sp.id][stuId]) : null;
     return {nombre:sp.name, nota:v, peso:sp.weight};
   });
 
@@ -4364,16 +4388,19 @@ function infRenderInforme(d) {
   var nivel = infNivel(d.definitiva);
 
   // Barra de tendencia
+  // esNR ahora usa la marca real 'NE' (No Entregó) en vez de adivinar por
+  // nota===0 — un 0 real (entregó y le fue muy mal) ya no se confunde con
+  // una no entrega, y sí cuenta en la tendencia de "realizadas" de abajo.
   var actsValidas = d.acts.filter(function(a){ return a.nota!==null; });
-  var realizadasTend = actsValidas.filter(function(a){ return a.nota > 0; });
+  var realizadasTend = actsValidas.filter(function(a){ return a.nota !== 'NE'; });
   var tendHTML = '';
   if (actsValidas.length >= 2) {
     tendHTML = '<div class="inf-tend">';
     actsValidas.forEach(function(a) {
-      var esNR = a.nota === 0;
+      var esNR = a.nota === 'NE';
       var h    = esNR ? 8 : Math.max(8, Math.round((a.nota/5)*50));
       var bg   = esNR ? '#94a3b8' : infChipBg(a.nota);
-      var lbl  = esNR ? 'N/E' : (h>14?a.nota.toFixed(1):'');
+      var lbl  = esNR ? 'NE' : (h>14?a.nota.toFixed(1):'');
       tendHTML += '<div class="inf-tend-col">' +
         '<div class="inf-tend-bar" style="height:' + h + 'px;background:' + bg + ';opacity:' + (esNR?'0.45':'1') + '">' + lbl + '</div>' +
         '<div class="inf-tend-nm" style="color:' + (esNR?'#ef4444':'') + '">' + infEsc(a.nombre.split(' ').slice(0,2).join(' ')) + '</div>' +
@@ -4385,10 +4412,10 @@ function infRenderInforme(d) {
       var diff = realizadasTend[realizadasTend.length-1].nota - realizadasTend[0].nota;
       tendHTML += '<div style="font-size:.72rem;color:var(--muted);margin-top:4px">' +
         (diff>0.3?'📈 Tendencia ascendente (+'+diff.toFixed(1)+')':diff<-0.3?'📉 Tendencia descendente ('+diff.toFixed(1)+')':'➡️ Desempeño estable') +
-        (actsValidas.length > realizadasTend.length ? ' &nbsp;·&nbsp; <span style="color:#ef4444">⚠ Barras grises = actividad no entregada (N/E)</span>' : '') +
+        (actsValidas.length > realizadasTend.length ? ' &nbsp;·&nbsp; <span style="color:#ef4444">⚠ Barras grises = actividad no entregada (NE)</span>' : '') +
         '</div>';
     } else {
-      tendHTML += '<div style="font-size:.72rem;color:#ef4444;margin-top:4px">⚠ Las barras grises (N/E) indican actividades no entregadas.</div>';
+      tendHTML += '<div style="font-size:.72rem;color:#ef4444;margin-top:4px">⚠ Las barras grises (NE) indican actividades no entregadas.</div>';
     }
   } else {
     tendHTML = '<div style="font-size:.78rem;color:var(--muted)">Se necesitan al menos 2 actividades registradas para mostrar tendencia.</div>';
@@ -4396,13 +4423,13 @@ function infRenderInforme(d) {
 
   // Tabla de actividades
   var actRows = d.acts.map(function(a,i) {
-    var esNR = a.nota === 0;
+    var esNR = a.nota === 'NE';
     var chip = a.nota!==null
       ? (esNR
-          ? '<span class="inf-chip ic-nd" style="background:#fee2e2;color:#991b1b;font-size:.7rem">N/E</span>'
+          ? '<span class="inf-chip ic-nd" style="background:#fee2e2;color:#991b1b;font-size:.7rem" title="No entregado — cuenta como 0.0 en la definitiva">NE</span>'
           : '<span class="inf-chip ' + infChipCls(a.nota) + '">' + a.nota.toFixed(1) + '</span>')
       : '<span class="inf-chip ic-nd">—</span>';
-    var desc = esNR ? '<span style="color:#991b1b;font-weight:700">No entregado (0.0)</span>' : infDesc(a.nota);
+    var desc = esNR ? '<span style="color:#991b1b;font-weight:700">No entregado (cuenta como 0.0)</span>' : infDesc(a.nota);
     return '<tr' + (esNR?' style="background:#fff5f5"':'') + '><td>' + (i+1) + '</td><td>' + infEsc(a.nombre) + '</td><td>' + chip + '</td><td style="font-size:.72rem">' + desc + '</td></tr>';
   }).join('');
   var promChip = d.promAct!==null
@@ -4563,14 +4590,16 @@ function infNivel(n) {
   if (n>=3.0) return {label:'Básico',   color:'#713f12', bg:'#fef9c3'};
   return             {label:'Bajo',     color:'#991b1b', bg:'#fee2e2'};
 }
+// n===0 ya NO se trata como "sin datos" — un 0 real (entregó y le fue muy
+// mal) es parte del rango Bajo, distinto de null/undefined (sin nota aún) y
+// de 'NE' (no entregó, manejado aparte por cada llamador vía esNR/nc).
 function infChipCls(n) {
   if (n===null||n===undefined) return 'ic-ne';
-  if (n===0) return 'ic-ne';
   if (n>=4.6) return 'ic-sup'; if (n>=4.0) return 'ic-alt';
   if (n>=3.0) return 'ic-bas'; return 'ic-baj';
 }
 function infChipBg(n) {
-  if (!n) return '#64748b';
+  if (n===null||n===undefined) return '#64748b';
   if (n>=4.6) return '#166534'; if (n>=4.0) return '#1e40af';
   if (n>=3.0) return '#92400e'; return '#991b1b';
 }
@@ -4593,7 +4622,7 @@ function infTipoActividad(nombre) {
 
 /* Análisis resumido para familias: solo conclusión + alertas clave */
 function infAnalisisCorto(d, actsValidas, nivel) {
-  var noRealizadas = actsValidas.filter(function(a){ return a.nota === 0; });
+  var noRealizadas = actsValidas.filter(function(a){ return a.nota === 'NE'; });
   var frases = [];
 
   // Conclusión por nivel
@@ -4608,7 +4637,7 @@ function infAnalisisCorto(d, actsValidas, nivel) {
 
   // Alerta actividades no entregadas
   if (noRealizadas.length > 0)
-    frases.push('⚠ <strong>' + noRealizadas.length + ' actividad' + (noRealizadas.length>1?'es':'') + ' sin entregar</strong> (nota 0.0): ' +
+    frases.push('⚠ <strong>' + noRealizadas.length + ' actividad' + (noRealizadas.length>1?'es':'') + ' sin entregar</strong> (NE): ' +
       noRealizadas.map(function(a){ return '"' + infEsc(a.nombre) + '"'; }).join(', ') +
       '. Esto afecta directamente la nota del periodo.');
 
@@ -4626,20 +4655,20 @@ function infAnalisis(d, actsValidas, nivel) {
   var lineas = [];
   var nombre = d.student.name.split(',')[0];
 
-  /* ── SEPARAR: no realizadas (nota 0) vs realizadas con nota ── */
-  var noRealizadas = actsValidas.filter(function(a){ return a.nota === 0; });
-  var realizadas   = actsValidas.filter(function(a){ return a.nota > 0; });
+  /* ── SEPARAR: no realizadas (marcadas NE) vs realizadas con nota ── */
+  var noRealizadas = actsValidas.filter(function(a){ return a.nota === 'NE'; });
+  var realizadas   = actsValidas.filter(function(a){ return a.nota !== 'NE'; });
 
-  /* ── 1. ACTIVIDADES NO REALIZADAS (nota 0) ── */
+  /* ── 1. ACTIVIDADES NO REALIZADAS (marcadas NE) ── */
   if (noRealizadas.length > 0) {
     var nombresNR = noRealizadas.map(function(a){
       return '"' + infEsc(a.nombre) + '" (' + infTipoLabel(infTipoActividad(a.nombre)) + ')';
     }).join(', ');
 
     if (noRealizadas.length === 1)
-      lineas.push('⚠ <strong>Actividad no entregada:</strong> El/La estudiante tiene registrada nota <strong>0.0</strong> en ' + nombresNR + ', lo que indica que <strong>no realizó ni entregó esta actividad</strong>. Esta situación afecta directamente el promedio del componente de actividades. Se solicita al acudiente verificar las razones de esta omisión y establecer compromisos para que no se repita.');
+      lineas.push('⚠ <strong>Actividad no entregada:</strong> El/La estudiante está marcado/a como <strong>No Entregó (NE)</strong> en ' + nombresNR + ', lo que indica que <strong>no realizó ni entregó esta actividad</strong>. Esta situación afecta directamente el promedio del componente de actividades (cuenta como 0.0). Se solicita al acudiente verificar las razones de esta omisión y establecer compromisos para que no se repita.');
     else
-      lineas.push('⚠ <strong>Actividades no entregadas (' + noRealizadas.length + '):</strong> El/La estudiante tiene nota <strong>0.0</strong> en las siguientes actividades, lo que indica que <strong>no las realizó ni entregó</strong>: ' + nombresNR + '. Cada actividad no entregada impacta significativamente el promedio del periodo. Se solicita al acudiente una conversación con el/la estudiante para identificar los motivos y establecer compromisos de cumplimiento.');
+      lineas.push('⚠ <strong>Actividades no entregadas (' + noRealizadas.length + '):</strong> El/La estudiante está marcado/a como <strong>No Entregó (NE)</strong> en las siguientes actividades, lo que indica que <strong>no las realizó ni entregó</strong>: ' + nombresNR + '. Cada actividad no entregada cuenta como 0.0 e impacta significativamente el promedio del periodo. Se solicita al acudiente una conversación con el/la estudiante para identificar los motivos y establecer compromisos de cumplimiento.');
 
     /* Cruce: ¿tiene 0 en evaluación? es especialmente grave */
     var evalsNR = noRealizadas.filter(function(a){ return infTipoActividad(a.nombre)==='evaluacion'; });
@@ -4674,7 +4703,7 @@ function infAnalisis(d, actsValidas, nivel) {
   } else if (realizadas.length === 1) {
     lineas.push('Solo se cuenta con <strong>una actividad realizada</strong> (' + realizadas[0].nota.toFixed(1) + ') para analizar el proceso del periodo. No es posible establecer una tendencia con un único dato.');
   } else if (realizadas.length === 0 && noRealizadas.length > 0) {
-    lineas.push('No se registran actividades realizadas en el periodo. <strong>Todas las actividades tienen nota 0.0</strong>, lo que indica que el/la estudiante no ha entregado ninguna evidencia de aprendizaje hasta la fecha.');
+    lineas.push('No se registran actividades realizadas en el periodo. <strong>Todas las actividades están marcadas como No Entregadas (NE)</strong>, lo que indica que el/la estudiante no ha entregado ninguna evidencia de aprendizaje hasta la fecha.');
   }
 
   /* ── CLASIFICAR POR TIPO solo las REALIZADAS ── */
@@ -4809,8 +4838,8 @@ function infTipoLabel(tipo) {
 /* ── Genera la sección de Objetivo Principal de Mejora ── */
 function infObjetivomejora(d, actsValidas, nivel) {
   var items = [];
-  var realizadas = actsValidas.filter(function(a){ return a.nota > 0; });
-  var noRealizadas = actsValidas.filter(function(a){ return a.nota === 0; });
+  var realizadas = actsValidas.filter(function(a){ return a.nota !== 'NE'; });
+  var noRealizadas = actsValidas.filter(function(a){ return a.nota === 'NE'; });
 
   // Actividad con menor nota
   if (realizadas.length > 0) {
@@ -4852,8 +4881,8 @@ function infObjetivomejora(d, actsValidas, nivel) {
 function infCompromisos(d, actsValidas, nivel, periodo) {
   var esBajo   = nivel.label === 'Bajo';
   var esBas    = nivel.label === 'Básico';
-  var realizadas   = actsValidas.filter(function(a){ return a.nota > 0; });
-  var noRealizadas = actsValidas.filter(function(a){ return a.nota === 0; });
+  var realizadas   = actsValidas.filter(function(a){ return a.nota !== 'NE'; });
+  var noRealizadas = actsValidas.filter(function(a){ return a.nota === 'NE'; });
   var brechaAutoeval = d.autoeval !== null && d.finalN !== null && d.autoeval - d.finalN > 0.8;
   var asistenciaBaja = d.asistencia && d.asistencia.total > 0 &&
                        Math.round((d.asistencia.asistidas/d.asistencia.total)*100) < 80;
