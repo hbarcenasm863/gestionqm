@@ -4292,17 +4292,16 @@ async function infBuildInformeData(stuId, period, obs) {
   var actVals = acts.filter(function(a){ return a.nota!==null; }).map(function(a){ return a.nota; });
   var promAct = actVals.length ? actVals.reduce(function(s,v){ return s+gnum(v); },0)/actVals.length : null;
 
-  // gnum(): si el docente marcó NE en autoeval/coeval/final/especial, el
-  // boletín lo trata como 0 (igual que en la definitiva) — el texto "NE" en
-  // sí solo se distingue en la tabla de actividades de abajo y en la tabla
-  // de edición/Consulta·QM, para no arriesgar el motor de análisis textual
-  // que hace aritmética con estos valores (diferencias, tendencias, etc.).
-  var autoeval = (grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][stuId]!=null) ? gnum(grades['autoeval']['_'][stuId]) : null;
-  var coeval   = (grades['coeval']  &&grades['coeval']  ['_']&&grades['coeval']  ['_'][stuId]!=null) ? gnum(grades['coeval']  ['_'][stuId]) : null;
-  var finalN   = (grades['final']   &&grades['final']   ['_']&&grades['final']   ['_'][stuId]!=null) ? gnum(grades['final']   ['_'][stuId]) : null;
+  // Se conserva el valor tal cual (puede ser 'NE') para que el boletín lo
+  // muestre distinto de un 0 real, igual que ya hace la tabla de
+  // actividades — cualquier aritmética sobre estos valores (diferencias,
+  // brechas autoeval/final, etc.) debe pasar por gnum() en el punto de uso.
+  var autoeval = (grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][stuId]!=null) ? grades['autoeval']['_'][stuId] : null;
+  var coeval   = (grades['coeval']  &&grades['coeval']  ['_']&&grades['coeval']  ['_'][stuId]!=null) ? grades['coeval']  ['_'][stuId] : null;
+  var finalN   = (grades['final']   &&grades['final']   ['_']&&grades['final']   ['_'][stuId]!=null) ? grades['final']   ['_'][stuId] : null;
 
   var speciVals = specials.map(function(sp) {
-    var v = grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][stuId]!=null ? gnum(grades['especial'][sp.id][stuId]) : null;
+    var v = grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][stuId]!=null ? grades['especial'][sp.id][stuId] : null;
     return {nombre:sp.name, nota:v, peso:sp.weight};
   });
 
@@ -4446,7 +4445,9 @@ function infRenderInforme(d) {
   d.specials.forEach(function(sp){ compRows.push([infEsc(sp.nombre) + ' (' + sp.peso + '%)', sp.nota]); });
   var compTableRows = compRows.map(function(r){
     var nota = r[1];
-    var chip = nota!==null ? '<span class="inf-chip ' + infChipCls(nota) + '">' + nota.toFixed(1) + '</span>' : '<span class="inf-chip ic-nd">—</span>';
+    var chip = nota === 'NE'
+      ? '<span class="inf-chip ic-nd" style="background:#fee2e2;color:#991b1b" title="No entregado — cuenta como 0.0 en la definitiva">NE</span>'
+      : (nota!==null ? '<span class="inf-chip ' + infChipCls(nota) + '">' + nota.toFixed(1) + '</span>' : '<span class="inf-chip ic-nd">—</span>');
     return '<tr><td style="font-size:.8rem;padding:5px 8px">' + r[0] + '</td><td style="padding:5px 8px;text-align:center">' + chip + '</td></tr>';
   }).join('');
 
@@ -4759,8 +4760,8 @@ function infAnalisis(d, actsValidas, nivel) {
       lineas.push('En las <strong>evaluaciones presentadas</strong> (promedio: ' + promEvals.toFixed(1) + '), el/la estudiante alcanza nivel básico. Comprende los conceptos generales pero presenta dificultades para <strong>aplicarlos con precisión en evaluación formal</strong>. Se recomienda reforzar el estudio sistemático previo a las pruebas.');
     else {
       var msgE = 'Las <strong>evaluaciones presentadas</strong> indican dificultades importantes en el dominio de contenidos (promedio: ' + promEvals.toFixed(1) + ').';
-      if (d.autoeval!==null && d.autoeval > promEvals + 0.8)
-        msgE += ' Además, existe una <strong>diferencia importante entre la autovaloración del estudiante (' + d.autoeval.toFixed(1) + ') y su desempeño real en evaluaciones (' + promEvals.toFixed(1) + ')</strong>, lo que sugiere que no identifica con claridad sus propias dificultades conceptuales.';
+      if (d.autoeval!==null && gnum(d.autoeval) > promEvals + 0.8)
+        msgE += ' Además, existe una <strong>diferencia importante entre la autovaloración del estudiante (' + gnum(d.autoeval).toFixed(1) + ') y su desempeño real en evaluaciones (' + promEvals.toFixed(1) + ')</strong>, lo que sugiere que no identifica con claridad sus propias dificultades conceptuales.';
       msgE += ' Es fundamental establecer un <strong>plan de estudio estructurado</strong> y solicitar apoyo al docente antes de la próxima evaluación.';
       lineas.push(msgE);
     }
@@ -4789,15 +4790,16 @@ function infAnalisis(d, actsValidas, nivel) {
 
   /* ── 8. AUTOEVALUACIÓN vs EVALUACIÓN FINAL ── */
   if (d.autoeval!==null && d.finalN!==null) {
-    var dif2 = d.autoeval - d.finalN;
+    var ae2 = gnum(d.autoeval), fi2 = gnum(d.finalN);
+    var dif2 = ae2 - fi2;
     if (dif2 > 1.2)
-      lineas.push('La <strong>autoevaluación (' + d.autoeval.toFixed(1) + ') supera considerablemente la evaluación final (' + d.finalN.toFixed(1) + ')</strong>. El/La estudiante sobreestima su aprendizaje, lo que puede llevar a una preparación insuficiente para las pruebas. Desde casa se puede apoyar con preguntas de repaso antes de las evaluaciones.');
+      lineas.push('La <strong>autoevaluación (' + ae2.toFixed(1) + ') supera considerablemente la evaluación final (' + fi2.toFixed(1) + ')</strong>. El/La estudiante sobreestima su aprendizaje, lo que puede llevar a una preparación insuficiente para las pruebas. Desde casa se puede apoyar con preguntas de repaso antes de las evaluaciones.');
     else if (dif2 > 0.5)
-      lineas.push('Existe una <strong>leve sobreestimación</strong> en la autoevaluación (' + d.autoeval.toFixed(1) + ') respecto a la evaluación final (' + d.finalN.toFixed(1) + '). Se recomienda que el/la estudiante sea más crítico al valorar su propio aprendizaje.');
-    else if (d.finalN > d.autoeval + 0.8)
-      lineas.push('El/La estudiante demostró en la <strong>evaluación final (' + d.finalN.toFixed(1) + ') un desempeño superior a su propia autovaloración (' + d.autoeval.toFixed(1) + ')</strong>. Con mayor confianza en sus capacidades podría alcanzar resultados aún más altos.');
+      lineas.push('Existe una <strong>leve sobreestimación</strong> en la autoevaluación (' + ae2.toFixed(1) + ') respecto a la evaluación final (' + fi2.toFixed(1) + '). Se recomienda que el/la estudiante sea más crítico al valorar su propio aprendizaje.');
+    else if (fi2 > ae2 + 0.8)
+      lineas.push('El/La estudiante demostró en la <strong>evaluación final (' + fi2.toFixed(1) + ') un desempeño superior a su propia autovaloración (' + ae2.toFixed(1) + ')</strong>. Con mayor confianza en sus capacidades podría alcanzar resultados aún más altos.');
     else if (Math.abs(dif2) <= 0.5)
-      lineas.push('La <strong>autoevaluación (' + d.autoeval.toFixed(1) + ') es coherente con la evaluación final (' + d.finalN.toFixed(1) + ')</strong>, lo que refleja buena capacidad de reflexión sobre el propio proceso de aprendizaje.');
+      lineas.push('La <strong>autoevaluación (' + ae2.toFixed(1) + ') es coherente con la evaluación final (' + fi2.toFixed(1) + ')</strong>, lo que refleja buena capacidad de reflexión sobre el propio proceso de aprendizaje.');
   }
 
   /* ── 9. ASISTENCIA ── */
@@ -4856,8 +4858,8 @@ function infObjetivomejora(d, actsValidas, nivel) {
   }
 
   // Brecha autoeval vs final
-  if (d.autoeval !== null && d.finalN !== null && d.autoeval - d.finalN > 0.8) {
-    items.push('📌 <strong>Metacognición:</strong> Existe una brecha de ' + (d.autoeval - d.finalN).toFixed(1) + ' puntos entre la autovaloración (' + d.autoeval.toFixed(1) + ') y el desempeño real en evaluaciones (' + d.finalN.toFixed(1) + '). El objetivo es reducir esta diferencia mediante contraste sistemático entre nota esperada y nota obtenida.');
+  if (d.autoeval !== null && d.finalN !== null && gnum(d.autoeval) - gnum(d.finalN) > 0.8) {
+    items.push('📌 <strong>Metacognición:</strong> Existe una brecha de ' + (gnum(d.autoeval) - gnum(d.finalN)).toFixed(1) + ' puntos entre la autovaloración (' + gnum(d.autoeval).toFixed(1) + ') y el desempeño real en evaluaciones (' + gnum(d.finalN).toFixed(1) + '). El objetivo es reducir esta diferencia mediante contraste sistemático entre nota esperada y nota obtenida.');
   }
 
   // Actividades no entregadas
@@ -4883,7 +4885,7 @@ function infCompromisos(d, actsValidas, nivel, periodo) {
   var esBas    = nivel.label === 'Básico';
   var realizadas   = actsValidas.filter(function(a){ return a.nota !== 'NE'; });
   var noRealizadas = actsValidas.filter(function(a){ return a.nota === 'NE'; });
-  var brechaAutoeval = d.autoeval !== null && d.finalN !== null && d.autoeval - d.finalN > 0.8;
+  var brechaAutoeval = d.autoeval !== null && d.finalN !== null && gnum(d.autoeval) - gnum(d.finalN) > 0.8;
   var asistenciaBaja = d.asistencia && d.asistencia.total > 0 &&
                        Math.round((d.asistencia.asistidas/d.asistencia.total)*100) < 80;
   var tieneZeros = noRealizadas.length > 0;
@@ -4987,14 +4989,14 @@ function infCompromisos(d, actsValidas, nivel, periodo) {
     if (esBajo) {
       b3html = '<div style="margin-top:10px"><strong style="font-size:.78rem;color:var(--navy)">3. Ajuste de Autopercepción</strong>' +
         '<ul style="margin:6px 0 0 16px;font-size:.76rem;line-height:1.7;color:var(--text2)">' +
-        '<li>Existe una brecha importante de <strong>' + (d.autoeval - d.finalN).toFixed(1) + ' puntos</strong> entre la autovaloración (' + d.autoeval.toFixed(1) + ') y el desempeño real (' + d.finalN.toFixed(1) + '). El/La estudiante sobreestima su aprendizaje, lo que lleva a una preparación insuficiente.</li>' +
+        '<li>Existe una brecha importante de <strong>' + (gnum(d.autoeval) - gnum(d.finalN)).toFixed(1) + ' puntos</strong> entre la autovaloración (' + gnum(d.autoeval).toFixed(1) + ') y el desempeño real (' + gnum(d.finalN).toFixed(1) + '). El/La estudiante sobreestima su aprendizaje, lo que lleva a una preparación insuficiente.</li>' +
         '<li>Después de cada actividad, anotar la nota esperada y la nota obtenida. El docente hará seguimiento de este contraste.</li>' +
         '<li>El acudiente puede apoyar este proceso preguntando en casa: <em>"¿Cuánto crees que sacaste? ¿Cuánto sacaste realmente?"</em></li>' +
         '</ul></div>';
     } else {
       b3html = '<div style="margin-top:10px"><strong style="font-size:.78rem;color:var(--navy)">3. Ajuste de Autopercepción</strong>' +
         '<ul style="margin:6px 0 0 16px;font-size:.76rem;line-height:1.7;color:var(--text2)">' +
-        '<li>La autovaloración (' + d.autoeval.toFixed(1) + ') supera al desempeño real (' + d.finalN.toFixed(1) + ') en ' + (d.autoeval - d.finalN).toFixed(1) + ' puntos. Reducir esta brecha ayuda a prepararse mejor.</li>' +
+        '<li>La autovaloración (' + gnum(d.autoeval).toFixed(1) + ') supera al desempeño real (' + gnum(d.finalN).toFixed(1) + ') en ' + (gnum(d.autoeval) - gnum(d.finalN)).toFixed(1) + ' puntos. Reducir esta brecha ayuda a prepararse mejor.</li>' +
         '<li>Anotar la nota esperada antes de conocer la nota real, y reflexionar sobre la diferencia.</li>' +
         '</ul></div>';
     }
