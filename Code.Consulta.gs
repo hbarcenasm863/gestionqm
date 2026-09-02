@@ -19,10 +19,11 @@ const SPREADSHEET_ID_QRY = '1FzUF-Rnu_6RB3exJXbtTS3QHyMGz-59vhomP3EXSyGE';
 // que administra cursos dinámicamente (addCourse/removeCourse).
 const _CURSOS_SEED = ['1004','1005','1006','1101','1102','1103','1104'];
 
-const _SH_STU  = 'Estudiantes';
-const _SH_GRD  = 'Notas';
-const _SH_SP   = 'Especiales';
-const _SH_CFG  = 'Config';
+const _SH_STU     = 'Estudiantes';
+const _SH_GRD     = 'Notas';
+const _SH_SP      = 'Especiales';
+const _SH_CFG     = 'Config';
+const _SH_WEIGHTS = 'Pesos';
 
 function doGet(e) {
   return HtmlService
@@ -51,7 +52,29 @@ function _gnum(v) {
   return v === 'NE' ? 0 : v;
 }
 
-function _calcPesos(specials) {
+// Pesos guardados por el docente con "Editar pesos" (hoja Pesos) para este
+// curso/periodo, o null si nunca se personalizaron (queda el reparto por
+// defecto). Misma hoja/columnas que getWeights() en Code.Notas.gs.
+function _getWeights(ss, curso, period) {
+  const sh = ss.getSheetByName(_SH_WEIGHTS);
+  if (!sh) return null;
+  const rows = sh.getDataRange().getValues().slice(1);
+  const row  = rows.find(r => r[0].toString()===curso && +r[1]===period);
+  if (!row) return null;
+  return { actividades:+row[2], autoeval:+row[3], coeval:+row[4], final:+row[5] };
+}
+
+// ✅ FIX: antes ignoraba por completo los pesos personalizados con "Editar
+// pesos" y asumía Autoeval/Coeval fijos en 5%/5% — si el docente los había
+// cambiado, la definitiva que veía el estudiante aquí no coincidía con la
+// que calcula Code.Notas.gs/index.html para el mismo curso/periodo. Ahora
+// usa baseW (leído de la hoja Pesos) cuando existe, igual que computeWeights()
+// en Code.Notas.gs; solo recurre al reparto 60/30 por defecto cuando nunca
+// se guardaron pesos personalizados para ese curso/periodo.
+function _calcPesos(specials, baseW) {
+  if (baseW && baseW.actividades != null) {
+    return { actividades: baseW.actividades, autoeval: baseW.autoeval, coeval: baseW.coeval, final: baseW.final };
+  }
   let pesoAct = null, pesoFin = null;
   for (let i = specials.length-1; i >= 0; i--) {
     if (specials[i].pesoAct != null && specials[i].pesoFinal != null) {
@@ -118,7 +141,8 @@ function consultarEstudiante(code) {
         pesoAct:   (r[5]!==''&&r[5]!==undefined&&r[5]!==null) ? +r[5] : null,
         pesoFinal: (r[6]!==''&&r[6]!==undefined&&r[6]!==null) ? +r[6] : null
       })) : [];
-    const weights = _calcPesos(spRows);
+    const baseW   = _getWeights(ss, curso, period);
+    const weights = _calcPesos(spRows, baseW);
 
     const grdRows = allGrd.filter(r => +r[1]===period);
 
