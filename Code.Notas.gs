@@ -400,22 +400,22 @@ function cleanName(s) {
   return String(s == null ? '' : s).replace(/^[\s\u00A0\u200B\uFEFF]+|[\s\u00A0\u200B\uFEFF]+$/g, '');
 }
 
+// Nota: getStudents() es de SOLO LECTURA a propósito. Una versión anterior
+// intentaba "autodesactivar" filas fantasma (activas pero sin nombre)
+// escribiendo Activo=false aquí mismo — pero esta función se llama
+// constantemente (getAll, boletines, CSV, backup...), y una escritura
+// disparada por una simple lectura es peligrosa: si el índice de fila no
+// coincidía exactamente con la fila real (por cualquier desajuste en la
+// hoja), la escritura podía caer sobre la fila de al lado y desactivar a
+// un estudiante real con nombre válido — esto pasó en producción en
+// Code.Asistencia.gs. Filtrar sin escribir logra el mismo resultado
+// visible sin ese riesgo — las filas fantasma quedan en la hoja pero
+// invisibles para la app; si quieres limpiarlas de verdad, hazlo a mano.
 function getStudents(course) {
-  const { sh, rows } = sheetRows(SH_STUDENTS);
-  const result = [];
-  rows.forEach((r, i) => {
-    if (r[0] != course || r[4] != true) return;
-    const name = cleanName(r[2]);
-    if (!name) {
-      // Fila fantasma (activa pero sin nombre real): se autodesactiva al
-      // detectarla para que deje de "existir" en vez de seguir apareciendo
-      // en cada lectura futura.
-      try { sh.getRange(i + 2, 5).setValue(false); _invalidate(SH_STUDENTS); } catch (e) {}
-      return;
-    }
-    result.push({ id: r[1], name, code: r[3] || '' });
-  });
-  return result;
+  const { rows } = sheetRows(SH_STUDENTS);
+  return rows
+    .filter(r => r[0] == course && r[4] == true && cleanName(r[2]))
+    .map(r => ({ id: r[1], name: cleanName(r[2]), code: r[3] || '' }));
 }
 
 // LockService: addStudent/addStudents/updateStudent primero LEEN todas las

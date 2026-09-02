@@ -179,23 +179,23 @@ function cleanName(s) {
   return String(s == null ? '' : s).replace(/^[\s\u00A0\u200B\uFEFF]+|[\s\u00A0\u200B\uFEFF]+$/g, '');
 }
 
+// Nota: getStudents() es de SOLO LECTURA a propósito. Una versión anterior
+// intentaba "autodesactivar" filas fantasma (activas pero sin nombre)
+// escribiendo Activo=false aquí mismo — pero esta función se llama
+// constantemente (cada carga de la lista de asistencia), y una escritura
+// disparada por una simple lectura es peligrosa: si el índice de fila no
+// coincidía exactamente con la fila real (por cualquier desajuste en la
+// hoja), la escritura podía caer sobre la fila de al lado y desactivar a
+// un estudiante real con nombre válido. Filtrar sin escribir logra el
+// mismo resultado visible (la fila fantasma no aparece en la lista) sin
+// ese riesgo — las filas fantasma quedan en la hoja pero invisibles para
+// la app; si quieres limpiarlas de verdad, hazlo a mano desde el Sheet.
 function getStudents(course) {
-  const { sh, rows } = sheetRows(SH_ATT_STUDENTS);
+  const { rows } = sheetRows(SH_ATT_STUDENTS);
   const courseStr = String(course).trim();
-  const result = [];
-  rows.forEach((r, i) => {
-    if (String(r[0]).trim() !== courseStr || r[3] != true) return;
-    const name = cleanName(r[2]);
-    if (!name) {
-      // Fila fantasma (activa pero sin nombre real): se autodesactiva al
-      // detectarla para que deje de "existir" en vez de seguir apareciendo
-      // en cada lectura futura.
-      try { sh.getRange(i + 2, 4).setValue(false); } catch (e) {}
-      return;
-    }
-    result.push({ id: r[1], name });
-  });
-  return result;
+  return rows
+    .filter(r => String(r[0]).trim() === courseStr && r[3] == true && cleanName(r[2]))
+    .map(r => ({ id: r[1], name: cleanName(r[2]) }));
 }
 
 function addStudent(course, name) {
