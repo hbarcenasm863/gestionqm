@@ -620,7 +620,14 @@ function addSpecial(course, period, name, weight, pesoAct, pesoFinal) {
   pesoFinal = pesoFinal !== undefined ? Math.round(+pesoFinal * 10) / 10 : '';
   if (!name || isNaN(weight) || weight <= 0 || weight > 90) return { ok:false, error:'invalid' };
   if (pesoAct !== '' && pesoFinal !== '') {
-    const total = Math.round((pesoAct + 5 + 5 + pesoFinal + weight) * 10) / 10;
+    // Autoeval/coeval no siempre son 5%/5% — un curso con "Editar pesos"
+    // personalizado (hoja Pesos) puede tener otros valores. Validar contra
+    // 5+5 fijos aquí rechazaba altas válidas (o aceptaba unas que no sumaban
+    // 100% de verdad) en cualquier curso con pesos custom.
+    const baseW = getWeights(course, period);
+    const auto  = baseW ? baseW.autoeval : 5;
+    const co    = baseW ? baseW.coeval   : 5;
+    const total = Math.round((pesoAct + auto + co + pesoFinal + weight) * 10) / 10;
     if (Math.abs(total - 100) > 0.05) return { ok:false, error:'invalid_total', total };
   }
   const specials = getSpecials(course, period);
