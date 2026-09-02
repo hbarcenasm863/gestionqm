@@ -178,12 +178,16 @@ function consultarEstudiante(code) {
     const actAvg  = actVals.length
       ? actVals.reduce((a,b)=>a+_gnum(b),0)/actVals.length : null;
 
+    // ✅ FIX: estos dos "weight:5" quedaban fijos aunque weights.autoeval /
+    // weights.coeval (ya corregidos arriba con _getWeights) trajeran otro
+    // valor — sumW más abajo pesa por c.weight, así que la definitiva seguía
+    // calculándose con 5%/5% aunque _calcPesos ya devolviera los reales.
     const componentes = [
       { key:'actividades', label:'Actividades de clase', weight:weights.actividades,
         grade:actAvg, actItems },
-      { key:'autoeval', label:'Autoevaluación', weight:5,
+      { key:'autoeval', label:'Autoevaluación', weight:weights.autoeval,
         grade: gmap['autoeval___']!==undefined ? gmap['autoeval___'] : null },
-      { key:'coeval',   label:'Coevaluación',   weight:5,
+      { key:'coeval',   label:'Coevaluación',   weight:weights.coeval,
         grade: gmap['coeval___']!==undefined   ? gmap['coeval___']   : null },
       { key:'final',    label:'Evaluación final', weight:weights.final,
         grade: gmap['final___']!==undefined    ? gmap['final___']    : null }
