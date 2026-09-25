@@ -310,7 +310,8 @@ function doPost(e) {
     if (b.action === 'removeStudent')     return json(removeStudent(b.course, b.studentId));
     if (b.action === 'updateStudent')     return json(updateStudent(b.course, b.studentId, b.name, b.code));
     if (b.action === 'transferStudent')   return json(transferStudent(b.course, b.studentId, b.destCourse));
-    if (b.action === 'saveGrade')         return json(saveGrade(b));
+    if (b.action === 'saveGrade')         return json(saveGradeLocked(b));
+    if (b.action === 'saveGrades')        return json(saveGrades(b.items));
     if (b.action === 'addSpecial')        return json(addSpecial(b.course, b.period, b.name, b.weight, b.pesoAct, b.pesoFinal));
     if (b.action === 'saveWeights')       return json(saveWeightsFn(b.course, +b.period, +b.pesoAct, +b.pesoAuto, +b.pesoCoeval, +b.pesoFinal, b.especiales));
     if (b.action === 'removeSpecial')     return json(removeSpecial(b.course, b.period, b.specialId));
@@ -702,6 +703,42 @@ function saveGrade(b) {
     _invalidate(SH_GRADES);
   }
   return { ok:true };
+}
+
+// LockService: saveGrade LEE la hoja y luego escribe por número de fila.
+// Sin lock, dos guardados casi simultáneos (el profesor digitando rápido)
+// pueden duplicar filas o, si uno borra una fila, desplazar el índice que el
+// otro ya había calculado y escribir la nota sobre la fila equivocada.
+function saveGradeLocked(b) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    _invalidate(SH_GRADES);
+    return saveGrade(b);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// Guardado manual (botón 💾 Guardar): recibe varias notas y las escribe
+// todas dentro de un solo lock. Devuelve cuántas quedaron guardadas.
+function saveGrades(items) {
+  if (!Array.isArray(items)) return { ok:false, error:'invalid_items' };
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    _invalidate(SH_GRADES);
+    let saved = 0;
+    const failed = [];
+    items.forEach(it => {
+      const r = saveGrade(it);
+      if (r && r.ok) saved++;
+      else failed.push({ studentId: it.studentId, component: it.component, itemId: it.itemId });
+    });
+    return { ok: failed.length === 0, saved, failed };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function getGrades(course, period) {

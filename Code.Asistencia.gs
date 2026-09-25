@@ -251,12 +251,12 @@ function updateStudent(course, studentId, name) {
 // ════════════════════════════════════════════════════════════════
 // ATTENDANCE
 // ════════════════════════════════════════════════════════════════
+// La columna de fecha suele volver de la hoja como objeto Date, así que
+// compararla con '==' contra el string YYYY-MM-DD nunca coincidía y la
+// sesión se mostraba en blanco al cambiar de fecha. Se normaliza igual que
+// getAttendanceDate.
 function getAttendance(course, date) {
-  const { rows } = sheetRows(SH_ATT_ATTENDANCE);
-  const result = {};
-  rows.filter(r => r[0]==course && r[1]==date)
-      .forEach(r => result[r[2]] = r[3]);
-  return result;
+  return getAttendanceDate(course, date);
 }
 
 function getAttendanceDate(course, date) {
@@ -316,8 +316,50 @@ function markAttendance(course, date, studentId, status) {
   }
 }
 
+// Guarda de una sola vez el estado de varios estudiantes para una fecha
+// (usado por "Marcar todos" y por el botón 💾 Guardar). Todo ocurre dentro
+// de un solo lock y con una sola lectura de la hoja: antes se llamaba a
+// markAttendance() por estudiante, lo que releía la hoja completa N veces y
+// podía superar el tiempo de espera del navegador, dejando celdas sin guardar.
+// status vacío = borrar la marca. Si existen filas duplicadas de un mismo
+// estudiante/fecha (de versiones anteriores), se deja solo una.
 function markAll(course, date, records) {
-  records.forEach(r => markAttendance(course, date, r.studentId, r.status));
-  writeLog('markAll', course, records.length + ' registro(s) · ' + normDate(date));
-  return { ok: true };
+  date = normDate(date);
+  if (!course || !date || !Array.isArray(records)) return { ok:false, error:'invalid' };
+  const courseStr = String(course);
+  const wanted = {};
+  records.forEach(r => { if (r && r.studentId) wanted[String(r.studentId)] = r.status ? String(r.status) : ''; });
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const { sh, rows } = sheetRows(SH_ATT_ATTENDANCE);
+    const existing = {};
+    rows.forEach((r, i) => {
+      if (String(r[0]) === courseStr && normDate(r[1]) === date) {
+        const sid = String(r[2]);
+        if (wanted.hasOwnProperty(sid)) (existing[sid] = existing[sid] || []).push(i + 2);
+      }
+    });
+    const toDelete = [], toAppend = [];
+    Object.keys(wanted).forEach(sid => {
+      const st = wanted[sid];
+      const rowNums = existing[sid] || [];
+      if (!st) { rowNums.forEach(n => toDelete.push(n)); return; }
+      if (rowNums.length) {
+        const keep = rowNums[rowNums.length - 1];
+        if (String(rows[keep - 2][3]) !== st) sh.getRange(keep, 4).setValue(st);
+        rowNums.slice(0, -1).forEach(n => toDelete.push(n));
+      } else {
+        toAppend.push([course, date, sid, st]);
+      }
+    });
+    toDelete.sort((a, b) => b - a).forEach(n => sh.deleteRow(n));
+    if (toAppend.length) sh.getRange(sh.getLastRow() + 1, 1, toAppend.length, 4).setValues(toAppend);
+    SpreadsheetApp.flush();
+  } finally {
+    lock.releaseLock();
+  }
+  writeLog('markAll', course, records.length + ' registro(s) · ' + date);
+  return { ok: true, saved: Object.keys(wanted).length };
 }

@@ -673,6 +673,8 @@ body {
 .btn-danger { background: none; border-color: #fca5a5; color: var(--fail); }
 .btn-danger:hover { background: var(--fail); color: white; border-color: var(--fail); }
 .btn-sm { padding: 5px 11px; font-size: .74rem; }
+.save-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 10px; }
+.save-status { font-size:.72rem; font-weight:700; white-space:nowrap; }
 
 /* STATS */
 .stats-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
@@ -1937,6 +1939,216 @@ async function flushOfflineQueue() {
 } // 'daily' | 'matrix'
 var pendingSaves={}, saveTimers={};
 
+/* ═══ CAMBIOS SIN GUARDAR (asistencia y notas) ═══
+   Cada marca/nota se guarda sola en segundo plano, pero antes, si esa
+   petición fallaba (red lenta del colegio, servidor ocupado), el cambio se
+   perdía en silencio y al reabrir la celda aparecía en blanco. Ahora todo
+   cambio queda anotado aquí —y en localStorage, para sobrevivir a un cierre
+   o recarga— hasta que el servidor confirma que lo guardó. El botón
+   💾 Guardar reenvía lo pendiente a demanda y verifica contra el servidor. */
+var unsaved = (function(){
+  try {
+    var u = JSON.parse(localStorage.getItem('gqm_unsaved') || '{}');
+    return { att: u.att || {}, grd: u.grd || {} };
+  } catch(e) { return { att:{}, grd:{} }; }
+})();
+function persistUnsaved(){
+  try { localStorage.setItem('gqm_unsaved', JSON.stringify(unsaved)); } catch(e) {}
+}
+function unsavedCount(type, course){
+  return Object.keys(unsaved[type]).filter(function(k){
+    return !course || k.indexOf(course + '|') === 0;
+  }).length;
+}
+
+/* ── Asistencia ── clave: curso|fecha|idEstudiante → estado ('' = borrar) */
+var attFlushTimer = null, attFlushChain = Promise.resolve();
+function attSetUnsaved(c, date, sid, status){
+  unsaved.att[c + '|' + date + '|' + sid] = status || '';
+  persistUnsaved();
+}
+// Reaplica sobre el caché lo que aún no confirma el servidor, para que una
+// recarga desde el servidor no muestre en blanco lo que el profesor marcó.
+// Solo toca fechas ya cargadas: crear la entrada haría creer que la fecha
+// ya se trajo del servidor y nunca se pediría.
+function attOverlayUnsaved(c){
+  if (!attCache[c] || !attCache[c].attendance) return;
+  Object.keys(unsaved.att).forEach(function(k){
+    var p = k.split('|');
+    if (p[0] !== c) return;
+    var day = attCache[c].attendance[c + '_' + p[1]];
+    if (!day) return;
+    var sid = p.slice(2).join('|'), st = unsaved.att[k];
+    if (st) day[sid] = st; else delete day[sid];
+  });
+}
+function attScheduleFlush(){
+  clearTimeout(attFlushTimer);
+  attFlushTimer = setTimeout(function(){ attFlush(false); }, 800);
+}
+// Los envíos van en fila (uno detrás de otro): si dos toques rápidos sobre el
+// mismo estudiante viajaban en paralelo, podían llegar en desorden y el
+// servidor quedaba con el estado anterior.
+function attFlush(manual){
+  clearTimeout(attFlushTimer);
+  var run = attFlushChain.then(function(){ return attFlushOnce(manual); });
+  attFlushChain = run.catch(function(){});
+  return run;
+}
+async function attFlushOnce(manual){
+  var snap = Object.assign({}, unsaved.att);
+  var keys = Object.keys(snap);
+  var ok = 0, fail = 0;
+  if (keys.length) {
+    var groups = {};
+    keys.forEach(function(k){
+      var p = k.split('|');
+      var g = p[0] + '|' + p[1];
+      (groups[g] = groups[g] || []).push({ key:k, studentId:p.slice(2).join('|'), status:snap[k] });
+    });
+    for (var g in groups) {
+      var gp = g.split('|'), recs = groups[g];
+      var res = await apiAttPost({ action:'markAll', course:gp[0], date:gp[1],
+        records: recs.map(function(r){ return { studentId:r.studentId, status:r.status }; }) }, 60000, true);
+      if (res && res.ok) {
+        recs.forEach(function(r){ if (unsaved.att[r.key] === r.status) delete unsaved.att[r.key]; });
+        ok += recs.length;
+      } else {
+        fail += recs.length;
+      }
+    }
+    persistUnsaved();
+  }
+  attRefreshSaveStatus();
+  if (fail && !manual) toast('⚠ Asistencia sin guardar (' + fail + ') — revisa la conexión y usa 💾 Guardar');
+  return { ok:ok, fail:fail };
+}
+function attRefreshSaveStatus(){
+  var el = document.getElementById('attSaveStatus');
+  if (!el) return;
+  var n = unsavedCount('att', activeCourse);
+  el.textContent = n ? '⚠ ' + n + ' cambio' + (n>1?'s':'') + ' sin guardar' : '✓ Todo guardado';
+  el.style.color = n ? 'var(--warn)' : 'var(--ok)';
+}
+// Botón 💾: reenvía todo lo marcado en pantalla para la fecha (no solo lo
+// pendiente) y luego relee la fecha del servidor para confirmar que coincide.
+async function attGuardarManual(){
+  var c = activeCourse, date = getDate();
+  if (!attCache[c]) return;
+  var btn = document.getElementById('attSaveBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Guardando…'; }
+  var att = getAtt(c, date);
+  attCache[c].students.forEach(function(s){
+    if (att[s.id]) attSetUnsaved(c, date, s.id, att[s.id]);
+  });
+  var r = await attFlush(true);
+  var msg;
+  if (r.fail) {
+    msg = '⚠ No se pudieron guardar ' + r.fail + ' marca' + (r.fail>1?'s':'') + ' — revisa la conexión e intenta de nuevo';
+  } else {
+    var srv = await apiAtt({ action:'getAttendanceDate', course:c, date:date });
+    if (srv && !srv.error) {
+      var local = getAtt(c, date);
+      var diff = attCache[c].students.filter(function(s){ return (local[s.id]||'') !== (srv[s.id]||''); });
+      if (diff.length) {
+        diff.forEach(function(s){ attSetUnsaved(c, date, s.id, local[s.id]||''); });
+        attScheduleFlush();
+        msg = '⚠ ' + diff.length + ' marca' + (diff.length>1?'s':'') + ' no coincidían con el servidor — reintentando';
+      } else {
+        msg = '✅ Asistencia del ' + date + ' guardada y verificada';
+      }
+    } else {
+      msg = '✅ Asistencia guardada (' + r.ok + ')';
+    }
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar asistencia'; }
+  attRefreshSaveStatus();
+  toast(msg);
+}
+
+/* ── Notas ── clave: la misma de pendingSaves → cuerpo de saveGrade */
+function grdRefreshSaveStatus(){
+  var el = document.getElementById('grdSaveStatus');
+  if (!el) return;
+  var n = unsavedCount('grd', activeCourse);
+  el.textContent = n ? '⚠ ' + n + ' nota' + (n>1?'s':'') + ' sin guardar' : '✓ Todo guardado';
+  el.style.color = n ? 'var(--warn)' : 'var(--ok)';
+}
+// Reaplica sobre el caché las notas aún no confirmadas (ver attOverlayUnsaved).
+function grdOverlayUnsaved(c, p){
+  var d = grdCache[c] && grdCache[c][p];
+  if (!d || !d.grades) return;
+  Object.keys(unsaved.grd).forEach(function(k){
+    var b = unsaved.grd[k];
+    if (b.course !== c || +b.period !== +p || b.studentId === '__col__') return;
+    if (!d.grades[b.component]) d.grades[b.component] = {};
+    if (!d.grades[b.component][b.itemId]) d.grades[b.component][b.itemId] = {};
+    d.grades[b.component][b.itemId][b.studentId] = b.grade;
+  });
+}
+var grdManualBusy = false;
+async function grdGuardarManual(){
+  if (grdManualBusy) return;
+  grdManualBusy = true;
+  var btn = document.getElementById('grdSaveBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Guardando…'; }
+  // Lo que aún espera el debounce de 600 ms pasa directo a la lista
+  Object.keys(pendingSaves).forEach(function(k){
+    clearTimeout(saveTimers[k]);
+    unsaved.grd[k] = pendingSaves[k];
+    delete pendingSaves[k];
+  });
+  persistUnsaved();
+  var keys = Object.keys(unsaved.grd);
+  var msg;
+  if (!keys.length) {
+    msg = '✅ Todas las notas ya estaban guardadas';
+  } else {
+    var items = keys.map(function(k){ return unsaved.grd[k]; });
+    var res = await apiGrdPost({ action:'saveGrades', items:items }, 60000, true);
+    var ok = 0, fail = 0;
+    if (res && res.error === 'unknown') {
+      // Servidor sin actualizar todavía: guardar una por una
+      for (var i = 0; i < keys.length; i++) {
+        var b = unsaved.grd[keys[i]];
+        var r1 = await apiGrdPost(Object.assign({ action:'saveGrade' }, b), 20000, true);
+        if (r1 && r1.ok) { if (unsaved.grd[keys[i]] === b) delete unsaved.grd[keys[i]]; ok++; }
+        else fail++;
+      }
+    } else if (res && !res.error) {
+      var failedSet = {};
+      (res.failed || []).forEach(function(f){ failedSet[f.component + '|' + f.itemId + '|' + f.studentId] = 1; });
+      keys.forEach(function(k, i){
+        var b = items[i];
+        if (failedSet[b.component + '|' + b.itemId + '|' + b.studentId]) { fail++; return; }
+        if (unsaved.grd[k] === b) delete unsaved.grd[k];
+        ok++;
+      });
+    } else {
+      fail = keys.length;
+    }
+    persistUnsaved();
+    msg = fail
+      ? '⚠ No se pudieron guardar ' + fail + ' nota' + (fail>1?'s':'') + ' — revisa la conexión e intenta de nuevo'
+      : '✅ ' + ok + ' nota' + (ok>1?'s':'') + ' guardada' + (ok>1?'s':'');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar notas'; }
+  grdManualBusy = false;
+  grdRefreshSaveStatus();
+  toast(msg);
+}
+
+// Aviso del navegador si se intenta cerrar con cambios sin confirmar.
+window.addEventListener('beforeunload', function(e) {
+  if (unsavedCount('att') || unsavedCount('grd') || Object.keys(pendingSaves).length) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+window.addEventListener('online', function() {
+  if (unsavedCount('att')) attScheduleFlush();
+});
+
 /* ═══ SCREENS ═══ */
 function showScreen(id) {
   document.getElementById('loginScreen').style.display = 'none';
@@ -2159,9 +2371,9 @@ async function apiAtt(params) {
     return {error:'network'};
   }
 }
-async function apiAttPost(body) {
+async function apiAttPost(body, timeoutMs, noQueue) {
   var controller = new AbortController();
-  var timer = setTimeout(function(){ controller.abort(); }, 15000);
+  var timer = setTimeout(function(){ controller.abort(); }, timeoutMs || 15000);
   try {
     var r = await fetch(URL_ATT, {method:'POST',
       body: JSON.stringify(Object.assign({}, body, {pwd: SESSION_PWD})),
@@ -2170,7 +2382,7 @@ async function apiAttPost(body) {
     return r.json();
   } catch(e) {
     clearTimeout(timer);
-    if (!navigator.onLine) {
+    if (!navigator.onLine && !noQueue) {
       offlineQueue.push({type:'att', body: body});
       try { localStorage.setItem('gqm_offline_queue', JSON.stringify(offlineQueue)); } catch(ex) {}
       toast('📴 Sin red — asistencia en cola offline');
@@ -2202,9 +2414,9 @@ async function apiGrd(params, pwd) {
   return {error: 'timeout'};
 }
 
-async function apiGrdPost(body) {
+async function apiGrdPost(body, timeoutMs, noQueue) {
   var controller = new AbortController();
-  var timer = setTimeout(function(){ controller.abort(); }, 15000);
+  var timer = setTimeout(function(){ controller.abort(); }, timeoutMs || 15000);
   try {
     var r = await fetch(URL_GRD, {method:'POST',
       body: JSON.stringify(Object.assign({}, body, {pwd: SESSION_PWD})),
@@ -2214,7 +2426,7 @@ async function apiGrdPost(body) {
   } catch(e) {
     clearTimeout(timer);
     // Guardar en cola offline si no hay red
-    if (!navigator.onLine) {
+    if (!navigator.onLine && !noQueue) {
       offlineQueue.push({type:'grd', body: body});
       try { localStorage.setItem('gqm_offline_queue', JSON.stringify(offlineQueue)); } catch(ex) {}
       toast('📴 Sin red — guardado en cola offline');
@@ -2619,6 +2831,7 @@ async function loadAttCourse(course) {
     }
   }
   renderAttMain();
+  if (unsavedCount('att')) attScheduleFlush();
 }
 
 async function attCambiarFecha(date) {
@@ -2626,16 +2839,24 @@ async function attCambiarFecha(date) {
   if (!attCache[c]) return;
   var key = c+'_'+date;
   if (!attCache[c].attendance[key]) {
-    try {
-      var r = await apiAtt({action:'getAttendance', course:c, date:date});
-      attCache[c].attendance[key] = (r&&!r.error) ? r : {};
-    } catch(e) { attCache[c].attendance[key] = {}; }
+    var r = await apiAtt({action:'getAttendanceDate', course:c, date:date});
+    if (r && !r.error) attCache[c].attendance[key] = r;
+    else {
+      // No se cachea un {} por un error: se vería la fecha en blanco como si
+      // no se hubiera tomado asistencia, y no se volvería a pedir.
+      toast('⚠ No se pudo cargar la asistencia del ' + date + ' — intenta de nuevo');
+      attCache[c].attendance[key] = {};
+      renderAttMain();
+      delete attCache[c].attendance[key];
+      return;
+    }
   }
   renderAttMain();
 }
 
 function renderAttMain() {
   if (attViewMode === 'matrix') { renderAttMatrix(); return; }
+  attOverlayUnsaved(activeCourse);
   var c = activeCourse;
   var inp = document.getElementById('dateInput');
   var date = (inp && inp.value) ? inp.value : today();
@@ -2714,6 +2935,10 @@ function renderAttMain() {
     ' style="border:1.5px solid var(--bord);border-radius:7px;padding:4px 8px;font-size:.76rem;background:white;color:var(--text);outline:none"' +
     ' onchange="syncMobDate(this.value)"></div>' +
     '</div>' +
+    '<div class="save-bar">' +
+    '<button class="btn btn-att btn-sm" id="attSaveBtn" onclick="attGuardarManual()">💾 Guardar asistencia</button>' +
+    '<span id="attSaveStatus" class="save-status"></span>' +
+    '</div>' +
     '<div class="tbl-wrap"><table class="tbl">' +
     '<thead><tr><th>Estudiante</th><th style="width:150px">Estado</th><th style="width:56px"></th></tr></thead>' +
     '<tbody>' + rows + '</tbody>' +
@@ -2726,6 +2951,7 @@ function renderAttMain() {
     sincBanner +
     histHtml;
 
+  attRefreshSaveStatus();
   // Sync mob date
   setTimeout(function(){
     var mob=document.getElementById('dateInputMob');
@@ -2768,17 +2994,18 @@ async function attMark(studentId,status){
   var cur=attCache[c].attendance[k][studentId];
   if(cur===status) delete attCache[c].attendance[k][studentId];
   else attCache[c].attendance[k][studentId]=status;
+  attSetUnsaved(c,date,studentId,cur===status?'':status);
   renderAttMain();
-  await apiAttPost({action:'markAttendance',course:c,date:date,studentId:studentId,status:cur===status?'':status});
+  attScheduleFlush();
 }
 
 async function attMarkAll(status){
   var c=activeCourse, date=getDate(), k=attKey(c,date);
   if(!attCache[c].attendance[k]) attCache[c].attendance[k]={};
-  attCache[c].students.forEach(function(s){ attCache[c].attendance[k][s.id]=status; });
+  attCache[c].students.forEach(function(s){ attCache[c].attendance[k][s.id]=status; attSetUnsaved(c,date,s.id,status); });
   renderAttMain();
-  await apiAttPost({action:'markAll',course:c,date:date,records:attCache[c].students.map(function(s){ return {studentId:s.id,status:status}; })});
   toast('Todos: ' + (status==='P'?'Presente':'Ausente'));
+  attFlush(false);
 }
 
 async function attAddStu(){
@@ -2936,6 +3163,7 @@ async function grdLoadView(course,period){
 function grdRenderMain(){
   var data=grdCache[activeCourse]&&grdCache[activeCourse][activePeriod];
   if(!data)return;
+  grdOverlayUnsaved(activeCourse, activePeriod);
   var students=data.students, weights=data.weights, actNames=data.actNames, grades=data.grades;
   var specials=weights.especiales||[];
   var baseW=computeWeights(specials);
@@ -2954,6 +3182,8 @@ function grdRenderMain(){
     '<div><div class="course-label">Curso ' + activeCourse + '</div>' +
     '<div class="course-meta">Periodo ' + activePeriod + ' · ' + students.length + ' estudiante' + (students.length!==1?'s':'') + '</div></div>' +
     '<div class="head-actions">' +
+    '<span id="grdSaveStatus" class="save-status"></span>' +
+    '<button class="btn btn-gold btn-sm" id="grdSaveBtn" onclick="grdGuardarManual()">💾 Guardar notas</button>' +
     '<button class="btn btn-outline btn-sm" onclick="openModal(\'specialModal\')">+ Especial</button>' +
     '<button class="btn btn-gold btn-sm" onclick="grdOpenActColModal()">+ Actividad</button>' +
     '</div></div>' +
@@ -2990,6 +3220,7 @@ function grdRenderMain(){
     ' onkeydown="if(event.key===\'Enter\')grdAddStu()">' +
     '<button class="btn btn-outline btn-sm" onclick="grdAddStu()">+ Agregar</button>' +
     '</div>';
+  grdRefreshSaveStatus();
 }
 
 function grdBuildUnifiedTable(students,actNames,grades,baseW,specials){
@@ -3337,6 +3568,7 @@ function grdDoSave(inp){
   var v=raw===''?null:(raw.toUpperCase()==='NE'&&comp!=='nivelacion'?'NE':Math.round(parseFloat(raw)*10)/10);
   var key=activeCourse+'_'+activePeriod+'_'+comp+'_'+item+'_'+sid;
   pendingSaves[key]={course:activeCourse,period:activePeriod,component:comp,itemId:item,studentId:sid,grade:v};
+  unsaved.grd[key]=pendingSaves[key]; persistUnsaved(); grdRefreshSaveStatus();
   clearTimeout(saveTimers[key]);
   saveTimers[key]=setTimeout(function(){ grdFlushSave(key); },600);
 }
@@ -3344,8 +3576,13 @@ function grdDoSave(inp){
 async function grdFlushSave(key){
   var b=pendingSaves[key]; if(!b)return;
   delete pendingSaves[key];
-  var res=await apiGrdPost(Object.assign({action:'saveGrade'},b));
-  if(res.error) toast('⚠ Error al guardar nota');
+  var res=await apiGrdPost(Object.assign({action:'saveGrade'},b), 20000, true);
+  if(res && res.ok){
+    if(unsaved.grd[key]===b){ delete unsaved.grd[key]; persistUnsaved(); }
+  } else {
+    toast('⚠ Nota sin guardar — usa 💾 Guardar notas para reintentar');
+  }
+  grdRefreshSaveStatus();
 }
 
 // Si el profesor cierra/recarga la pestaña dentro de la ventana de 600ms del
@@ -5081,6 +5318,7 @@ function renderAttMatrixLoading() {
 
 function renderAttMatrix() {
   var c = activeCourse;
+  attOverlayUnsaved(c);
   var data = attCache[c]||{students:[],attendance:{}};
   var sts = data.students.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
 
@@ -5238,9 +5476,10 @@ async function matSetStatus(stuId, date, status) {
   if (!attCache[c].attendance[key]) attCache[c].attendance[key] = {};
   if (status) attCache[c].attendance[key][stuId] = status;
   else delete attCache[c].attendance[key][stuId];
+  attSetUnsaved(c, date, stuId, status);
   renderAttMatrix();
-  await apiAttPost({action:'markAttendance', course:c, date:date, studentId:stuId, status:status});
-  toast((status ? status : 'Sin marcar') + ' guardado');
+  var r = await attFlush(false);
+  if (!r.fail) toast((status ? status : 'Sin marcar') + ' guardado');
 }
 
 /* ═══ SINCRONIZAR HISTORIAL DE ASISTENCIA ═══ */
