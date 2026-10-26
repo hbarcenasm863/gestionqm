@@ -1373,6 +1373,59 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   .topbar-center { display: none; }
   .icon-btn { padding: 5px 7px; font-size: .7rem; }
 }
+
+/* ═══ CELULAR EN HORIZONTAL ═══
+   En horizontal el ancho (~800-950px) no activa las reglas móviles, pero la
+   altura es mínima: se compacta la barra superior y la lateral, y la tabla de
+   notas deja de apretar columnas (table-layout fixed + width 100%) para
+   desplazarse dentro de su propio contenedor con encabezado y nombre fijos. */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root { --sw: 64px; }
+  .sidebar-head, .cct, .cdot,
+  .ap-badge, .sidebar-bot .icon-btn span { display: none; }
+  .cbtn { justify-content: center; padding: 10px 0; font-size: .8rem; }
+  .sidebar-bot { padding: 6px; }
+  .sidebar-bot .icon-btn { font-size: 1.1rem; padding: 7px; }
+
+  .topbar { height: 44px; padding: 0 8px; gap: 6px; }
+  .topbar-logo span { display: none; }
+  .topbar-center {
+    justify-content: flex-start; overflow-x: auto; scrollbar-width: none;
+  }
+  .topbar-center::-webkit-scrollbar { display: none; }
+  .mod-tab { padding: 4px 10px; }
+  .mod-tab span:not(:first-child) { display: none; }
+  .ptab { padding: 4px 9px; font-size: .68rem; }
+  .icon-btn { padding: 4px 8px; }
+
+  .main { padding: 8px 10px; }
+  .stats-row { gap: 6px; margin-bottom: 8px; flex-wrap: nowrap; overflow-x: auto; }
+  .stat { padding: 4px 10px; flex-shrink: 0; }
+
+  .tbl-wrap {
+    overflow: auto;
+    max-height: calc(100vh - 60px);
+    max-height: calc(100dvh - 60px);
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    /* que el input enfocado no quede tapado por el nombre o el encabezado fijos */
+    scroll-padding-left: 150px;
+    scroll-padding-top: 64px;
+  }
+  .tbl {
+    table-layout: auto;
+    width: max-content;
+    min-width: 100%;
+    font-size: .78rem;
+  }
+  .tbl th { padding: 6px 4px; }
+  .tbl td { padding: 4px 3px; }
+  .tbl th:first-child,
+  .tbl td:first-child { width: 150px; min-width: 150px; max-width: 150px; }
+  .tbl td:first-child { padding: 4px 6px; font-size: .76rem; }
+  .tbl td.td-def { min-width: 48px; }
+  .ginp { width: 48px; min-width: 48px; font-size: .9rem; padding: 6px 2px; }
+}
 </style>
 </head>
 <body>
@@ -3494,7 +3547,17 @@ function grdUpdateDefCell(sid, data){
   window._statsTimer=setTimeout(grdUpdateStats, 300);
 }
 
-function grdOnFocus(inp){ setTimeout(function(){ inp.select(); },10); }
+var GRD_LANDSCAPE_MQ = window.matchMedia ? window.matchMedia('(orientation: landscape) and (max-height: 500px)') : null;
+function grdOnFocus(inp){
+  setTimeout(function(){ inp.select(); },10);
+  // Celular en horizontal: el teclado tapa casi toda la pantalla; tras abrirse,
+  // se centra la celda enfocada dentro de la tabla.
+  if(GRD_LANDSCAPE_MQ && GRD_LANDSCAPE_MQ.matches && inp.closest('.tbl-wrap')){
+    setTimeout(function(){
+      try { inp.scrollIntoView({block:'center', inline:'nearest'}); } catch(e) {}
+    },350);
+  }
+}
 
 function grdNavKey(e,inp){
   if(e.key==='Tab'||e.key==='Enter'){
