@@ -1,4 +1,4 @@
-const CACHE = 'hbmol-v2';
+const CACHE = 'hbmol-v3';
 const ASSETS = [
   '/gestionqm/',
   '/gestionqm/index.html',
@@ -13,7 +13,9 @@ const NETWORK_TIMEOUT_MS = 3000;
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS))
+    caches.open(CACHE).then(c =>
+      c.addAll(ASSETS.map(u => new Request(u, { cache: 'reload' })))
+    )
   );
   self.skipWaiting();
 });
@@ -45,7 +47,10 @@ self.addEventListener('fetch', e => {
         });
       }, NETWORK_TIMEOUT_MS);
 
-      fetch(e.request).then(res => {
+      // cache:'no-store' salta también la caché HTTP del navegador (GitHub
+      // Pages la permite hasta 10 min): "red primero" debe ser la web real,
+      // no una copia guardada por el navegador.
+      fetch(e.request, { cache: 'no-store' }).then(res => {
         // Solo se cachean respuestas exitosas — un 404/500 pasajero (p.ej.
         // durante un redeploy) no debe reemplazar el último contenido bueno
         // conocido, o quedaría sirviéndose como "respaldo offline" hasta la

@@ -6128,5 +6128,5 @@ init();
 </script>
 
 </body>
-<script>if("serviceWorker"in navigator)window.addEventListener("load",function(){ navigator.serviceWorker.register("./sw.js"); });</script>
+<script>if("serviceWorker"in navigator)window.addEventListener("load",function(){ navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).then(function(r){ r.update(); }); });</script>
 </html>
