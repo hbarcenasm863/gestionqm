@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="HBMol">
 <meta name="theme-color" content="#1a2e5a">
-<link rel="apple-touch-icon" href="hbmol.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="hbmol.png">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/charts/loader.js"></script>
@@ -89,13 +89,13 @@ body {
   text-align: center;
 }
 .login-emblem {
-  width: 64px; height: 64px;
+  width: 96px; height: 96px;
   background: var(--navy);
-  border-radius: 16px;
+  border-radius: 22px;
+  overflow: hidden;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.8rem;
   margin: 0 auto 18px;
-  box-shadow: 0 4px 12px rgba(26,46,90,.3);
+  box-shadow: 0 6px 18px rgba(26,46,90,.35);
 }
 .login-title {
   font-family: 'Syne', sans-serif;
@@ -1052,6 +1052,26 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
+/* ═══ AVISO DE ACTUALIZACIÓN ═══ */
+.update-banner {
+  position: fixed; top: 14px; left: 50%;
+  transform: translate(-50%, -150%);
+  width: min(440px, calc(100% - 32px));
+  display: flex; align-items: center; gap: 10px;
+  background: var(--navy); color: white;
+  padding: 10px 10px 10px 12px; border-radius: 14px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.3);
+  z-index: 1000; transition: transform .3s;
+  font-family: 'Syne', sans-serif;
+}
+.update-banner.show { transform: translate(-50%, 0); }
+.update-banner img { width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0; }
+.update-banner-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: .72rem; line-height: 1.3; }
+.update-banner-txt b { font-size: .8rem; }
+.update-banner-txt span { opacity: .8; }
+.update-banner-btn { background: #22d3ee; color: #031336; border: none; border-radius: 8px; padding: 7px 12px; font: inherit; font-size: .75rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.update-banner-x { background: none; border: none; color: rgba(255,255,255,.7); font-size: .9rem; cursor: pointer; padding: 4px; }
+
 /* ═══ HAMBURGER MENU (mobile) ═══ */
 .hamburger {
   display: none;
@@ -1296,7 +1316,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   body.printing-informe .att-view-toggle,
   body.printing-informe .print-header,
   body.printing-informe .print-footer,
-  body.printing-informe .toast { display: none !important; }
+  body.printing-informe .toast, body.printing-informe .update-banner { display: none !important; }
   body.printing-informe #appShell { display: block !important; height: auto !important; overflow: visible !important; }
   body.printing-informe .app-body { display: block !important; overflow: visible !important; }
   body.printing-informe .main { padding: 0 !important; overflow: visible !important; }
@@ -1434,7 +1454,7 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
 <div id="loginScreen" style="display:none">
 <div class="login-page">
   <div class="login-card">
-    <div class="login-emblem"><img src="hbmol.png" style="width:44px;height:44px;border-radius:10px;object-fit:cover"></div>
+    <div class="login-emblem"><img src="icon-192.png" alt="HBMol" style="width:100%;height:100%;object-fit:cover"></div>
     <div class="login-title">HBMol</div>
     <div class="login-subtitle">Química · Colegio Rufino José Cuervo IED<br>Bogotá, Colombia</div>
     <label class="login-label" for="pwdInput">Contraseña de acceso</label>
@@ -1876,6 +1896,12 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="update-banner" id="updateBanner" role="status">
+  <img src="icon-192.png" alt="">
+  <div class="update-banner-txt"><b>Nueva versión de HBMol</b><span>Actualiza para ver los últimos cambios.</span></div>
+  <button class="update-banner-btn" onclick="location.reload()">Actualizar</button>
+  <button class="update-banner-x" onclick="document.getElementById('updateBanner').classList.remove('show')" aria-label="Cerrar">✕</button>
+</div>
 
 <script>
 /* ═══════════════════════════════════════════
@@ -6128,5 +6154,23 @@ init();
 </script>
 
 </body>
-<script>if("serviceWorker"in navigator)window.addEventListener("load",function(){ navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).then(function(r){ r.update(); }); });</script>
+<script>
+/* Service worker + aviso de actualización: cuando se publica una versión
+   nueva, el SW nuevo toma el control (skipWaiting/clients.claim) y aquí se
+   muestra un aviso para recargar. No se recarga solo, para no interrumpir
+   a alguien que está tomando asistencia o digitando notas. */
+if ("serviceWorker" in navigator) window.addEventListener("load", function () {
+  var hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", function () {
+    if (!hadController) { hadController = true; return; } // primera instalación
+    document.getElementById("updateBanner").classList.add("show");
+  });
+  navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).then(function (r) {
+    r.update();
+    // La PWA puede quedar abierta horas: revisar al volver a la app y cada 30 min.
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) r.update(); });
+    setInterval(function () { r.update(); }, 30 * 60 * 1000);
+  });
+});
+</script>
 </html>
