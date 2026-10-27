@@ -1,9 +1,12 @@
-const CACHE = 'hbmol-v3';
+const CACHE = 'hbmol-v4';
 const ASSETS = [
   '/gestionqm/',
   '/gestionqm/index.html',
   '/gestionqm/manifest.json',
-  '/gestionqm/hbmol.png'
+  '/gestionqm/hbmol.png',
+  '/gestionqm/icon-192.png',
+  '/gestionqm/icon-512.png',
+  '/gestionqm/icon-maskable-512.png'
 ];
 
 // Tiempo máximo que se espera a la red antes de usar el caché como
