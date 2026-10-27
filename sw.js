@@ -1,4 +1,4 @@
-const CACHE = 'hbmol-v5';
+const CACHE = 'hbmol-v6';
 const ASSETS = [
   '/gestionqm/',
   '/gestionqm/index.html',
