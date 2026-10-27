@@ -1612,6 +1612,21 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   .dash-quick-btns { grid-template-columns: 1fr; }
 }
 
+/* Consolidado: botones de periodo */
+.cons-per { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.cons-per:empty { display: none; }
+.cons-per-btn { padding: 5px 12px; border-radius: 99px; border: 1.5px solid var(--bord2); background: white; color: var(--text2); font-size: .76rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.cons-per-btn.on { background: var(--navy); border-color: var(--navy); color: white; }
+
+/* Informes: fechas de los periodos */
+.inf-per-note { font-size: .74rem; color: var(--muted); margin-top: 8px; text-align: center; }
+.per-dates { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.per-row { display: grid; grid-template-columns: 34px 1fr auto 1fr; gap: 8px; align-items: center; }
+.per-lbl { font-family: 'DM Mono', monospace; font-weight: 700; color: var(--navy); font-size: .82rem; }
+.per-sep { font-size: .78rem; color: var(--muted); }
+.per-row .inf-input { padding: 7px 8px; min-width: 0; }
+.per-help { font-size: .72rem; color: var(--muted); margin-bottom: 10px; line-height: 1.45; }
+
 /* Bloqueo automático: ocultar ventanas y menús abiertos sin cerrarlos,
    para que al desbloquear sigan con lo que se estaba digitando */
 body.app-locked .overlay,
@@ -1932,6 +1947,7 @@ body.app-locked .mob-menu-overlay { display: none !important; }
         <input class="minput" type="date" id="consTo">
       </div>
     </div>
+    <div class="cons-per" id="consPer"></div>
     <button class="btn btn-navy" style="width:100%;justify-content:center;margin-bottom:14px"
       onclick="generarConsolidado()">Generar consolidado</button>
     <div id="consResult"></div>
@@ -2522,6 +2538,7 @@ async function launchApp() {
   showScreen('appShell');
   await loadCourses();
   grdConfig = await apiGrd({ action:'getConfig' });
+  loadPeriodDates(); // en segundo plano: no retrasa la entrada
   showDash();
 }
 
@@ -2777,6 +2794,47 @@ async function apiGrdPost(body, timeoutMs, noQueue) {
 }
 
 /* ═══════════════════════════════════════════
+   FECHAS DE LOS PERIODOS ACADÉMICOS
+   Los informes, boletines e informe de grupo cuentan solo la asistencia
+   tomada entre estas fechas. Se guardan en el Apps Script de Notas para
+   que sean las mismas en todos los equipos; si ese script aún no tiene
+   las acciones getPeriodDates/savePeriodDates, se usan las de este equipo
+   (localStorage) o las de abajo. Un periodo sin fechas cuenta toda la
+   asistencia, como antes.
+═══════════════════════════════════════════ */
+var PERIOD_DATES_DEFAULT = { 3: { from: '2026-08-10', to: '2026-11-05' } };
+var PERIOD_DATES = periodDatesFromLocal() || JSON.parse(JSON.stringify(PERIOD_DATES_DEFAULT));
+var PERIOD_DATES_SERVER = false; // true si el Apps Script ya las guarda
+
+function periodDatesFromLocal() {
+  try { var v = JSON.parse(localStorage.getItem('gqm_period_dates') || 'null'); return v && typeof v === 'object' ? v : null; }
+  catch (e) { return null; }
+}
+async function loadPeriodDates() {
+  var res = await apiGrd({ action: 'getPeriodDates' });
+  if (res && !res.error && typeof res === 'object') {
+    PERIOD_DATES_SERVER = true;
+    // Si el servidor aún no tiene ninguna, se conservan las de este equipo
+    if (Object.keys(res).length) {
+      PERIOD_DATES = res;
+      try { localStorage.setItem('gqm_period_dates', JSON.stringify(res)); } catch (e) {}
+    }
+  }
+}
+function periodRange(p) {
+  var r = PERIOD_DATES[p];
+  return (r && r.from && r.to) ? r : null;
+}
+function fmtPeriodRange(r) {
+  if (!r) return '';
+  function f(iso) {
+    var d = new Date(iso + 'T12:00:00');
+    return d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  return f(r.from) + ' – ' + f(r.to);
+}
+
+/* ═══════════════════════════════════════════
    NORMALIZAR FECHA — función utilitaria
    Acepta: ISO string, "dd/mm/yyyy", Date object
    Devuelve: "yyyy-mm-dd" o null si inválida
@@ -2880,10 +2938,25 @@ function openConsolidado() {
   var from = new Date(todayDate); from.setDate(from.getDate()-90);
   document.getElementById('consFrom').value = from.toISOString().split('T')[0];
   document.getElementById('consTo').value   = todayDate.toISOString().split('T')[0];
+  // Botones para usar las fechas de un periodo; por defecto, el periodo en curso
+  var hoy = today(), actual = null;
+  document.getElementById('consPer').innerHTML = [1,2,3].filter(function(p){ return periodRange(p); }).map(function(p){
+    var r = periodRange(p);
+    if (hoy >= r.from && hoy <= r.to) actual = p;
+    return '<button type="button" class="cons-per-btn" id="consPerBtn' + p + '" onclick="consUsarPeriodo(' + p + ')" title="' + fmtPeriodRange(r) + '">Periodo ' + p + '</button>';
+  }).join('');
+  if (actual) consUsarPeriodo(actual);
   document.getElementById('consResult').innerHTML = '';
   document.getElementById('consBtns').style.display = 'none';
   document.getElementById('consBtnsInit').style.display = '';
   openModal('consolidadoModal');
+}
+
+function consUsarPeriodo(p) {
+  var r = periodRange(p); if (!r) return;
+  document.getElementById('consFrom').value = r.from;
+  document.getElementById('consTo').value   = r.to;
+  document.querySelectorAll('.cons-per-btn').forEach(function(b){ b.classList.toggle('on', b.id === 'consPerBtn' + p); });
 }
 
 async function generarConsolidado() {
@@ -4841,11 +4914,12 @@ function infRenderSelector() {
     '<option value="">— Selecciona —</option>' + opts +
     '</select></div>' +
     '<div><label class="inf-lbl">Periodo</label>' +
-    '<select class="inf-select" id="inf-per">' + perOpts + '</select></div>' +
+    '<select class="inf-select" id="inf-per" onchange="infActualizarNotaPeriodo()">' + perOpts + '</select></div>' +
     '</div>' +
     '<div class="inf-sel-full"><label class="inf-lbl">Observaciones del docente (opcional)</label>' +
     '<input class="inf-input" id="inf-obs" type="text" placeholder="Ej: Presenta dificultades en cálculos estequiométricos…"></div>' +
     '<button class="btn-inf" onclick="infGenerar()">📄 Generar informe individual</button>' +
+    '<div class="inf-per-note" id="infPerNote"></div>' +
     '</div>' +
     '<div class="inf-group">' +
     '<div class="inf-group-title">Curso ' + activeCourse + '</div>' +
@@ -4859,7 +4933,45 @@ function infRenderSelector() {
     '<button class="btn-inf-sec" onclick="infComparativas()">📈 Comparativas entre cursos</button>' +
     '<button class="btn-inf-sec rep" onclick="infReprobados()">⚠ Lista de reprobados</button>' +
     '</div></div>' +
+    '<div class="inf-group">' +
+    '<div class="inf-group-title">📅 Fechas de los periodos</div>' +
+    '<div class="per-dates">' + [1,2,3].map(function(p){
+      var r = PERIOD_DATES[p] || {};
+      return '<div class="per-row"><span class="per-lbl">P' + p + '</span>' +
+        '<input type="date" class="inf-input" id="perFrom' + p + '" value="' + (r.from||'') + '" aria-label="Inicio periodo ' + p + '">' +
+        '<span class="per-sep">a</span>' +
+        '<input type="date" class="inf-input" id="perTo' + p + '" value="' + (r.to||'') + '" aria-label="Fin periodo ' + p + '"></div>';
+    }).join('') + '</div>' +
+    '<div class="per-help">La asistencia de los informes, boletines e informe de grupo cuenta solo las clases entre estas fechas. Un periodo vacío cuenta toda la asistencia.</div>' +
+    '<button class="btn-inf-sec" style="width:100%" onclick="infGuardarFechas()">💾 Guardar fechas</button>' +
+    '</div>' +
     '</div>';
+  infActualizarNotaPeriodo();
+}
+
+function infActualizarNotaPeriodo() {
+  var el = document.getElementById('infPerNote'), sel = document.getElementById('inf-per');
+  if (!el || !sel) return;
+  var r = periodRange(parseInt(sel.value));
+  el.textContent = r ? 'Asistencia del periodo: ' + fmtPeriodRange(r) : 'Este periodo no tiene fechas: se cuenta toda la asistencia.';
+}
+
+async function infGuardarFechas() {
+  var nuevo = {};
+  for (var p = 1; p <= 3; p++) {
+    var f = document.getElementById('perFrom' + p).value, t = document.getElementById('perTo' + p).value;
+    if (!f && !t) continue;
+    if (!f || !t) { toast('Periodo ' + p + ': falta la fecha de ' + (f ? 'fin' : 'inicio')); return; }
+    if (f > t) { toast('Periodo ' + p + ': la fecha de inicio es posterior a la de fin'); return; }
+    nuevo[p] = { from: f, to: t };
+  }
+  PERIOD_DATES = nuevo;
+  try { localStorage.setItem('gqm_period_dates', JSON.stringify(nuevo)); } catch (e) {}
+  infActualizarNotaPeriodo();
+  var res = await apiGrdPost({ action: 'savePeriodDates', dates: nuevo }, 15000, true);
+  if (res && res.ok) { PERIOD_DATES_SERVER = true; toast('✓ Fechas guardadas'); }
+  else if (res && res.error === 'unknown') toast('Fechas guardadas solo en este equipo. Actualiza el Apps Script de Notas para usarlas en todos.');
+  else toast('Fechas guardadas en este equipo; no se pudieron enviar al servidor' + (res && res.error ? ' (' + res.error + ')' : ''));
 }
 
 async function infGenerar() {
@@ -4922,19 +5034,25 @@ async function infBuildInformeData(stuId, period, obs) {
   // Asistencia: cargar historial si no está disponible
   var asistencia = null;
   if (attCache[activeCourse] && attCache[activeCourse].historialCargado) {
-    asistencia = infGetAsistencia(student.name, activeCourse);
+    asistencia = infGetAsistencia(student.name, activeCourse, period);
   } else {
     // Intentar cargar sincrónicamente
     try {
       var attFreshInf = await apiAtt({action:'getAllAttendance', course:activeCourse});
       if (attFreshInf && !attFreshInf.error) {
         if (!attCache[activeCourse]) attCache[activeCourse] = {students:[], attendance:{}, historialCargado:false};
+        // Sin la lista de Asistencia no se puede cruzar por nombre (pasaba
+        // al abrir Informes sin haber entrado antes a Asistencia)
+        if (!attCache[activeCourse].students || !attCache[activeCourse].students.length) {
+          var stuFreshInf = await apiAtt({action:'getStudents', course:activeCourse});
+          if (Array.isArray(stuFreshInf)) attCache[activeCourse].students = attValidStudents(stuFreshInf);
+        }
         Object.keys(attFreshInf).forEach(function(rawDate) {
           var clean = normAttDate(rawDate);
           if (clean) attCache[activeCourse].attendance[activeCourse + '_' + clean] = attFreshInf[rawDate];
         });
         attCache[activeCourse].historialCargado = true;
-        asistencia = infGetAsistencia(student.name, activeCourse);
+        asistencia = infGetAsistencia(student.name, activeCourse, period);
       }
     } catch(e) { /* sin asistencia */ }
   }
@@ -4948,7 +5066,7 @@ async function infBuildInformeData(stuId, period, obs) {
   };
 }
 
-function infGetAsistencia(nombre, course) {
+function infGetAsistencia(nombre, course, period) {
   // Si no hay historial cargado, intentar sincronizar en background para próxima vez
   var cache = attCache[course];
   if (!cache || !cache.attendance) return null;
@@ -4977,7 +5095,11 @@ function infGetAsistencia(nombre, course) {
   if (matches.length !== 1) return null;
   var student = matches[0];
   var total=0, asistidas=0, fallas=0, tardanzas=0, justificadas=0;
+  var rango = periodRange(period);
   Object.keys(cache.attendance).forEach(function(k) {
+    // clave: curso_AAAA-MM-DD — solo las clases dentro de las fechas del periodo
+    var fecha = k.slice(course.length + 1);
+    if (rango && (fecha < rango.from || fecha > rango.to)) return;
     var rec = cache.attendance[k];
     if (rec && typeof rec === 'object') {
       var st = rec[student.id];
@@ -5069,7 +5191,7 @@ function infRenderInforme(d) {
     var pct = Math.round((d.asistencia.asistidas/d.asistencia.total)*100);
     var riesgo = pct < 80;
     asistHTML =
-      '<div class="inf-sec">2. Asistencia</div>' +
+      '<div class="inf-sec">2. Asistencia' + infRangoTxt(d.period) + '</div>' +
       '<div class="inf-asist">' +
       infAsistItem(d.asistencia.total, 'Clases', '#1a2e5a') +
       infAsistItem(d.asistencia.asistidas, 'Asistencias', '#166534') +
@@ -5080,7 +5202,7 @@ function infRenderInforme(d) {
       (riesgo?'<div style="font-size:.72rem;color:#991b1b;font-weight:700;margin-bottom:10px">⚠ Asistencia por debajo del 80% — riesgo de pérdida por inasistencia.</div>':'');
   } else {
     asistHTML =
-      '<div class="inf-sec">2. Asistencia</div>' +
+      '<div class="inf-sec">2. Asistencia' + infRangoTxt(d.period) + '</div>' +
       '<div style="font-size:.78rem;color:var(--muted);margin-bottom:12px">No hay datos de asistencia disponibles para este curso en este periodo.</div>';
   }
 
@@ -5173,6 +5295,11 @@ function infRenderInforme(d) {
 function infFi(l, v) {
   return '<div class="inf-fi"><div class="inf-fi-l">' + l + '</div><div class="inf-fi-v">' + infEsc(String(v)) + '</div></div>';
 }
+function infRangoTxt(period) {
+  var r = periodRange(period);
+  return r ? '<span style="font-weight:600;text-transform:none;letter-spacing:0"> · ' + fmtPeriodRange(r) + '</span>' : '';
+}
+
 function infAsistItem(val, lbl, color) {
   return '<div class="inf-asist-item"><div class="inf-asist-n" style="color:' + color + '">' + val + '</div><div class="inf-asist-l">' + lbl + '</div></div>';
 }
@@ -6182,7 +6309,7 @@ async function infGenerarGrupo() {
   var rows = d.students.map(function(s) {
     var definitiva = grdCalcEffective(s, actNames, grades, baseW, specials);
     var nivel = infNivel(definitiva);
-    var asis  = infGetAsistencia(s.name, course);
+    var asis  = infGetAsistencia(s.name, course, period);
     var pctAsis = (asis && asis.total > 0) ? Math.round((asis.asistidas/asis.total)*100) : null;
     return { name:s.name, code:s.code||'', definitiva:definitiva, nivel:nivel, pctAsis:pctAsis };
   }).sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
@@ -6271,6 +6398,7 @@ function infRenderGrupo(d) {
     '<table class="inf-tbl"><thead><tr><th>Nivel</th><th style="text-align:center">Estudiantes</th><th style="text-align:center">%</th></tr></thead>' +
     '<tbody>' + nivelRows + '</tbody></table>' +
 
+    (periodRange(d.period) ? '<div style="font-size:.68rem;color:var(--muted);margin:-4px 0 8px">Asistencia contada entre ' + fmtPeriodRange(periodRange(d.period)) + '.</div>' : '') +
     '<div class="inf-sec">3. Detalle por estudiante</div>' +
     '<table class="inf-tbl"><thead><tr><th>#</th><th>Estudiante</th><th>Código</th><th>Definitiva</th><th>Nivel</th><th style="text-align:center">Asistencia</th></tr></thead>' +
     '<tbody>' + stuRows + '</tbody></table>' +
