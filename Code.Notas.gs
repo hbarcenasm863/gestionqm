@@ -18,7 +18,11 @@
 //     sobrescribir siempre el mismo archivo.
 // ══════════════════════════════════════════════════════════════════
 
-const PASSWORD = '951220';
+// La contraseña NO va escrita aquí (este archivo está en un repositorio
+// público). Se guarda en Apps Script → Configuración del proyecto →
+// Propiedades del script, con el nombre PASSWORD. Si falta, todo responde
+// error 'auth' (nunca se acepta una contraseña vacía).
+const PASSWORD = PropertiesService.getScriptProperties().getProperty('PASSWORD') || '';
 
 const SPREADSHEET_ID_NOTAS = '1FzUF-Rnu_6RB3exJXbtTS3QHyMGz-59vhomP3EXSyGE';
 function getSS() { return SpreadsheetApp.openById(SPREADSHEET_ID_NOTAS); }
@@ -286,7 +290,7 @@ function doGet(e) {
   const p = e.parameter;
   if (p.action === 'ping')         return json({ ok:true });
   if (p.action === 'queryStudent') return json(queryStudent(p.code));
-  if (p.pwd !== PASSWORD)          return json({ error:'auth' });
+  if (!PASSWORD || p.pwd !== PASSWORD) return json({ error:'auth' });
   try {
     if (p.action === 'getStudents') return json(getStudents(p.course));
     if (p.action === 'getAll')      return json(getAll(p.course, +p.period));
@@ -303,7 +307,7 @@ function doGet(e) {
 
 function doPost(e) {
   const b = JSON.parse(e.postData.contents);
-  if (b.pwd !== PASSWORD) return json({ error:'auth' });
+  if (!PASSWORD || b.pwd !== PASSWORD) return json({ error:'auth' });
   try {
     if (b.action === 'addStudent')        return json(addStudent(b.course, b.name, b.code));
     if (b.action === 'addStudents')       return json(addStudents(b.course, b.students));

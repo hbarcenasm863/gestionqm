@@ -17,7 +17,12 @@
 // reciba. Los cursos se administran únicamente desde Code.Notas.gs.
 // ══════════════════════════════════════════════════════════════════
 
-const PASSWORD_ATT = '951220';  // ← MISMA que en Notas
+// La contraseña NO va escrita aquí (este archivo está en un repositorio
+// público). Se guarda en Apps Script → Configuración del proyecto →
+// Propiedades del script, con el nombre PASSWORD. Si falta, todo responde
+// error 'auth' (nunca se acepta una contraseña vacía).
+// Usa la MISMA contraseña que Notas.
+const PASSWORD_ATT = PropertiesService.getScriptProperties().getProperty('PASSWORD') || '';
 
 const SPREADSHEET_ID_ATT = '1_unsXdtPoe3_lqXlV3X3U4VbS9os5_hQMhntIumk-CQ';
 function getSS_ATT() { return SpreadsheetApp.openById(SPREADSHEET_ID_ATT); }
@@ -79,7 +84,7 @@ function writeLog(action, course, detail) {
 // ════════════════════════════════════════════════════════════════
 function doGet(e) {
   const p = e.parameter;
-  if (p.pwd !== PASSWORD_ATT) return jsonOut({ error: 'auth' });
+  if (!PASSWORD_ATT || p.pwd !== PASSWORD_ATT) return jsonOut({ error: 'auth' });
   try {
     if (p.action === 'getStudents')        return jsonOut(getStudents(p.course));
     if (p.action === 'getAllAttendance')    return jsonOut(getAllAttendance(p.course));
@@ -120,7 +125,7 @@ function debugSheet(course) {
 
 function doPost(e) {
   const b = JSON.parse(e.postData.contents);
-  if (b.pwd !== PASSWORD_ATT) return jsonOut({ error: 'auth' });
+  if (!PASSWORD_ATT || b.pwd !== PASSWORD_ATT) return jsonOut({ error: 'auth' });
   try {
     if (b.action === 'addStudent')      return jsonOut(addStudent(b.course, b.name));
     if (b.action === 'addStudents')     return jsonOut(addStudents(b.course, b.names));

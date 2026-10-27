@@ -41,7 +41,7 @@ Esta carpeta (`hbmol/`) es **independiente** del resto del repositorio (`index.h
 1. En el mismo Google Sheet, ve a **Extensiones → Apps Script**.
 2. Borra el contenido del archivo `Code.gs` por defecto y pega **todo** el contenido de `hbmol/Code.Notas.gs`.
 3. Reemplaza la constante `SPREADSHEET_ID_HBMOL` con el ID que copiaste en el paso 1.
-4. (Opcional pero recomendado) Cambia la constante `PASSWORD` por una contraseña propia, distinta de `951220`.
+4. En **Configuración del proyecto → Propiedades del script**, agrega la propiedad `PASSWORD` con tu contraseña. No la escribas en el código: este repositorio es público.
 5. En el editor, selecciona la función `setup` en el desplegable de funciones y ejecútala (▶). La primera vez te pedirá autorizar permisos — acéptalos (son tuyos, sobre tu propio Sheet).
 6. Verifica en el Sheet que se crearon las pestañas: `Config`, `Estudiantes`, `Notas`, `Especiales`, `Pesos`, `Log`, y las hojas-vista `1004-P1`, `1004-P2`, etc. (los 7 cursos por defecto). Si quieres otros cursos desde el arranque, edita `DEFAULT_COURSES` en el código ANTES de correr `setup()` por primera vez (después, usa el panel de administración).
 7. Despliega como aplicación web: **Implementar → Nueva implementación → Aplicación web**.

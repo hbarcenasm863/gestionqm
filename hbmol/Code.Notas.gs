@@ -23,11 +23,12 @@
 // Reemplaza a: gestionqm/Code.gs (backend de notas, NO TOCADO).
 // ══════════════════════════════════════════════════════════════════
 
-const PASSWORD = '951220'; // TODO: cámbiala antes de desplegar. Ver notas de
-                            // seguridad en ANALISIS_Y_DISEÑO.md (sección de
-                            // fragilidades) — sigue siendo un secreto único
-                            // compartido, HBMOL no resuelve eso por sí solo,
-                            // ver ahí las opciones (enlaces firmados, etc.)
+// La contraseña NO va escrita aquí (este archivo está en un repositorio
+// público). Se guarda en Apps Script → Configuración del proyecto →
+// Propiedades del script, con el nombre PASSWORD. Si falta, todo responde
+// error 'auth' (nunca se acepta una contraseña vacía).
+// Sigue siendo un secreto único compartido: ver ANALISIS_Y_DISEÑO.md.
+const PASSWORD = PropertiesService.getScriptProperties().getProperty('PASSWORD') || '';
 
 // TODO: pega aquí el ID del Google Sheet "HBMOL" (el MISMO ID debe ir en
 // Code.Asistencia.gs). Créalo una sola vez siguiendo hbmol/README.md.
@@ -156,7 +157,7 @@ function doGet(e) {
   const p = e.parameter;
   if (p.action === 'ping') return json({ ok:true });
   if (p.action === 'queryStudent') return json(queryStudent(p.code));
-  if (p.pwd !== PASSWORD) return json({ error:'auth' });
+  if (!PASSWORD || p.pwd !== PASSWORD) return json({ error:'auth' });
   try {
     if (p.action === 'getStudents') return json(getStudents(p.course));
     if (p.action === 'getAll') return json(getAll(p.course, +p.period));
@@ -169,7 +170,7 @@ function doGet(e) {
 }
 function doPost(e) {
   const b = JSON.parse(e.postData.contents);
-  if (b.pwd !== PASSWORD) return json({ error:'auth' });
+  if (!PASSWORD || b.pwd !== PASSWORD) return json({ error:'auth' });
   try {
     if (b.action === 'addStudent') return json(addStudent(b.course, b.name, b.code));
     if (b.action === 'addStudents') return json(addStudents(b.course, b.students));
