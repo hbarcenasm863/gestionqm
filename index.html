@@ -1612,6 +1612,12 @@ textarea.minput { resize: vertical; min-height: 90px; line-height: 1.55; }
   .dash-quick-btns { grid-template-columns: 1fr; }
 }
 
+/* Bloqueo automático: ocultar ventanas y menús abiertos sin cerrarlos,
+   para que al desbloquear sigan con lo que se estaba digitando */
+body.app-locked .overlay,
+body.app-locked .mob-menu,
+body.app-locked .mob-menu-overlay { display: none !important; }
+
 /* 9 · Gestión de cursos: "Desactivar" discreto */
 .btn-quiet-danger {
   background: none; border: 1px solid transparent; border-radius: 6px;
@@ -2127,20 +2133,70 @@ var SESSION_PWD = '';
     var navEntries = performance.getEntriesByType && performance.getEntriesByType('navigation');
     navType = (navEntries && navEntries.length) ? navEntries[0].type : '';
   } catch(e) {}
-  var wasTabActive = !!sessionStorage.getItem('gqm_tab_active');
+  // Solo se conserva la sesión en un F5. Antes también se conservaba si la
+  // marca 'gqm_tab_active' seguía puesta, pero en el celular (sobre todo en
+  // la PWA instalada) 'beforeunload' casi nunca se dispara al cerrar la app:
+  // la marca quedaba y al reabrir entraba sin pedir contraseña.
   var stored = sessionStorage.getItem('gqm_pwd');
-  if (stored && (navType === 'reload' || wasTabActive)) {
+  if (stored && navType === 'reload') {
     SESSION_PWD = stored;
   } else {
     sessionStorage.removeItem('gqm_pwd');
   }
-  sessionStorage.setItem('gqm_tab_active', '1');
+  sessionStorage.removeItem('gqm_tab_active'); // marca vieja, ya no se usa
 })();
 
 window.addEventListener('beforeunload', function() {
   grdFlushPendingOnUnload();
-  sessionStorage.removeItem('gqm_tab_active');
 });
+
+/* ═══ BLOQUEO AUTOMÁTICO ═══
+   Si la app queda abierta (celular en el escritorio, PC del salón), se
+   bloquea y vuelve a pedir la contraseña:
+   - al volver a la app después de LOCK_HIDDEN_MS en segundo plano, o
+   - tras LOCK_IDLE_MS sin tocar la pantalla ni el teclado.
+   El bloqueo no cierra la sesión por dentro: lo que se esté guardando o
+   esté en cola offline sigue sincronizándose, y al desbloquear todo queda
+   como estaba (mismo curso, mismas notas digitadas). */
+var LOCK_HIDDEN_MS = 2 * 60 * 1000;
+var LOCK_IDLE_MS   = 15 * 60 * 1000;
+var APP_LOCKED = false;
+var lastActivity = Date.now();
+var hiddenSince = 0;
+
+function lockApp() {
+  if (APP_LOCKED || !SESSION_PWD) return;
+  APP_LOCKED = true;
+  sessionStorage.removeItem('gqm_pwd'); // un F5 estando bloqueado también pide contraseña
+  document.body.classList.add('app-locked');
+  showScreen('loginScreen');
+  var inp = document.getElementById('pwdInput');
+  inp.value = '';
+  document.querySelector('.login-btn').textContent = 'Desbloquear';
+  document.querySelector('.login-btn').disabled = false;
+  document.getElementById('loginErr').style.display = 'none';
+}
+
+function unlockApp(pwd) {
+  APP_LOCKED = false;
+  sessionStorage.setItem('gqm_pwd', pwd);
+  document.body.classList.remove('app-locked');
+  document.querySelector('.login-btn').textContent = 'Ingresar';
+  lastActivity = Date.now();
+  showScreen('appShell');
+}
+
+['pointerdown','keydown','touchstart','wheel'].forEach(function(ev){
+  document.addEventListener(ev, function(){ lastActivity = Date.now(); }, { passive: true, capture: true });
+});
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) { hiddenSince = Date.now(); return; }
+  if (hiddenSince && Date.now() - hiddenSince >= LOCK_HIDDEN_MS) lockApp();
+  hiddenSince = 0;
+});
+setInterval(function() {
+  if (!document.hidden && Date.now() - lastActivity >= LOCK_IDLE_MS) lockApp();
+}, 30 * 1000);
 
 var activeModule = 'dash';
 var activeCourse = localStorage.getItem('gqm_course') || COURSES[0];
@@ -2421,17 +2477,25 @@ async function doLogin() {
   if (!pwd) return;
   var btn = document.querySelector('.login-btn');
   var errEl = document.getElementById('loginErr');
+  if (APP_LOCKED) {
+    // Desbloqueo: se compara con la contraseña de la sesión en curso, sin
+    // red, para que funcione también sin internet.
+    if (pwd === SESSION_PWD) { unlockApp(pwd); return; }
+    errEl.textContent = 'Contraseña incorrecta. Intenta de nuevo.';
+    errEl.style.display = 'block';
+    return;
+  }
   btn.textContent = 'Verificando…'; btn.disabled = true;
   errEl.style.display = 'none';
   try {
     var res = await apiGrd({ action:'getStudents', course:COURSES[0] }, pwd);
     if (res.error === 'auth') {
-      errEl.style.display = '';
+      errEl.style.display = 'block';
       btn.textContent = 'Ingresar'; btn.disabled = false; return;
     }
     if (res.error) {
       errEl.textContent = 'Error: ' + res.error;
-      errEl.style.display = '';
+      errEl.style.display = 'block';
       btn.textContent = 'Ingresar'; btn.disabled = false; return;
     }
     SESSION_PWD = pwd;
@@ -2439,13 +2503,14 @@ async function doLogin() {
     launchApp();
   } catch(e) {
     errEl.textContent = 'Error de conexión. Verifica tu internet.';
-    errEl.style.display = '';
+    errEl.style.display = 'block';
     btn.textContent = 'Ingresar'; btn.disabled = false;
   }
 }
 
 function logout() {
   sessionStorage.removeItem('gqm_pwd'); SESSION_PWD = '';
+  APP_LOCKED = false; document.body.classList.remove('app-locked');
   showScreen('loginScreen');
   document.getElementById('pwdInput').value = '';
   document.querySelector('.login-btn').textContent = 'Ingresar';

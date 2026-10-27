@@ -26,9 +26,13 @@
 // Reemplaza a: gestionqm/Code.gs (backend de asistencia, NO TOCADO).
 // ══════════════════════════════════════════════════════════════════
 
-const PASSWORD_ATT = '951220'; // TODO: cámbiala. Ideal: distinta de PASSWORD
-                                // de Notas si quieres separar quién puede
-                                // tocar qué módulo (ver ANALISIS_Y_DISEÑO.md).
+// La contraseña NO va escrita aquí (este archivo está en un repositorio
+// público). Se guarda en Apps Script → Configuración del proyecto →
+// Propiedades del script, con el nombre PASSWORD. Si falta, todo responde
+// error 'auth' (nunca se acepta una contraseña vacía).
+// Si quieres separar quién toca qué módulo, usa aquí otra propiedad
+// (ver ANALISIS_Y_DISEÑO.md).
+const PASSWORD_ATT = PropertiesService.getScriptProperties().getProperty('PASSWORD') || '';
 
 // TODO: EL MISMO ID que pegaste en Code.Notas.gs → SPREADSHEET_ID_HBMOL.
 const SPREADSHEET_ID_HBMOL = 'PEGA_AQUI_EL_ID_DEL_SHEET_HBMOL';
@@ -70,7 +74,7 @@ function logAudit(action, course, detail) {
 
 function doGet(e) {
   const p = e.parameter;
-  if (p.pwd !== PASSWORD_ATT) return jsonOut({ error: 'auth' });
+  if (!PASSWORD_ATT || p.pwd !== PASSWORD_ATT) return jsonOut({ error: 'auth' });
   try {
     if (p.action === 'getStudents') return jsonOut(getStudents(p.course));
     if (p.action === 'getAllAttendance') return jsonOut(getAllAttendance(p.course));
@@ -84,7 +88,7 @@ function doGet(e) {
 }
 function doPost(e) {
   const b = JSON.parse(e.postData.contents);
-  if (b.pwd !== PASSWORD_ATT) return jsonOut({ error: 'auth' });
+  if (!PASSWORD_ATT || b.pwd !== PASSWORD_ATT) return jsonOut({ error: 'auth' });
   try {
     // NOTA: ya NO hay addStudent/addStudents/removeStudent aquí a propósito.
     // Gestiona el roster desde el módulo de Notas (misma hoja "Estudiantes").
