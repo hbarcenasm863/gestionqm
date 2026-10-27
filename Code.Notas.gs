@@ -297,12 +297,40 @@ function doGet(e) {
     if (p.action === 'getConfig')   return json(getConfig());
     if (p.action === 'getCourses')  return json(getCourses());
     if (p.action === 'downloadBackup') return json({ csv: generateFullCSV() });
+    if (p.action === 'getPeriodDates') return json(getPeriodDates());
     if (p.action === 'saveWeights') {
       const esp = p.especiales ? JSON.parse(p.especiales) : [];
       return json(saveWeightsFn(p.course, +p.period, +p.pesoAct, +p.pesoAuto, +p.pesoCoeval, +p.pesoFinal, esp));
     }
     return json({ error:'unknown' });
   } catch(e) { return json({ error: e.message }); }
+}
+
+// ════════════════════════════════════════════════════════════════
+// FECHAS DE LOS PERIODOS ACADÉMICOS
+// Se guardan en Propiedades del script (clave PERIOD_DATES) como
+// { "1": {"from":"2026-01-26","to":"2026-04-10"}, "3": {...} }.
+// Los informes las usan para contar solo la asistencia del periodo.
+// ════════════════════════════════════════════════════════════════
+function getPeriodDates() {
+  const raw = PropertiesService.getScriptProperties().getProperty('PERIOD_DATES');
+  if (!raw) return {};
+  try { return JSON.parse(raw); } catch (e) { return {}; }
+}
+
+function savePeriodDates(dates) {
+  const ISO = /^\d{4}-\d{2}-\d{2}$/;
+  const clean = {};
+  PERIODS.forEach(p => {
+    const d = dates && dates[p];
+    if (!d || !d.from || !d.to) return;
+    if (!ISO.test(d.from) || !ISO.test(d.to) || d.from > d.to) {
+      throw new Error('Fechas inválidas en el periodo ' + p);
+    }
+    clean[p] = { from: d.from, to: d.to };
+  });
+  PropertiesService.getScriptProperties().setProperty('PERIOD_DATES', JSON.stringify(clean));
+  return { ok: true, dates: clean };
 }
 
 function doPost(e) {
@@ -323,6 +351,7 @@ function doPost(e) {
     if (b.action === 'removeActivity')    return json(removeActivity(b.course, b.period, b.itemId));
     if (b.action === 'addCourse')         return json(addCourse(b.course, b.color));
     if (b.action === 'removeCourse')      return json(removeCourse(b.course));
+    if (b.action === 'savePeriodDates')   return json(savePeriodDates(b.dates));
     return json({ error:'unknown' });
   } catch(e) { return json({ error: e.message }); }
 }
