@@ -207,8 +207,8 @@ function consultarEstudiante(code) {
     // resto de la app (component:'nivelacion', itemId:'_'), sin sheet nueva.
     // Si el docente diligenció una nota de nivelación para este periodo, la
     // definitiva que ve el estudiante/acudiente se fija en 3.0 y se marca el
-    // periodo como nivelado — el valor real de la nivelación queda solo para
-    // registro interno del docente, no se muestra aquí.
+    // periodo como nivelado. La nota real de nivelación también se envía
+    // (nivelacionGrade) para mostrarla como columna aparte en el periodo.
     const nivelacionGrade = gmap['nivelacion___'] !== undefined ? gmap['nivelacion___'] : null;
     const nivelado = nivelacionGrade !== null;
     if (nivelado) definitiva = 3.0;
@@ -216,7 +216,7 @@ function consultarEstudiante(code) {
     periodosData.push({
       period, componentes, definitiva, totalPct,
       actCount: actNames.length, isActive: period===activePeriod,
-      nivelado
+      nivelado, nivelacionGrade
     });
   });
 
@@ -402,6 +402,12 @@ tbody tr:hover td{background:#f7faf9}
   background:#f3e8ff;border:1px solid #d8b4fe;border-radius:8px;
   font-size:.76rem;color:#6b21a8;
   display:flex;align-items:center;gap:6px;
+}
+.sust-notice{
+  margin:0 16px 14px;padding:10px 12px;
+  background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;
+  font-size:.8rem;color:#991b1b;
+  display:flex;align-items:center;flex-wrap:wrap;gap:4px;
 }
 .page-footer{
   text-align:center;margin-top:24px;
@@ -621,11 +627,14 @@ function buildAnoBlock(definitivaAnual, periodos, nombre){
     +'<div style="padding:10px 16px 14px;font-size:.72rem;color:#6b7a8d">'
     +'Promedio de las definitivas de los 3 periodos académicos.'
     +'</div>'
+    +(def!==null&&def<3.0
+      ?'<div class="sust-notice">⚠️ Tu definitiva anual es inferior a 3.0: <b>&nbsp;debes realizar el proceso de sustentación final.</b></div>'
+      :'')
     +'</div>';
 }
 
 function buildBlock(p){
-  const{period,componentes,definitiva,totalPct,nivelado}=p;
+  const{period,componentes,definitiva,totalPct,nivelado,nivelacionGrade}=p;
   const def=definitiva;
   const nivel=nivelLabel(def);
 
@@ -640,7 +649,9 @@ function buildBlock(p){
     +'</div></div>';
 
   if(nivelado){
-    html+='<div class="niv-notice">📘 Este periodo se niveló: la definitiva mostrada corresponde a la nota mínima de aprobación (3.0), independiente del detalle por componente de abajo.</div>';
+    html+='<div class="niv-notice">📘 Este periodo se niveló'
+      +(typeof nivelacionGrade==='number'?' con nota <b>&nbsp;'+nivelacionGrade.toFixed(1)+'&nbsp;</b>':'')
+      +': la definitiva mostrada corresponde a la nota mínima de aprobación (3.0), independiente del detalle por componente de abajo.</div>';
   }
 
   const actComp=componentes.find(c=>c.key==='actividades');
@@ -655,6 +666,7 @@ function buildBlock(p){
   otherComps.forEach(c=>{
     thd+='<th>'+esc(c.label)+'<br><span style="font-weight:400;font-size:.65rem">'+c.weight+'%</span></th>';
   });
+  if(nivelado) thd+='<th style="background:#f3e8ff;color:#7c3aed">Nivelación</th>';
   thd+='<th style="background:#1a3d6b;color:#f5d06a">DEFINITIVA</th>';
 
   let trow='<td class="name-col">'+esc(p.nombre)+'</td>';
@@ -664,6 +676,7 @@ function buildBlock(p){
   otherComps.forEach(c=>{
     trow+='<td><span class="nota '+nc(c.grade)+'"'+(c.grade==='NE'?' title="No entregado — cuenta como 0.0 en la definitiva"':'')+'>'+nf(c.grade)+'</span></td>';
   });
+  if(nivelado) trow+='<td style="background:#faf5ff"><span class="nota '+nc(nivelacionGrade)+'">'+nf(nivelacionGrade)+'</span></td>';
   trow+='<td style="background:#fef3d0"><span class="nota" style="font-size:.95rem;font-weight:700;color:'+defColor(def)+'">'
     +(def!==null?def.toFixed(1):'—')+'</span></td>';
 
