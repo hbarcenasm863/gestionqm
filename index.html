@@ -6500,7 +6500,6 @@ function infRenderSustentacion(d) {
       '<td>' + (r.code ? infEsc(r.code) : '—') + '</td>' +
       r.porPeriodo.map(sustNotaCell).join('') +
       '<td style="text-align:center"><span class="inf-chip ic-baj" style="font-size:.8rem">' + r.acumulado.toFixed(1) + '</span></td>' +
-      '<td style="text-align:center;font-weight:700;color:#991b1b">' + (3.0 - r.acumulado).toFixed(1) + '</td>' +
       '</tr>';
   }).join('');
 
@@ -6560,7 +6559,7 @@ function infRenderSustentacion(d) {
 
     '<div class="inf-sec">1. Estudiantes que deben presentar sustentación final</div>' +
     (pierden.length
-      ? '<table class="inf-tbl"><thead><tr><th>#</th><th>Estudiante</th><th>Código</th>' + thP + '<th style="text-align:center">Acumulado</th><th style="text-align:center">Le falta</th></tr></thead>' +
+      ? '<table class="inf-tbl"><thead><tr><th>#</th><th>Estudiante</th><th>Código</th>' + thP + '<th style="text-align:center">Acumulado</th></tr></thead>' +
         '<tbody>' + pierdenRows + '</tbody></table>'
       : '<div class="inf-analisis">✅ Ningún estudiante pierde la asignatura: todos tienen acumulado ≥ 3.0.</div>') +
 
