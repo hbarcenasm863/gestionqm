@@ -4206,8 +4206,12 @@ async function grdEnsureAllPeriods(course){
 }
 
 /* Filas del acumulado: definitiva por periodo (null si el estudiante no tiene
-   notas en ese periodo) y promedio de los periodos con nota. Lo usan la vista
-   Acumulado de Notas y el informe de sustentación final. */
+   notas en ese periodo) y promedio de los periodos con nota, con igual peso
+   para cada periodo (Manual de convivencia, Art. 28.15). Lo usan la vista
+   Acumulado de Notas y el informe de sustentación final.
+   Parágrafo 1 del Art. 28.5: un periodo en Bajo (< 3.0) seguido de uno en Alto
+   o Superior (≥ 4.0) queda en 3.0. originales[i] guarda la nota calculada
+   cuando el parágrafo la cambió (null si no). */
 function grdAcumuladoRows(course){
   var base=PERIODS.map(function(p){ return grdCache[course]&&grdCache[course][p]; }).find(function(d){ return d&&d.students; });
   var students=(base&&base.students?base.students.slice():[]).sort(function(a,b){ return a.name.localeCompare(b.name,'es'); });
@@ -4223,11 +4227,29 @@ function grdAcumuladoRows(course){
       var w=repComputeWeights(d);
       return grdCalcEffective(s, d.actNames||[], d.grades||{}, w, specials);
     });
+    var originales=porPeriodo.map(function(){ return null; });
+    for(var i=0;i<porPeriodo.length-1;i++){
+      var v=porPeriodo[i], sig=porPeriodo[i+1];
+      if(v!==null && v<3.0 && sig!==null && sig>=4.0){ originales[i]=v; porPeriodo[i]=3.0; }
+    }
     var conNota=porPeriodo.filter(function(v){ return v!==null; });
     var acumulado=conNota.length?Math.round(conNota.reduce(function(a,b){ return a+b; },0)/conNota.length*10)/10:null;
-    return { id:s.id, name:s.name, code:s.code||'', porPeriodo:porPeriodo, acumulado:acumulado };
+    return { id:s.id, name:s.name, code:s.code||'', porPeriodo:porPeriodo, originales:originales, acumulado:acumulado };
   });
 }
+
+// Celda de un periodo del acumulado; si el Parágrafo 1 la subió a 3.0, muestra la nota original
+function acumNotaCell(r, i){
+  var v=r.porPeriodo[i], o=r.originales[i];
+  if(v===null) return '<td style="text-align:center"><span style="color:#94a3b8">—</span></td>';
+  return '<td style="text-align:center"><span class="inf-chip ' + infChipCls(v) + '">' + v.toFixed(1) + (o!==null?' ¹':'') + '</span>' +
+    (o!==null?'<div style="font-size:.6rem;color:#64748b;margin-top:1px">era ' + o.toFixed(1) + '</div>':'') + '</td>';
+}
+
+function acumHayAjustes(rows){
+  return rows.some(function(r){ return r.originales.some(function(o){ return o!==null; }); });
+}
+var ACUM_NOTA_PAR1='¹ Parágrafo 1 (Art. 28.5): el desempeño Bajo de un periodo pasa a 3.0 cuando el estudiante logra desempeño Alto o Superior en el periodo siguiente.';
 
 function grdRenderAcumulado(){
   var course=activeCourse;
@@ -4245,9 +4267,7 @@ function grdRenderAcumulado(){
     '<th style="text-align:center">Acumulado</th><th style="text-align:center">Estado</th>';
 
   var tbody=rows.map(function(r){
-    var cells=r.porPeriodo.map(function(v){
-      return '<td style="text-align:center">' + (v!==null?'<span class="inf-chip ' + infChipCls(v) + '">' + v.toFixed(1) + '</span>':'<span style="color:var(--muted);font-size:.72rem">—</span>') + '</td>';
-    }).join('');
+    var cells=r.porPeriodo.map(function(v,i){ return acumNotaCell(r,i); }).join('');
     var estadoTxt = r.acumulado===null?'—':(r.acumulado>=3.0?'Aprobando':'Reprobando');
     var estadoColor = r.acumulado===null?'#64748b':(r.acumulado>=3.0?'#166534':'#991b1b');
     return '<tr' + (r.acumulado!==null&&r.acumulado<3.0?' style="background:#fff5f5"':'') + '>' +
@@ -4263,7 +4283,8 @@ function grdRenderAcumulado(){
     '<div><div class="course-label">Curso ' + course + '</div>' +
     '<div class="course-meta">Promedio acumulado · ' + rows.length + ' estudiante' + (rows.length!==1?'s':'') + '</div></div>' +
     '</div>' +
-    '<div style="font-size:.72rem;color:var(--muted);margin-bottom:10px">El acumulado promedia solo los periodos con notas registradas (así aún falten periodos por cursar). Aprobando ≥ 3.0.</div>' +
+    '<div style="font-size:.72rem;color:var(--muted);margin-bottom:10px">El acumulado promedia solo los periodos con notas registradas (así aún falten periodos por cursar), con igual peso para cada uno. Aprobando ≥ 3.0.' +
+    (acumHayAjustes(rows)?'<br>' + ACUM_NOTA_PAR1:'') + '</div>' +
     '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + thead + '</tr></thead><tbody>' + tbody + '</tbody></table></div>';
 }
 
@@ -6475,10 +6496,6 @@ function sustLinksHtml(links, qrOk, qrSize) {
   }).join('') + '</div>';
 }
 
-function sustNotaCell(v) {
-  return '<td style="text-align:center">' + (v !== null ? '<span class="inf-chip ' + infChipCls(v) + '">' + v.toFixed(1) + '</span>' : '<span style="color:#94a3b8">—</span>') + '</td>';
-}
-
 function infRenderSustentacion(d) {
   var links = sustLinks(d.course), herr = links[1];
   var fecha = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
@@ -6498,7 +6515,7 @@ function infRenderSustentacion(d) {
       '<td>' + (i+1) + '</td>' +
       '<td>' + infEsc(r.name) + '</td>' +
       '<td>' + (r.code ? infEsc(r.code) : '—') + '</td>' +
-      r.porPeriodo.map(sustNotaCell).join('') +
+      r.porPeriodo.map(function(v, i){ return acumNotaCell(r, i); }).join('') +
       '<td style="text-align:center"><span class="inf-chip ic-baj" style="font-size:.8rem">' + r.acumulado.toFixed(1) + '</span></td>' +
       '</tr>';
   }).join('');
@@ -6511,7 +6528,7 @@ function infRenderSustentacion(d) {
     return '<tr' + (pierde ? ' class="inf-row-alerta"' : '') + '>' +
       '<td>' + (i+1) + '</td>' +
       '<td>' + infEsc(r.name) + '</td>' +
-      r.porPeriodo.map(sustNotaCell).join('') +
+      r.porPeriodo.map(function(v, i){ return acumNotaCell(r, i); }).join('') +
       '<td style="text-align:center"><span class="inf-chip ' + (r.acumulado !== null ? infChipCls(r.acumulado) : 'ic-nd') + '">' + (r.acumulado !== null ? r.acumulado.toFixed(1) : '—') + '</span></td>' +
       '<td style="text-align:center">' + estado + '</td>' +
       '</tr>';
@@ -6564,7 +6581,8 @@ function infRenderSustentacion(d) {
       : '<div class="inf-analisis">✅ Todos los estudiantes lograron los mínimos necesarios para la aprobación de la asignatura (acumulado ≥ 3.0).</div>') +
 
     '<div class="inf-sec">2. Reglas de la sustentación y material de repaso</div>' +
-    '<div class="inf-analisis">Quien tenga <b>nota acumulada menor a 3.0</b> (promedio de los tres periodos) no logró los mínimos necesarios para la aprobación de la asignatura y debe presentarse a la <b>sustentación final</b>. ' +
+    '<div class="inf-analisis">Quien tenga <b>nota acumulada menor a 3.0</b> (promedio de los tres periodos, con igual peso cada uno) no logró los mínimos necesarios para la aprobación de la asignatura y debe presentarse a la <b>sustentación final</b>, que se realiza durante una semana al finalizar el año. ' +
+    'Quien apruebe la sustentación obtendrá una nota de <b>3.0</b> en la asignatura (Art. 28.15). ' +
     'Las <b>reglas de este proceso</b> (fechas, temas y forma de evaluación) se encuentran en <b>sites.google.com/view/harveylab</b>, donde también hay material de repaso. ' +
     (herr ? 'Material de repaso adicional en <b>' + herr.url.replace(/^https:\/\//, '') + '</b> (' + herr.name + '). ' : '') +
     'Escanea los códigos QR para entrar directo.</div>' +
@@ -6573,7 +6591,8 @@ function infRenderSustentacion(d) {
     '<div class="inf-sec">3. Consolidado del curso</div>' +
     '<table class="inf-tbl"><thead><tr><th>#</th><th>Estudiante</th>' + thP + '<th style="text-align:center">Acumulado</th><th style="text-align:center">Estado</th></tr></thead>' +
     '<tbody>' + todosRows + '</tbody></table>' +
-    '<div style="font-size:.68rem;color:var(--muted);margin-bottom:6px">Acumulado = promedio de los periodos con nota. Filas resaltadas: acumulado &lt; 3.0.' +
+    '<div style="font-size:.68rem;color:var(--muted);margin-bottom:6px">Acumulado = promedio de los periodos con nota, con igual peso para cada uno (Art. 28.15). Filas resaltadas: acumulado &lt; 3.0.' +
+    (acumHayAjustes(rows) ? '<br>' + ACUM_NOTA_PAR1 : '') +
     (sinNotas ? ' ' + sinNotas + ' estudiante' + (sinNotas !== 1 ? 's' : '') + ' sin ninguna nota registrada.' : '') + '</div>' +
 
     '<div class="inf-firma">' +
@@ -6602,9 +6621,10 @@ function infCitacionesSustentacion() {
       '<div class="hd"><img src="' + INF_LOGO_SRC + '" alt=""><div><b>Colegio Rufino José Cuervo IED</b><span>Química ' + anio + ' · Citación a sustentación final</span></div><b class="cu">Curso ' + d.course + '</b></div>' +
       '<div class="nm">' + infEsc(r.name) + (r.code ? ' <span>· Código ' + infEsc(r.code) + '</span>' : '') + '</div>' +
       '<table><tr>' + PERIODS.map(function(p){ return '<th>P' + p + '</th>'; }).join('') + '<th>Acumulado</th></tr><tr>' +
-      r.porPeriodo.map(function(v){ return '<td>' + (v !== null ? v.toFixed(1) : '—') + '</td>'; }).join('') +
+      r.porPeriodo.map(function(v, i){ return '<td>' + (v !== null ? v.toFixed(1) + (r.originales[i] !== null ? ' ¹' : '') : '—') + '</td>'; }).join('') +
       '<td class="ac">' + r.acumulado.toFixed(1) + '</td></tr></table>' +
-      '<p>Tu nota acumulada es menor a 3.0: <b>no lograste los mínimos necesarios para la aprobación de la asignatura y debes presentarte a la sustentación final</b>. ' +
+      (r.originales.some(function(o){ return o !== null; }) ? '<div class="nt">' + ACUM_NOTA_PAR1 + '</div>' : '') +
+      '<p>Tu nota acumulada es menor a 3.0: <b>no lograste los mínimos necesarios para la aprobación de la asignatura y debes presentarte a la sustentación final</b>. Si la apruebas, tu nota en la asignatura será 3.0. ' +
       'Consulta las reglas del proceso y el material de repaso en HarveyLab' + (herr ? '; también puedes repasar en ' + herr.name : '') + '.</p>' +
       sustLinksHtml(links, d.qrOk, '20mm') +
       '<div class="fr"><span>Firma del acudiente: ______________________</span><span>Fecha: ____________</span></div>' +
@@ -6621,7 +6641,7 @@ function infCitacionesSustentacion() {
     '.nm{font-size:13pt;font-weight:700}.nm span{font-size:9pt;font-weight:400;color:#64748b}' +
     'table{border-collapse:collapse;width:100%}th{background:#1a2e5a;color:#fff;font-size:8pt;padding:2px;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
     'td{text-align:center;border:1px solid #e2e8f0;padding:3px;font-weight:700;font-size:10pt}td.ac{color:#991b1b;background:#fee2e2;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
-    'p{margin:0;line-height:1.4}.fr{margin-top:auto;display:flex;justify-content:space-between;font-size:8.5pt}' +
+    '.nt{font-size:7.5pt;color:#64748b}p{margin:0;line-height:1.4}.fr{margin-top:auto;display:flex;justify-content:space-between;font-size:8.5pt}' +
     '</style></head><body onload="setTimeout(function(){print()},400)">' +
     '<div class="aviso">' + pierden.length + ' ' + (pierden.length !== 1 ? 'citaciones' : 'citación') + ' · Curso ' + d.course + ' · Dos por hoja carta: recorta por la línea punteada.</div>' +
     cards + '</body></html>');
@@ -6635,12 +6655,13 @@ function infExportSustentacionCSV() {
   csv += 'SUSTENTACIÓN FINAL · Curso ' + d.course + '\n';
   csv += 'Generado: ' + new Date().toLocaleString('es-CO') + '\n';
   csv += 'Reglas y material de repaso: ' + sustLinks(d.course).map(function(l){ return l.url; }).join(' · ') + '\n\n';
-  csv += 'Estudiante,Código,' + PERIODS.map(function(p){ return 'P' + p; }).join(',') + ',Acumulado,Estado\n';
+  csv += 'Estudiante,Código,' + PERIODS.map(function(p){ return 'P' + p; }).join(',') + ',Acumulado,Estado,Parágrafo 1 (Art. 28.5)\n';
   d.rows.forEach(function(r){
     var estado = r.acumulado === null ? 'Sin notas' : r.acumulado < 3.0 ? 'Debe sustentar' : 'Aprueba';
     csv += csvField(r.name) + ',' + csvField(r.code) + ',' +
       r.porPeriodo.map(function(v){ return v !== null ? v.toFixed(1) : ''; }).join(',') + ',' +
-      (r.acumulado !== null ? r.acumulado.toFixed(1) : '') + ',' + estado + '\n';
+      (r.acumulado !== null ? r.acumulado.toFixed(1) : '') + ',' + estado + ',' +
+      csvField(r.originales.map(function(o, i){ return o !== null ? 'P' + PERIODS[i] + ' ' + o.toFixed(1) + ' → 3.0' : ''; }).filter(Boolean).join('; ')) + '\n';
   });
   var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   var a = document.createElement('a');
