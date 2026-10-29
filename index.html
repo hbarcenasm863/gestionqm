@@ -4958,6 +4958,7 @@ function infRenderSelector() {
     '<input class="inf-input" id="inf-obs" type="text" placeholder="Ej: Presenta dificultades en cálculos estequiométricos…"></div>' +
     '<button class="btn-inf" onclick="infGenerar()">📄 Generar informe individual</button>' +
     '<div class="inf-per-note" id="infPerNote"></div>' +
+    '<button class="btn-inf-sec rep" style="width:100%;margin-top:8px" onclick="infSustentacionIndividual()">🎓 Sustentación final de este estudiante</button>' +
     '<button class="inf-link-btn" onclick="infStickers(document.getElementById(\'inf-stu\').value)">🏷 Imprimir solo el sticker de este estudiante</button>' +
     '</div>' +
     '<div class="inf-group">' +
@@ -6483,6 +6484,101 @@ async function infSustentacion() {
   if (!rows.length) { toast('No se pudieron cargar los estudiantes del curso'); infRenderSelector(); return; }
   window._sustData = { course: course, rows: rows, qrOk: qrOk };
   infRenderSustentacion(window._sustData);
+}
+
+// Informe de sustentación final de un solo estudiante (el elegido en "Un estudiante")
+async function infSustentacionIndividual() {
+  var stuId = document.getElementById('inf-stu').value;
+  if (!stuId) { toast('Selecciona un estudiante'); return; }
+  var course = activeCourse;
+  document.getElementById('mainArea').innerHTML =
+    '<div class="spin-wrap"><div class="spin"></div>Cargando los 3 periodos…</div>';
+  await grdEnsureAllPeriods(course);
+  var qrOk = true;
+  try { await ensureLib(STICKER_QR_LIB); } catch (e) { qrOk = false; toast('No se pudo cargar el generador de QR: el informe sale sin códigos QR'); }
+  var r = grdAcumuladoRows(course).find(function(x){ return x.id === stuId; });
+  if (!r) { toast('Estudiante no encontrado'); infRenderSelector(); return; }
+  infRenderSustentacionIndividual(course, r, qrOk);
+}
+
+function infRenderSustentacionIndividual(course, r, qrOk) {
+  var links = sustLinks(course), herr = links[1];
+  var fecha = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+  var a = r.acumulado;
+  var debe = a !== null && a < 3.0;
+  var faltan = PERIODS.filter(function(p, i){ return r.porPeriodo[i] === null; });
+  var ajustado = r.originales.some(function(o){ return o !== null; });
+  var badgeBg = a === null ? '#64748b' : debe ? '#991b1b' : '#166534';
+
+  var resultado = a === null
+    ? '<div class="inf-analisis">El estudiante aún no tiene notas registradas en ningún periodo.</div>'
+    : debe
+      ? '<div class="inf-analisis" style="border-left-color:#991b1b;background:#fef2f2">Con una nota acumulada de <b>' + a.toFixed(1) + '</b> (menor a 3.0), el estudiante <b>no logró los mínimos necesarios para la aprobación de la asignatura</b> y debe presentarse a la <b>sustentación final</b>, que se realiza durante una semana al finalizar el año. Si la aprueba, obtendrá una nota de <b>3.0</b> en la asignatura (Art. 28.15).</div>'
+      : '<div class="inf-analisis" style="border-left-color:#166534;background:#f0fdf4">Con una nota acumulada de <b>' + a.toFixed(1) + '</b>, el estudiante <b>logró los mínimos necesarios para la aprobación de la asignatura</b> y no debe presentar sustentación final.</div>';
+
+  var aviso = (a !== null && faltan.length)
+    ? '<div style="margin:0 0 8px;padding:8px 12px;background:#fef9c3;border:1px solid #f5d06a;border-radius:8px;font-size:.72rem;color:#713f12;-webkit-print-color-adjust:exact;print-color-adjust:exact">⚠ Sin nota en ' +
+      faltan.map(function(p){ return 'P' + p; }).join(', ') + ': el acumulado promedia solo los periodos con nota y puede cambiar.</div>'
+    : '';
+
+  document.getElementById('mainArea').innerHTML =
+    '<div class="inf-toolbar">' +
+    '<button class="btn-inf-back" onclick="infRenderSelector()">← Volver</button>' +
+    '<button class="btn-inf-print" onclick="infImprimir()">🖨️ Imprimir / PDF</button>' +
+    '</div>' +
+
+    '<div class="inf-hoja">' +
+    '<div class="inf-cab">' +
+    '<img src="' + INF_LOGO_SRC + '" alt="Rufino" style="height:48px">' +
+    '<div class="inf-cab-c">' +
+    '<h3>Colegio Rufino José Cuervo IED</h3>' +
+    '<p>Ciencias Naturales — Química &nbsp;|&nbsp; Informe Individual de Sustentación Final</p>' +
+    '<p style="font-size:.65rem;color:#94a3b8;margin-top:1px">Generado el ' + fecha + '</p>' +
+    '</div>' +
+    '<div class="inf-badge" style="background:' + badgeBg + '">' +
+    '<div class="inf-badge-n">' + (a !== null ? a.toFixed(1) : '—') + '</div>' +
+    '<div class="inf-badge-l">Acumulado</div>' +
+    '</div></div>' +
+
+    '<div class="inf-ficha">' +
+    infFi('Estudiante', infEsc(r.name)) +
+    infFi('Código', r.code ? infEsc(r.code) : '—') +
+    infFi('Curso', 'Grado ' + course) +
+    infFi('Año', new Date().getFullYear()) +
+    infFi('Docente', 'Harvey Barcenas M.') +
+    '</div>' +
+    aviso +
+
+    '<div class="inf-sec">1. Notas del año</div>' +
+    '<table class="inf-tbl"><thead><tr>' + PERIODS.map(function(p){ return '<th style="text-align:center">Periodo ' + p + '</th>'; }).join('') +
+    '<th style="text-align:center">Acumulado</th><th style="text-align:center">Desempeño</th></tr></thead><tbody><tr>' +
+    PERIODS.map(function(p, i){ return acumNotaCell(r, i); }).join('') +
+    '<td style="text-align:center"><span class="inf-chip ' + (a !== null ? infChipCls(a) : 'ic-nd') + '" style="font-size:.85rem">' + (a !== null ? a.toFixed(1) : '—') + '</span></td>' +
+    '<td style="text-align:center;font-weight:700">' + (a !== null ? infNivel(a).label : '—') + '</td>' +
+    '</tr></tbody></table>' +
+    '<div style="font-size:.68rem;color:var(--muted);margin-bottom:6px">Acumulado = promedio de los periodos con nota, con igual peso para cada uno (Art. 28.15).' +
+    (ajustado ? '<br>' + ACUM_NOTA_PAR1 : '') + '</div>' +
+
+    '<div class="inf-sec">2. Resultado</div>' +
+    resultado +
+
+    '<div class="inf-sec">3. Reglas de la sustentación y material de repaso</div>' +
+    '<div class="inf-analisis">Las <b>reglas de este proceso</b> (fechas, temas y forma de evaluación) se encuentran en <b>sites.google.com/view/harveylab</b>, donde también hay material de repaso. ' +
+    (herr ? 'Material de repaso adicional en <b>' + herr.url.replace(/^https:\/\//, '') + '</b> (' + herr.name + '). ' : '') +
+    'Escanea los códigos QR para entrar directo.</div>' +
+    sustLinksHtml(links, qrOk, '64px') +
+
+    '<div class="inf-firma" style="grid-template-columns:1fr 1fr 1fr">' +
+    '<div class="inf-firma-item"><div class="inf-firma-nm">Harvey Barcenas Morales</div>' +
+    '<div class="inf-firma-linea"></div><div class="inf-firma-l">Docente Química</div></div>' +
+    '<div class="inf-firma-item"><div class="inf-firma-nm">&nbsp;</div>' +
+    '<div class="inf-firma-linea"></div><div class="inf-firma-l">Estudiante</div></div>' +
+    '<div class="inf-firma-item"><div class="inf-firma-nm">&nbsp;</div>' +
+    '<div class="inf-firma-linea"></div><div class="inf-firma-l">Acudiente</div></div>' +
+    '</div>' +
+
+    '<div class="inf-pie">Generado con HBMol · Colegio Rufino José Cuervo IED · Ciencias Naturales — Química.</div>' +
+    '</div>';
 }
 
 // Bloque de enlaces con QR (en línea: debe verse igual en la ventana de impresión)
