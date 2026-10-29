@@ -6440,7 +6440,7 @@ function infRenderGrupo(d) {
 
 /* ════════════════════════════════════════════════════════
    SUSTENTACIÓN FINAL — notas de P1, P2, P3 y acumulado del curso.
-   Acumulado < 3.0 → pierde la asignatura y debe presentar sustentación.
+   Acumulado < 3.0 → no logró los mínimos para aprobar y debe presentar sustentación.
    Las reglas y el material de repaso están en HarveyLab y en la herramienta
    del grado (10° IONOM, 11° CHROMANOM).
 ════════════════════════════════════════════════════════ */
@@ -6561,10 +6561,10 @@ function infRenderSustentacion(d) {
     (pierden.length
       ? '<table class="inf-tbl"><thead><tr><th>#</th><th>Estudiante</th><th>Código</th>' + thP + '<th style="text-align:center">Acumulado</th></tr></thead>' +
         '<tbody>' + pierdenRows + '</tbody></table>'
-      : '<div class="inf-analisis">✅ Ningún estudiante pierde la asignatura: todos tienen acumulado ≥ 3.0.</div>') +
+      : '<div class="inf-analisis">✅ Todos los estudiantes lograron los mínimos necesarios para la aprobación de la asignatura (acumulado ≥ 3.0).</div>') +
 
     '<div class="inf-sec">2. Reglas de la sustentación y material de repaso</div>' +
-    '<div class="inf-analisis">Pierde la asignatura quien tenga <b>nota acumulada menor a 3.0</b> (promedio de los tres periodos) y debe presentarse a la <b>sustentación final</b>. ' +
+    '<div class="inf-analisis">Quien tenga <b>nota acumulada menor a 3.0</b> (promedio de los tres periodos) no logró los mínimos necesarios para la aprobación de la asignatura y debe presentarse a la <b>sustentación final</b>. ' +
     'Las <b>reglas de este proceso</b> (fechas, temas y forma de evaluación) se encuentran en <b>sites.google.com/view/harveylab</b>, donde también hay material de repaso. ' +
     (herr ? 'Material de repaso adicional en <b>' + herr.url.replace(/^https:\/\//, '') + '</b> (' + herr.name + '). ' : '') +
     'Escanea los códigos QR para entrar directo.</div>' +
@@ -6587,7 +6587,7 @@ function infRenderSustentacion(d) {
     '</div>';
 }
 
-// Una citación por estudiante que pierde: sus notas, el acumulado y los QR de repaso
+// Una citación por estudiante que no logró los mínimos: sus notas, el acumulado y los QR de repaso
 function infCitacionesSustentacion() {
   var d = window._sustData;
   if (!d) return;
@@ -6604,7 +6604,7 @@ function infCitacionesSustentacion() {
       '<table><tr>' + PERIODS.map(function(p){ return '<th>P' + p + '</th>'; }).join('') + '<th>Acumulado</th></tr><tr>' +
       r.porPeriodo.map(function(v){ return '<td>' + (v !== null ? v.toFixed(1) : '—') + '</td>'; }).join('') +
       '<td class="ac">' + r.acumulado.toFixed(1) + '</td></tr></table>' +
-      '<p>Tu nota acumulada es menor a 3.0: <b>pierdes la asignatura y debes presentarte a la sustentación final</b>. ' +
+      '<p>Tu nota acumulada es menor a 3.0: <b>no lograste los mínimos necesarios para la aprobación de la asignatura y debes presentarte a la sustentación final</b>. ' +
       'Consulta las reglas del proceso y el material de repaso en HarveyLab' + (herr ? '; también puedes repasar en ' + herr.name : '') + '.</p>' +
       sustLinksHtml(links, d.qrOk, '20mm') +
       '<div class="fr"><span>Firma del acudiente: ______________________</span><span>Fecha: ____________</span></div>' +
