@@ -6441,12 +6441,15 @@ function infRenderGrupo(d) {
 /* ════════════════════════════════════════════════════════
    SUSTENTACIÓN FINAL — notas de P1, P2, P3 y acumulado del curso.
    Acumulado < 3.0 → pierde la asignatura y debe presentar sustentación.
-   Las reglas y el material de repaso están en HarveyLab y CHROMANOM.
+   Las reglas y el material de repaso están en HarveyLab y en la herramienta
+   del grado (10° IONOM, 11° CHROMANOM).
 ════════════════════════════════════════════════════════ */
-var SUST_LINKS = [
-  { name: 'HarveyLab', desc: 'Reglas de la sustentación y material de repaso', url: 'https://sites.google.com/view/harveylab' },
-  { name: 'CHROMANOM', desc: 'Material de repaso', url: 'https://hbarcenasm863.github.io/chromanom' }
-];
+function sustLinks(course) {
+  var links = [{ name: 'HarveyLab', desc: 'Reglas de la sustentación y material de repaso', url: 'https://sites.google.com/view/harveylab' }];
+  var herr = STICKER_LINKS[String(course).slice(0, 2)];
+  if (herr) links.push({ name: herr.name, desc: 'Material de repaso', url: herr.url });
+  return links;
+}
 
 async function infSustentacion() {
   var course = activeCourse;
@@ -6462,8 +6465,8 @@ async function infSustentacion() {
 }
 
 // Bloque de enlaces con QR (en línea: debe verse igual en la ventana de impresión)
-function sustLinksHtml(qrOk, qrSize) {
-  return '<div style="display:flex;gap:14px;flex-wrap:wrap">' + SUST_LINKS.map(function(l){
+function sustLinksHtml(links, qrOk, qrSize) {
+  return '<div style="display:flex;gap:14px;flex-wrap:wrap">' + links.map(function(l){
     return '<div style="flex:1;min-width:200px;display:flex;gap:10px;align-items:center;border:1.5px solid #e2e8f0;border-radius:8px;padding:8px 10px">' +
       (qrOk ? '<div style="width:' + qrSize + ';height:' + qrSize + ';flex-shrink:0">' + stickerQr(l.url).replace('<svg ', '<svg style="width:100%;height:100%;display:block" ') + '</div>' : '') +
       '<div style="min-width:0;line-height:1.35"><div style="font-weight:800;color:#1a2e5a;font-size:.8rem">' + l.name + '</div>' +
@@ -6477,6 +6480,7 @@ function sustNotaCell(v) {
 }
 
 function infRenderSustentacion(d) {
+  var links = sustLinks(d.course), herr = links[1];
   var fecha = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
   var rows = d.rows;
   var conNota = rows.filter(function(r){ return r.acumulado !== null; });
@@ -6563,8 +6567,9 @@ function infRenderSustentacion(d) {
     '<div class="inf-sec">2. Reglas de la sustentación y material de repaso</div>' +
     '<div class="inf-analisis">Pierde la asignatura quien tenga <b>nota acumulada menor a 3.0</b> (promedio de los tres periodos) y debe presentarse a la <b>sustentación final</b>. ' +
     'Las <b>reglas de este proceso</b> (fechas, temas y forma de evaluación) se encuentran en <b>sites.google.com/view/harveylab</b>, donde también hay material de repaso. ' +
-    'Material de repaso adicional en <b>hbarcenasm863.github.io/chromanom</b>. Escanea los códigos QR para entrar directo.</div>' +
-    sustLinksHtml(d.qrOk, '64px') +
+    (herr ? 'Material de repaso adicional en <b>' + herr.url.replace(/^https:\/\//, '') + '</b> (' + herr.name + '). ' : '') +
+    'Escanea los códigos QR para entrar directo.</div>' +
+    sustLinksHtml(links, d.qrOk, '64px') +
 
     '<div class="inf-sec">3. Consolidado del curso</div>' +
     '<table class="inf-tbl"><thead><tr><th>#</th><th>Estudiante</th>' + thP + '<th style="text-align:center">Acumulado</th><th style="text-align:center">Estado</th></tr></thead>' +
@@ -6592,6 +6597,7 @@ function infCitacionesSustentacion() {
   var win = window.open('', '_blank');
   if (!win) { toast('El navegador bloqueó la ventana: permite ventanas emergentes para imprimir'); return; }
   var anio = new Date().getFullYear();
+  var links = sustLinks(d.course), herr = links[1];
   var cards = pierden.map(function(r){
     return '<div class="ct">' +
       '<div class="hd"><img src="' + INF_LOGO_SRC + '" alt=""><div><b>Colegio Rufino José Cuervo IED</b><span>Química ' + anio + ' · Citación a sustentación final</span></div><b class="cu">Curso ' + d.course + '</b></div>' +
@@ -6600,8 +6606,8 @@ function infCitacionesSustentacion() {
       r.porPeriodo.map(function(v){ return '<td>' + (v !== null ? v.toFixed(1) : '—') + '</td>'; }).join('') +
       '<td class="ac">' + r.acumulado.toFixed(1) + '</td></tr></table>' +
       '<p>Tu nota acumulada es menor a 3.0: <b>pierdes la asignatura y debes presentarte a la sustentación final</b>. ' +
-      'Consulta las reglas del proceso y el material de repaso en HarveyLab; también puedes repasar en CHROMANOM.</p>' +
-      sustLinksHtml(d.qrOk, '20mm') +
+      'Consulta las reglas del proceso y el material de repaso en HarveyLab' + (herr ? '; también puedes repasar en ' + herr.name : '') + '.</p>' +
+      sustLinksHtml(links, d.qrOk, '20mm') +
       '<div class="fr"><span>Firma del acudiente: ______________________</span><span>Fecha: ____________</span></div>' +
       '</div>';
   }).join('');
@@ -6629,7 +6635,7 @@ function infExportSustentacionCSV() {
   var csv = '﻿';
   csv += 'SUSTENTACIÓN FINAL · Curso ' + d.course + '\n';
   csv += 'Generado: ' + new Date().toLocaleString('es-CO') + '\n';
-  csv += 'Reglas y material de repaso: ' + SUST_LINKS.map(function(l){ return l.url; }).join(' · ') + '\n\n';
+  csv += 'Reglas y material de repaso: ' + sustLinks(d.course).map(function(l){ return l.url; }).join(' · ') + '\n\n';
   csv += 'Estudiante,Código,' + PERIODS.map(function(p){ return 'P' + p; }).join(',') + ',Acumulado,Estado\n';
   d.rows.forEach(function(r){
     var estado = r.acumulado === null ? 'Sin notas' : r.acumulado < 3.0 ? 'Debe sustentar' : 'Aprueba';
