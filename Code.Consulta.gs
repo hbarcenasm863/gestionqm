@@ -48,6 +48,10 @@ function _getCursosActivos(ss) {
 
 // 'NE' (No Entregó) cuenta como 0 en cualquier suma ponderada — ver nota en
 // consultarEstudiante(). Mismo helper que gnum() en Code.Notas.gs/index.html.
+// Las notas van a un decimal SIN aproximar (decisión del colegio): 2.96 → 2.9.
+// El +1e-7 evita que errores de coma flotante (8.9999999/3) bajen una décima.
+function notaUnDecimalC_(x) { return Math.floor(x * 10 + 1e-7) / 10; }
+
 function _gnum(v) {
   return v === 'NE' ? 0 : v;
 }
@@ -201,7 +205,7 @@ function consultarEstudiante(code) {
     let sumW = 0;
     // ✅ CORREGIDO: el 0 real sí cuenta para la definitiva
     componentes.forEach(c => { sumW += (c.grade !== null ? _gnum(c.grade) : 0) * (c.weight / 100); });
-    let definitiva = totalPct>0 ? Math.round(sumW/(totalPct/100)*10)/10 : null;
+    let definitiva = totalPct>0 ? notaUnDecimalC_(sumW/(totalPct/100)) : null;
 
     // ✅ NUEVO: nivelación — mismo mecanismo genérico de saveGrade que usa el
     // resto de la app (component:'nivelacion', itemId:'_'), sin sheet nueva.
@@ -224,7 +228,7 @@ function consultarEstudiante(code) {
     .filter(p => p.definitiva !== null)
     .map(p => p.definitiva);
   const definitivaAnual = definitivasAno.length > 0
-    ? Math.round(definitivasAno.reduce((a,b)=>a+b,0) / definitivasAno.length * 10) / 10
+    ? notaUnDecimalC_(definitivasAno.reduce((a,b)=>a+b,0) / definitivasAno.length)
     : null;
 
   return { ok:true, nombre, course:curso, activePeriod, code, periodos:periodosData, definitivaAnual };

@@ -3829,6 +3829,9 @@ function grdNivelacion(s,grades){
 // se sigue mostrando en la columna DEFINITIVA de la tabla de notas del
 // periodo (a propósito, para que el docente siempre vea ahí el cálculo
 // original, incluso después de diligenciar nivelación).
+// Las notas van a un decimal SIN aproximar (decisión del colegio): 2.96 → 2.9.
+// El +1e-7 evita que errores de coma flotante (8.9999999/3) bajen una décima.
+function nota1(x){ return Math.floor(x*10+1e-7)/10; }
 function grdCalcFinal(s,actNames,grades,baseW,specials){
   // 'NE' (No Entregó) cuenta como 0 en la suma vía gnum() — se muestra
   // distinto de un 0 real en la celda, pero pesa igual en la definitiva.
@@ -3844,7 +3847,7 @@ function grdCalcFinal(s,actNames,grades,baseW,specials){
   specials.forEach(function(sp){
     sum+=((grades['especial']&&grades['especial'][sp.id]&&grades['especial'][sp.id][s.id]!=null)?gnum(grades['especial'][sp.id][s.id]):0)*(sp.weight/100);
   });
-  return Math.round(sum/(totalPct/100)*10)/10;
+  return nota1(sum/(totalPct/100));
 }
 // Definitiva "efectiva": si el periodo se niveló, la nota de nivelación
 // reemplaza el cálculo por componentes — es el resultado que cuenta en todo
@@ -4233,7 +4236,7 @@ function grdAcumuladoRows(course){
       if(v!==null && v<3.0 && sig!==null && sig>=4.0){ originales[i]=v; porPeriodo[i]=3.0; }
     }
     var conNota=porPeriodo.filter(function(v){ return v!==null; });
-    var acumulado=conNota.length?Math.round(conNota.reduce(function(a,b){ return a+b; },0)/conNota.length*10)/10:null;
+    var acumulado=conNota.length?nota1(conNota.reduce(function(a,b){ return a+b; },0)/conNota.length):null;
     return { id:s.id, name:s.name, code:s.code||'', porPeriodo:porPeriodo, originales:originales, acumulado:acumulado };
   });
 }
@@ -4402,7 +4405,7 @@ async function buildGrdExport(){
   students.forEach(function(s){
     var av=actNames.map(function(n){ return grades['actividad']&&grades['actividad'][n]&&grades['actividad'][n][s.id]!=null?grades['actividad'][n][s.id]:''; });
     var avf=av.filter(function(v){ return v!==''; });
-    var actAvg=avf.length?Math.round(avf.reduce(function(a,b){ return a+gnum(b); },0)/avf.length*10)/10:'';
+    var actAvg=avf.length?nota1(avf.reduce(function(a,b){ return a+gnum(b); },0)/avf.length):'';
     var ae=grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][s.id]!=null?grades['autoeval']['_'][s.id]:'';
     var ce=grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null?grades['coeval']['_'][s.id]:'';
     var fi=grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null?grades['final']['_'][s.id]:'';
@@ -4445,7 +4448,7 @@ async function downloadCSV(){
     students.forEach(function(s){
       var av=actNames.map(function(n){ return grades['actividad']&&grades['actividad'][n]&&grades['actividad'][n][s.id]!=null?grades['actividad'][n][s.id]:''; });
       var avf=av.filter(function(v){ return v!==''; });
-      var actAvg=avf.length?Math.round(avf.reduce(function(a,b){ return a+gnum(b); },0)/avf.length*10)/10:'';
+      var actAvg=avf.length?nota1(avf.reduce(function(a,b){ return a+gnum(b); },0)/avf.length):'';
       var ae=grades['autoeval']&&grades['autoeval']['_']&&grades['autoeval']['_'][s.id]!=null?grades['autoeval']['_'][s.id]:'';
       var ce=grades['coeval']&&grades['coeval']['_']&&grades['coeval']['_'][s.id]!=null?grades['coeval']['_'][s.id]:'';
       var fi=grades['final']&&grades['final']['_']&&grades['final']['_'][s.id]!=null?grades['final']['_'][s.id]:'';
@@ -4975,6 +4978,7 @@ function infRenderSelector() {
     '<button class="btn-inf-sec" onclick="infComparativas()">📈 Comparativas entre cursos</button>' +
     '<button class="btn-inf-sec rep" onclick="infReprobados()">⚠ Lista de reprobados</button>' +
     '<button class="btn-inf-sec" onclick="infActaFirmas()">✍ Acta de notas y firmas</button>' +
+    '<button class="btn-inf-sec rep" onclick="infListaNivelar()">📋 Estudiantes a nivelar</button>' +
     '</div></div>' +
     '<div class="inf-group">' +
     '<div class="inf-group-title">📅 Fechas de los periodos</div>' +
@@ -6984,7 +6988,7 @@ async function infActaFirmas() {
         '<td class="fi"></td></tr>';
     }).join('');
 
-    var notas = ['Acumulado = promedio de los periodos con nota, con igual peso para cada uno (Art. 28.15). Notas menores a 3.0 en <b><u>negrilla y subrayadas</u></b>.'];
+    var notas = ['Acumulado = promedio de los periodos con nota, con igual peso para cada uno (Art. 28.15). Notas a un decimal sin aproximar. Notas menores a 3.0 en <b><u>negrilla y subrayadas</u></b>.'];
     if (hayPar1) notas.push(ACUM_NOTA_PAR1);
     if (hayFaltan) notas.push('* Le falta nota en algún periodo: el acumulado promedia solo los periodos con nota.');
 
@@ -7041,6 +7045,96 @@ async function infActaFirmas() {
     'if(c.scrollHeight>pg.clientHeight){c.style.zoom=(pg.clientHeight/c.scrollHeight*0.99).toFixed(3);}});' +
     'setTimeout(function(){print()},400);};' +
     '<\/script></body></html>');
+  win.document.close();
+  if (sinDatos.length) toast('⚠ No se pudieron cargar: ' + sinDatos.join(', '));
+}
+
+/* Lista de estudiantes a nivelar de todos los cursos: los que tienen el
+   acumulado del año por debajo de 3.0 (deben presentar la sustentación
+   final). Se imprime en blanco y negro o se descarga como CSV (Excel). */
+async function infListaNivelar() {
+  // La ventana se abre ya, dentro del clic, para que el navegador no la bloquee
+  var win = window.open('', '_blank');
+  if (!win) { toast('El navegador bloqueó la ventana: permite ventanas emergentes para imprimir'); return; }
+  win.document.write('<p style="font-family:sans-serif;padding:20px">Cargando las notas de los 3 periodos de todos los cursos…</p>');
+
+  var cursos = COURSES.slice();
+  await Promise.all(cursos.map(function(c){ return grdEnsureAllPeriods(c); }));
+
+  var fecha = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+  var anio = new Date().getFullYear();
+  var sinDatos = [], total = 0, totalEst = 0, hayPar1 = false, hayFaltan = false;
+  var csv = '﻿Estudiantes a nivelar (sustentación final) · Química ' + anio + '\n' +
+    'Generado: ' + fecha + ' · Notas a un decimal sin aproximar\n\n' +
+    'Curso,Estudiante,Código,P1,P2,P3,Acumulado\n';
+
+  function nota(v, o) {
+    if (v === null) return '<td class="n">—</td>';
+    return '<td class="n' + (v < 3.0 ? ' bj' : '') + '">' + v.toFixed(1) + (o !== null ? '<sup>¹</sup>' : '') + '</td>';
+  }
+
+  var bloques = cursos.map(function(course){
+    var rows = grdAcumuladoRows(course);
+    if (!rows.length) { sinDatos.push(course); return ''; }
+    totalEst += rows.length;
+    var nivelan = rows.filter(function(r){ return r.acumulado !== null && r.acumulado < 3.0; });
+    total += nivelan.length;
+    var filas = nivelan.map(function(r, i){
+      var faltan = r.porPeriodo.some(function(v){ return v === null; });
+      if (faltan) hayFaltan = true;
+      if (r.originales.some(function(o){ return o !== null; })) hayPar1 = true;
+      csv += [course, r.name, r.code || '', ].concat(r.porPeriodo.map(function(v){ return v === null ? '' : v.toFixed(1); }))
+        .concat([r.acumulado.toFixed(1)]).map(csvField).join(',') + '\n';
+      return '<tr><td class="c">' + (i + 1) + '</td><td>' + infEsc(r.name) + '</td><td class="c">' + (r.code ? infEsc(r.code) : '—') + '</td>' +
+        PERIODS.map(function(p, k){ return nota(r.porPeriodo[k], r.originales[k]); }).join('') +
+        '<td class="n ac bj">' + r.acumulado.toFixed(1) + (faltan ? '*' : '') + '</td></tr>';
+    }).join('');
+    return '<div class="cur"><h2>Curso ' + course + '<span>' + nivelan.length + ' de ' + rows.length + ' estudiantes</span></h2>' +
+      (nivelan.length
+        ? '<table><colgroup><col style="width:0.8cm"><col><col style="width:2.2cm"><col style="width:1.3cm"><col style="width:1.3cm"><col style="width:1.3cm"><col style="width:1.8cm"></colgroup>' +
+          '<thead><tr><th>#</th><th class="l">Estudiante</th><th>Código</th><th>P1</th><th>P2</th><th>P3</th><th>Acum.</th></tr></thead><tbody>' + filas + '</tbody></table>'
+        : '<p class="nadie">Ningún estudiante debe nivelar.</p>') +
+      '</div>';
+  }).join('');
+
+  if (!bloques) { win.close(); toast('No se pudieron cargar las notas de los cursos'); return; }
+
+  var notas = ['Debe nivelar quien tiene el acumulado del año (promedio de los periodos con nota, Art. 28.15) por debajo de 3.0. Notas a un decimal sin aproximar; las menores a 3.0 van en <b><u>negrilla y subrayadas</u></b>.'];
+  if (hayPar1) notas.push(ACUM_NOTA_PAR1);
+  if (hayFaltan) notas.push('* Le falta nota en algún periodo: el acumulado promedia solo los periodos con nota.');
+
+  var csvHref = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  win.document.open();
+  win.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<title>Estudiantes a nivelar ' + anio + '</title><style>' +
+    '@page{size:letter portrait;margin:1.2cm}' +
+    '*{box-sizing:border-box}body{margin:0 auto;max-width:19.2cm;padding:0 8px;font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#000;background:#fff}' +
+    '.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 0;border-bottom:1px solid #000;margin-bottom:10px;font-size:9.5pt}' +
+    '.bar a,.bar button{font:inherit;font-weight:700;padding:7px 12px;border:1.5px solid #000;border-radius:6px;background:#fff;color:#000;text-decoration:none;cursor:pointer}' +
+    '@media print{.bar{display:none}}' +
+    'header{display:flex;align-items:center;gap:10px;border-bottom:2.5px solid #000;padding-bottom:5px;margin-bottom:6px}' +
+    'header img{height:1.3cm;filter:grayscale(1)}.t{flex:1}h1{margin:0;font-size:13pt}.t p{margin:1px 0 0;font-size:8.5pt}' +
+    '.tot{border:2px solid #000;border-radius:4px;padding:2px 10px;text-align:center}.tot span{display:block;font-size:7pt;text-transform:uppercase}.tot b{font-size:17pt}' +
+    '.cur{margin-top:10px;break-inside:avoid;page-break-inside:avoid}' +
+    'h2{font-size:11pt;margin:0 0 3px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:1.5px solid #000}h2 span{font-size:8.5pt;font-weight:400}' +
+    'table{width:100%;border-collapse:collapse;table-layout:fixed}' +
+    'th,td{border:1px solid #000;padding:3px 5px}th{font-size:8pt;text-transform:uppercase;border-bottom:2px solid #000}th.l{text-align:left}' +
+    '.c{text-align:center;font-size:.9em}.n{text-align:center}.ac{font-size:1.05em}.bj{font-weight:700;text-decoration:underline}.n sup{font-size:.6em}' +
+    '.nadie{margin:2px 0;font-size:9pt;font-style:italic}' +
+    '.nt{font-size:7.5pt;margin-top:10px;line-height:1.35}' +
+    '</style></head><body>' +
+    '<div class="bar"><button onclick="print()">🖨 Imprimir / PDF</button>' +
+    '<a href="' + csvHref + '" download="estudiantes_a_nivelar_' + anio + '.csv">⬇ Descargar Excel (CSV)</a>' +
+    (sinDatos.length ? '<span>⚠ Sin datos: ' + sinDatos.join(', ') + '</span>' : '') + '</div>' +
+    '<header><img src="' + INF_LOGO_SRC + '" alt="">' +
+    '<div class="t"><h1>Colegio Rufino José Cuervo IED</h1>' +
+    '<p>Ciencias Naturales — Química · Estudiantes a nivelar (sustentación final)</p>' +
+    '<p>Docente: Harvey Barcenas Morales · Año ' + anio + ' · Generada el ' + fecha + ' · ' + totalEst + ' estudiantes en ' + (cursos.length - sinDatos.length) + ' cursos</p></div>' +
+    '<div class="tot"><span>A nivelar</span><b>' + total + '</b></div></header>' +
+    bloques +
+    '<div class="nt">' + notas.join('<br>') + '</div>' +
+    '</body></html>');
   win.document.close();
   if (sinDatos.length) toast('⚠ No se pudieron cargar: ' + sinDatos.join(', '));
 }
