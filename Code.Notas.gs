@@ -159,6 +159,10 @@ function validGrade(v) {
 // Convierte un valor de nota (número o 'NE') al número que debe entrar a una
 // suma ponderada. 'NE' cuenta como 0, igual que decidió el docente para esta
 // versión — no se excluye del promedio, se penaliza como una entrega en 0.
+// Las notas van a un decimal SIN aproximar (decisión del colegio): 2.96 → 2.9.
+// El +1e-7 evita que errores de coma flotante (8.9999999/3) bajen una décima.
+function notaUnDecimal_(x) { return Math.floor(x * 10 + 1e-7) / 10; }
+
 function gnum(v) {
   return v === 'NE' ? 0 : v;
 }
@@ -864,7 +868,7 @@ function generateFullCSV() {
           // grdCalcFinal de index.html — pero la celda visible de arriba
           // (actVals/ae/ce/fi/especiales) conserva el texto "NE" tal cual.
           const actAvgRaw = filled.length ? filled.reduce((a,b)=>a+gnum(b),0)/filled.length : 0;
-          const actAvg = filled.length ? Math.round(actAvgRaw*10)/10 : '';
+          const actAvg = filled.length ? notaUnDecimal_(actAvgRaw) : '';
           row.push(actAvg);
           const ae=grades['autoeval']?.['_']?.[s.id]??'', ce=grades['coeval']?.['_']?.[s.id]??'', fi=grades['final']?.['_']?.[s.id]??'';
           row.push(ae,ce,fi);
@@ -882,7 +886,7 @@ function generateFullCSV() {
           // real de nivelación — son dos audiencias distintas a propósito.
           const nivelacionGrade = grades['nivelacion']?.['_']?.[s.id] ?? null;
           const def = nivelacionGrade !== null ? nivelacionGrade
-            : (totPct>0?Math.round(sumW2/(totPct/100)*10)/10:0);
+            : (totPct>0?notaUnDecimal_(sumW2/(totPct/100)):0);
           row.push(def);
           lines.push(row.map(v => csvField(v)).join(','));
         });
@@ -968,7 +972,7 @@ function rebuildCourseSheet(course, period) {
     // gnum(): 'NE' (No Entregó) cuenta como 0 en la suma — la celda visible
     // de arriba conserva el texto "NE" tal cual.
     const actAvgRaw = filled.length ? filled.reduce((a,b)=>a+gnum(b),0)/filled.length : 0;
-    const actAvg = filled.length ? Math.round(actAvgRaw*10)/10 : '';
+    const actAvg = filled.length ? notaUnDecimal_(actAvgRaw) : '';
     row.push(actAvg);
     const ae=grades['autoeval']?.['_']?.[s.id]??'', ce=grades['coeval']?.['_']?.[s.id]??'', fi=grades['final']?.['_']?.[s.id]??'';
     row.push(ae,ce,fi);
@@ -986,7 +990,7 @@ function rebuildCourseSheet(course, period) {
     // original mientras edita).
     const nivelacionGrade = grades['nivelacion']?.['_']?.[s.id] ?? null;
     const definitiva = nivelacionGrade !== null ? nivelacionGrade
-      : (totalPctR>0?Math.round(sumWR/(totalPctR/100)*10)/10:0);
+      : (totalPctR>0?notaUnDecimal_(sumWR/(totalPctR/100)):0);
     row.push(definitiva);
     return row;
   });
@@ -1054,7 +1058,7 @@ function queryStudent(code) {
   // cola de flotantes de actAvgRaw. Por eso el resumen usa actAvgRaw
   // explícitamente en vez de leer components[0].grade.
   const actAvgRaw=validActs.length>0?validActs.reduce((a,b)=>a+gnum(b),0)/validActs.length:null;
-  const actAvg=actAvgRaw!==null?Math.round(actAvgRaw*10)/10:null;
+  const actAvg=actAvgRaw!==null?notaUnDecimal_(actAvgRaw):null;
   const components=[
     { key:'actividades', label:'Actividades de clase', weight:weights.actividades,
       detail: actNames.length>0?`${validActs.length} de ${actNames.length} notas · promedio ${actAvg!==null?actAvg.toFixed(1):'—'}`:'Sin actividades aún',
@@ -1070,7 +1074,7 @@ function queryStudent(code) {
     const g = c.key==='actividades' ? actAvgRaw : c.grade;
     sumW+=(g!==null?gnum(g):0)*(c.weight/100);
   });
-  let avg=totalPct>0?Math.round(sumW/(totalPct/100)*10)/10:null;
+  let avg=totalPct>0?notaUnDecimal_(sumW/(totalPct/100)):null;
   // Nivelación: mismo mecanismo genérico de saveGrade (component:'nivelacion',
   // itemId:'_') que usa Code.Consulta.gs — si el docente la diligenció, la
   // definitiva pública se fija en 3.0. Sin esto, este endpoint (que también
