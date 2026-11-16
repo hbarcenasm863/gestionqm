@@ -7085,14 +7085,14 @@ async function infListaNivelar() {
       if (r.originales.some(function(o){ return o !== null; })) hayPar1 = true;
       csv += [course, r.name, r.code || '', ].concat(r.porPeriodo.map(function(v){ return v === null ? '' : v.toFixed(1); }))
         .concat([r.acumulado.toFixed(1)]).map(csvField).join(',') + '\n';
-      return '<tr><td class="c">' + (i + 1) + '</td><td>' + infEsc(r.name) + '</td><td class="c">' + (r.code ? infEsc(r.code) : '—') + '</td>' +
+      return '<tr><td class="c">' + (i + 1) + '</td><td class="cu2">' + course + '</td><td>' + infEsc(r.name) + '</td><td class="c">' + (r.code ? infEsc(r.code) : '—') + '</td>' +
         PERIODS.map(function(p, k){ return nota(r.porPeriodo[k], r.originales[k]); }).join('') +
         '<td class="n ac bj">' + r.acumulado.toFixed(1) + (faltan ? '*' : '') + '</td></tr>';
     }).join('');
     return '<div class="cur"><h2>Curso ' + course + '<span>' + nivelan.length + ' de ' + rows.length + ' estudiantes</span></h2>' +
       (nivelan.length
-        ? '<table><colgroup><col style="width:0.8cm"><col><col style="width:2.2cm"><col style="width:1.3cm"><col style="width:1.3cm"><col style="width:1.3cm"><col style="width:1.8cm"></colgroup>' +
-          '<thead><tr><th>#</th><th class="l">Estudiante</th><th>Código</th><th>P1</th><th>P2</th><th>P3</th><th>Acum.</th></tr></thead><tbody>' + filas + '</tbody></table>'
+        ? '<table><colgroup><col style="width:0.8cm"><col style="width:1.4cm"><col><col style="width:1.6cm"><col style="width:1.3cm"><col style="width:1.3cm"><col style="width:1.3cm"><col style="width:1.8cm"></colgroup>' +
+          '<thead><tr><th>#</th><th>Curso</th><th class="l">Estudiante</th><th>Código</th><th>P1</th><th>P2</th><th>P3</th><th>Acum.</th></tr></thead><tbody>' + filas + '</tbody></table>'
         : '<p class="nadie">Ningún estudiante debe nivelar.</p>') +
       '</div>';
   }).join('');
@@ -7121,6 +7121,7 @@ async function infListaNivelar() {
     'table{width:100%;border-collapse:collapse;table-layout:fixed}' +
     'th,td{border:1px solid #000;padding:3px 5px}th{font-size:8pt;text-transform:uppercase;border-bottom:2px solid #000}th.l{text-align:left}' +
     '.c{text-align:center;font-size:.9em}.n{text-align:center}.ac{font-size:1.05em}.bj{font-weight:700;text-decoration:underline}.n sup{font-size:.6em}' +
+    '.cu2{text-align:center;font-weight:700}' +
     '.nadie{margin:2px 0;font-size:9pt;font-style:italic}' +
     '.nt{font-size:7.5pt;margin-top:10px;line-height:1.35}' +
     '</style></head><body>' +
